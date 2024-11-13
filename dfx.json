@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "decent_credit_backend": {
+      "candid": "src/decent_credit_backend/decent_credit_backend.did",
+      "package": "decent_credit_backend",
+      "type": "rust"
+    },
+    "decent_credit_frontend": {
+      "dependencies": [
+        "decent_credit_backend"
+      ],
+      "source": [
+        "src/decent_credit_frontend/assets"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

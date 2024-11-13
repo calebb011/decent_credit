@@ -1,3 +1,23 @@
+type Institution = record {
+    id: principal;
+    name: text;
+    registration_time: nat64;
+    is_active: bool;
+    credit_score: nat64;
+};
+
+type CreditRecord = record {
+    id: nat64;
+    institution: principal;
+    subject_id: text;
+    record_type: text;
+    data_hash: text;
+    timestamp: nat64;
+    is_valid: bool;
+};
+
 service : {
-    "greet": (text) -> (text) query;
-}
+    "register_institution": (text) -> (variant { Ok: null; Err: text });
+    "get_institution": (principal) -> (opt Institution) query;
+    "init": () -> ();
+};

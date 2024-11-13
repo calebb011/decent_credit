@@ -14,7 +14,7 @@
       },
       "source": [
         "src/decent_credit_frontend/assets",
-        "dist/decent_credit_frontend/"
+        "src/decent_credit_frontend/src"
       ],
       "type": "assets"
     }
@@ -23,11 +23,6 @@
     "build": {
       "args": "",
       "packtool": ""
-    }
-  },
-  "networks": {
-    "local": {
-      "bind": "127.0.0.1:4943"
     }
   },
   "version": 1

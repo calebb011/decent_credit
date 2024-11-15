@@ -1,9 +1,18 @@
 type Institution = record {
     id: principal;
     name: text;
-    registration_time: nat64;
-    is_active: bool;
-    credit_score: nat64;
+    fullName: text;
+    status: variant { active; inactive };
+    joinTime: nat64;
+    lastActive: nat64;
+    apiCalls: nat64;
+    dccConsumed: nat64;
+    dataUploads: nat64;
+    creditScore: nat64;
+    tokenTrading: record {
+        bought: nat64;
+        sold: nat64;
+    };
 };
 
 type CreditRecord = record {
@@ -17,7 +26,14 @@ type CreditRecord = record {
 };
 
 service : {
-    "register_institution": (text) -> (variant { Ok: null; Err: text });
-    "get_institution": (principal) -> (opt Institution) query;
-    "init": () -> ();
-};
+    register_institution: (text, text) -> (principal);
+    get_institution: (principal) -> (opt Institution) query;
+    get_all_institutions: () -> (vec Institution) query;
+    update_institution_status: (principal, bool) -> ();
+    update_credit_score: (principal, nat64) -> ();
+    record_api_call: (principal, nat64) -> ();
+    record_data_upload: (principal, nat64) -> ();
+    record_token_trading: (principal, bool, nat64) -> ();
+}
+
+

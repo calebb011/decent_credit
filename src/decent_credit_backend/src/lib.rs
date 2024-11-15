@@ -53,9 +53,9 @@ fn register_institution(name: String) -> Result<(), String> {
     
     STATE.with(|state| {
         let mut state = state.borrow_mut();
-        if state.institutions.contains_key(&caller) {
-            return Err("Institution already registered".to_string());
-        }
+        // if state.institutions.contains_key(&caller) {
+        //     return Err("Institution already registered".to_string());
+        // }
 
         let institution = Institution {
             id: caller,

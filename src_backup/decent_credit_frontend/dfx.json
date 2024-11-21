@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "decent_credit_backend": {
+      "candid": "src/decent_credit_backend/decent_credit_backend.did",
+      "package": "decent_credit_backend",
+      "type": "rust"
+    },
+    "decent_credit_frontend": {
+      "dependencies": [
+        "decent_credit_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/decent_credit_frontend/src/index.html"
+      },
+      "source": [
+        "src/decent_credit_frontend/assets",
+        "src/decent_credit_frontend/src"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "version": 1
+}

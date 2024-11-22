@@ -10,8 +10,8 @@ import {
 import { Wallet } from 'lucide-react';
 import TokenExchange from './TokenExchange';
 import { useWallet } from '../hooks/useWallet';
-import InstitutionManagement from './InstitutionManagement';  // 修改这里的导入
-const Layout2 = ({ children }) => {
+import AdminManagement from './AdminManagement';  // 修改这里的导入
+const InstitutionLayout = ({ children }) => {
   const [activePage, setActivePage] = useState('overview');
 
   const { account, error, connectWallet, isConnected, dccBalance } = useWallet();
@@ -137,11 +137,11 @@ const Layout2 = ({ children }) => {
   </aside>
 
   <main className="flex-1 px-4 sm:px-6 lg:px-8">
-    {activePage === 'institutions' ? <InstitutionManagement /> : children}
+    {activePage === 'institutions' ? <AdminManagement /> : children}
   </main>
 </div>
     </div>
   );
 };
 
-export default Layout2;
+export default InstitutionLayout;

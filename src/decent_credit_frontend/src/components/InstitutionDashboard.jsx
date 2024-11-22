@@ -1,141 +1,175 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Table, Progress } from 'antd';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { DatabaseOutlined, LineChartOutlined, DollarOutlined, StarOutlined } from '@ant-design/icons';
+// Dashboard.js
+import React, { useState, useEffect } from 'react';
+import { BarChart2, Database, Coins, Award, Activity } from 'lucide-react';
+import { getDashboardData } from '../services/dashboardService';
 
-const InstitutionDashboard = () => {
-  // 模拟数据
-  const stats = {
-    totalSubmissions: 156,
-    monthlySubmissions: 23,
-    totalRewards: 289.5,
-    creditScore: 85,
-  };
+const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const submissionHistory = [
-    { month: '1月', submissions: 18 },
-    { month: '2月', submissions: 23 },
-    { month: '3月', submissions: 29 },
-    { month: '4月', submissions: 34 },
-    { month: '5月', submissions: 45 },
-    { month: '6月', submissions: 23 },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const response = await getDashboardData();
+        if (response.success) {
+          setDashboardData(response.data);
+        } else {
+          console.error('获取概览数据失败:', response.message);
+        }
+      } catch (error) {
+        console.error('获取概览数据异常:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const recentRecords = [
-    {
-      key: '1',
-      date: '2024-03-20',
-      type: '贷款记录',
-      status: '已确认',
-      reward: 1.0,
-    },
-    // ... 更多记录
-  ];
+    fetchDashboardData();
+  }, []);
 
-  const columns = [
-    {
-      title: '提交时间',
-      dataIndex: 'date',
-      key: 'date',
-    },
-    {
-      title: '记录类型',
-      dataIndex: 'type',
-      key: 'type',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <span className={status === '已确认' ? 'text-green-600' : 'text-yellow-600'}>
-          {status}
-        </span>
-      ),
-    },
-    {
-      title: '获得奖励',
-      dataIndex: 'reward',
-      key: 'reward',
-      render: (reward) => `${reward} DCC`,
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500">加载中...</div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500">暂无数据</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      {/* 统计卡片 */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} className="shadow-sm">
-            <Statistic
-              title="累计提交"
-              value={stats.totalSubmissions}
-              prefix={<DatabaseOutlined />}
-              suffix="条"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} className="shadow-sm">
-            <Statistic
-              title="本月提交"
-              value={stats.monthlySubmissions}
-              prefix={<LineChartOutlined />}
-              suffix="条"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} className="shadow-sm">
-            <Statistic
-              title="累计奖励"
-              value={stats.totalRewards}
-              prefix={<DollarOutlined />}
-              suffix="DCC"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} className="shadow-sm">
-            <Statistic
-              title="信用分"
-              value={stats.creditScore}
-              prefix={<StarOutlined />}
-              suffix="/100"
-            />
-          </Card>
-        </Col>
-      </Row>
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 头部信息 */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">系统概览</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            机构名称: {dashboardData.basicInfo.name}
+            <span className={`ml-4 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+              dashboardData.basicInfo.status === 'active' 
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {dashboardData.basicInfo.status === 'active' ? '已接入' : '未接入'}
+            </span>
+          </p>
+        </div>
 
-      {/* 图表区域 */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col span={24}>
-          <Card title="提交记录趋势" bordered={false} className="shadow-sm">
-            <div style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={submissionHistory}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="submissions" fill="#1890ff" />
-                </BarChart>
-              </ResponsiveContainer>
+        {/* 状态卡片 */}
+        <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-2">
+          {/* 数据提交统计 */}
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-blue-100 bg-opacity-75">
+                  <Database className="h-8 w-8 text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">数据提交统计</p>
+                  <p className="text-xl font-semibold text-gray-900">
+                    {dashboardData.submissionStats.todaySubmissions.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    总记录: {dashboardData.submissionStats.totalSubmissions.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-500">今日提交</p>
+                <p className="text-xl font-semibold text-gray-900">
+                  {dashboardData.submissionStats.todaySubmissions.toLocaleString()}
+                </p>
+              </div>
             </div>
-          </Card>
-        </Col>
-      </Row>
+          </div>
 
-      {/* 最近记录 */}
-      <Card title="最近提交记录" bordered={false} className="shadow-sm">
-        <Table 
-          columns={columns} 
-          dataSource={recentRecords} 
-          pagination={{ pageSize: 5 }}
-        />
-      </Card>
+          {/* API使用统计 */}
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-green-100 bg-opacity-75">
+                  <Activity className="h-8 w-8 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">API调用统计</p>
+                  <p className="text-xl font-semibold text-gray-900">
+                    {dashboardData.usageStats.todayQueries.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    额度: {dashboardData.usageStats.apiQuota.used}/{dashboardData.usageStats.apiQuota.total}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-500">今日调用</p>
+                <p className="text-xl font-semibold text-gray-900">
+                  {dashboardData.usageStats.todayQueries.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 代币消耗 */}
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-yellow-100 bg-opacity-75">
+                  <Coins className="h-8 w-8 text-yellow-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">代币消耗</p>
+                  <p className="text-xl font-semibold text-gray-900">
+                    {dashboardData.tokenInfo.monthlySpent.toLocaleString()} DCC
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    剩余: {dashboardData.tokenInfo.balance.toLocaleString()} DCC
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-500">今日消耗</p>
+                <p className="text-xl font-semibold text-gray-900">
+                  {dashboardData.tokenInfo.monthlySpent.toLocaleString()} DCC
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 奖励信息 */}
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-purple-100 bg-opacity-75">
+                  <Award className="h-8 w-8 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">获得奖励</p>
+                  <p className="text-xl font-semibold text-gray-900">
+                    {dashboardData.rewardInfo.totalReward.toLocaleString()} DCC
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    今日: {dashboardData.rewardInfo.todayReward.toLocaleString()} DCC
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-500">累计奖励</p>
+                <p className="text-xl font-semibold text-gray-900">
+                  {dashboardData.rewardInfo.totalReward.toLocaleString()} DCC
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default InstitutionDashboard;
+export default Dashboard;

@@ -3,8 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import AdminLogin from './components/AdminLogin';
 import InstitutionLogin from './components/InstitutionLogin';
-import Layout from './components/Layout';
-import Layout2 from './components/Layout2';
+import AdminLayout from './components/AdminLayout';
+import InstitutionLayout from './components/InstitutionLayout';
 import InstitutionDataSubmission from './components/InstitutionDataSubmission';
 import InstitutionDashboard from './components/InstitutionDashboard';
 
@@ -20,10 +20,10 @@ function App() {
     <AppContext.Provider value={icpState}>
   <Routes>
       <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/institution/login" element={<InstitutionLogin />} />
-      <Route path="/admin/*" element={<Layout />} />
-      <Route path="/institution/*" element={<Layout2 />} />
+      <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/" element={<Navigate to="/admin/login" />} />
+      <Route path="/institution/*" element={<InstitutionLayout />} />
+      <Route path="/institution/login" element={<InstitutionLogin />} />
       <Route path="/institution/submit" element={<InstitutionDataSubmission />} />
       <Route path="/institution/dashboard" element={<InstitutionDashboard />} />
     </Routes>

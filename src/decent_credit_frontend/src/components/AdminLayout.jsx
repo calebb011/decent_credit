@@ -11,9 +11,9 @@ import {
 import { Wallet, LogOut } from 'lucide-react';
 import TokenExchange from './TokenExchange';
 import { useWallet } from '../hooks/useWallet';
-import InstitutionManagement from './InstitutionManagement';
+import AdminManagement from './AdminManagement';
 
-const Layout = ({ children }) => {
+const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState('overview');
   const { account, error, connectWallet, isConnected, dccBalance } = useWallet();
@@ -45,30 +45,7 @@ const Layout = ({ children }) => {
             <div className="flex items-center space-x-3">
               <span className="text-gray-700 text-sm">管理员</span>
 
-              {!isConnected ? (
-                <button
-                  onClick={handleConnect}
-                  className="flex items-center px-2 py-1.5 rounded-md text-sm font-medium border border-gray-300 hover:bg-gray-50 text-gray-700"
-                >
-                  <Wallet className="w-4 h-4 mr-1.5" />
-                  连接钱包
-                </button>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <Dialog>
-                    <DialogPortal>
-                      <DialogOverlay className="fixed inset-0 bg-black/50" />
-                      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-white rounded-lg p-6 w-full max-w-2xl">
-                        <div className="mb-4">
-                          <DialogTitle className="text-lg font-semibold">代币兑换</DialogTitle>
-                        </div>
-                        <TokenExchange />
-                      </DialogContent>
-                    </DialogPortal>
-                  </Dialog>
-                </div>
-              )}
-
+           
               <button
                 onClick={handleLogout}
                 className="flex items-center px-2 py-1.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
@@ -125,11 +102,11 @@ const Layout = ({ children }) => {
 
         {/* 主内容区 */}
         <main className="flex-1 px-4 py-4">
-          {activePage === 'institutions' ? <InstitutionManagement /> : children}
+          {activePage === 'institutions' ? <AdminManagement /> : children}
         </main>
       </div>
     </div>
   );
 };
 
-export default Layout;
+export default AdminLayout;

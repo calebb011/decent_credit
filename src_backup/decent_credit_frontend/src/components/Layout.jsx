@@ -11,7 +11,7 @@ import {
 import { Wallet, LogOut } from 'lucide-react';
 import TokenExchange from './TokenExchange';
 import { useWallet } from '../hooks/useWallet';
-import InstitutionManagement from './InstitutionManagement';
+import AdminManagement from './AdminManagement';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -125,7 +125,7 @@ const Layout = ({ children }) => {
 
         {/* 主内容区 */}
         <main className="flex-1 px-4 py-4">
-          {activePage === 'institutions' ? <InstitutionManagement /> : children}
+          {activePage === 'institutions' ? <AdminManagement /> : children}
         </main>
       </div>
     </div>

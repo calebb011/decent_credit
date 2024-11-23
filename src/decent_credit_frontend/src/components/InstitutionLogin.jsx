@@ -27,7 +27,7 @@ const InstitutionLogin = () => {
   useEffect(() => {
     if (showWalletModal && isConnected) {
       // 钱包连接成功且获得代币后跳转
-      navigate('/institution/dashboard');
+      navigate('/institution/*');
     }
   }, [isConnected, showWalletModal]);
 

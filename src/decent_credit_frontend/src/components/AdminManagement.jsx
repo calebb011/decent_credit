@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, Database, AlertCircle } from 'lucide-react';
+import { BarChart2, Database, AlertCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/icpService';
 import InstitutionDialog from './InstitutionDialog';
 
@@ -7,15 +7,23 @@ const InstitutionList = () => {
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDCCModalOpen, setIsDCCModalOpen] = useState(false);
   const [editingInstitution, setEditingInstitution] = useState(null);
+  const [selectedInstitution, setSelectedInstitution] = useState(null);
+  const [transactionType, setTransactionType] = useState('');
+  const [formData, setFormData] = useState({
+    amount: '',
+    usdtAmount: '',
+    txHash: '',
+    remarks: ''
+  });
 
   const handleAddOrEdit = async (formData) => {
     try {
       if (editingInstitution) {
-        // 目前 IDL 中没有更新机构信息的接口
         console.log('修改机构:', formData);
       } else {
-        await registerInstitution(formData.name, formData.full_name,formData.password);
+        await registerInstitution(formData.name, formData.full_name, formData.password);
       }
       const data = await getAllInstitutions();
       setInstitutions(data);
@@ -50,6 +58,47 @@ const InstitutionList = () => {
         console.error('解除绑定失败:', error);
       }
     }
+  };
+
+  const handleDCCOperation = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (transactionType === 'recharge') {
+        await rechargeDCC(selectedInstitution.id, {
+          dccAmount: parseFloat(formData.amount),
+          usdtAmount: parseFloat(formData.usdtAmount),
+          txHash: formData.txHash,
+          remarks: formData.remarks
+        });
+      } else {
+        await deductDCC(selectedInstitution.id, {
+          dccAmount: parseFloat(formData.amount),
+          usdtAmount: parseFloat(formData.usdtAmount),
+          txHash: formData.txHash,
+          remarks: formData.remarks
+        });
+      }
+      
+      setIsDCCModalOpen(false);
+      const data = await getAllInstitutions();
+      setInstitutions(data);
+    } catch (error) {
+      console.error('操作失败:', error);
+      alert(error.message || '操作失败');
+    }
+  };
+
+  const handleOpenDCCModal = (institution, type) => {
+    setSelectedInstitution(institution);
+    setTransactionType(type);
+    setIsDCCModalOpen(true);
+    setFormData({
+      amount: '',
+      usdtAmount: '',
+      txHash: '',
+      remarks: ''
+    });
   };
 
   return (
@@ -169,6 +218,20 @@ const InstitutionList = () => {
                   </div>
 
                   <div className="mt-4 flex justify-end space-x-3">
+                    <button
+                      className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700"
+                      onClick={() => handleOpenDCCModal(institution, 'recharge')}
+                    >
+                      <ArrowUpCircle className="w-4 h-4 mr-2" />
+                      充值DCC
+                    </button>
+                    <button
+                      className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700"
+                      onClick={() => handleOpenDCCModal(institution, 'deduct')}
+                    >
+                      <ArrowDownCircle className="w-4 h-4 mr-2" />
+                      扣除DCC
+                    </button>
                     <button 
                       className="px-3 py-1.5 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100"
                       onClick={() => console.log('查看详情:', institution.id)}
@@ -188,6 +251,7 @@ const InstitutionList = () => {
           </div>
         )}
 
+        {/* 机构信息对话框 */}
         <InstitutionDialog
           isOpen={isDialogOpen}
           onClose={() => {
@@ -197,6 +261,79 @@ const InstitutionList = () => {
           institution={editingInstitution}
           onSubmit={handleAddOrEdit}
         />
+
+        {/* DCC充值/扣除模态框 */}
+        {isDCCModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {transactionType === 'recharge' ? '充值DCC' : '扣除DCC'} - {selectedInstitution?.name}
+              </h3>
+              <form onSubmit={handleDCCOperation}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">DCC数量</label>
+                    <input
+                      type="number"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={formData.amount}
+                      onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">USDT金额</label>
+                    <input
+                      type="number"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={formData.usdtAmount}
+                      onChange={(e) => setFormData({...formData, usdtAmount: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">交易哈希</label>
+                    <input
+                      type="text"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={formData.txHash}
+                      onChange={(e) => setFormData({...formData, txHash: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">备注</label>
+                    <textarea
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={formData.remarks}
+                      onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                      rows="3"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    onClick={() => setIsDCCModalOpen(false)}
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="submit"
+                    className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                      transactionType === 'recharge' 
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-red-600 hover:bg-red-700'
+                    }`}
+                  >
+                    确认
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

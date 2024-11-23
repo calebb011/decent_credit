@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-  DialogPortal,
-  DialogOverlay,
-} from "@radix-ui/react-dialog";
-import { Wallet, LogOut } from 'lucide-react';
-import TokenExchange from './TokenExchange';
+import { LogOut } from 'lucide-react';
 import { useWallet } from '../hooks/useWallet';
 import AdminManagement from './AdminManagement';
+import AdminDashboard from './AdminDashboard';
+import CreditRecords from './CreditRecords';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -30,11 +23,24 @@ const AdminLayout = ({ children }) => {
     navigate('/admin/login');
   };
 
+  const renderContent = () => {
+    switch (activePage) {
+      case 'institutions':
+        return <AdminManagement />;
+      case 'overview':
+        return <AdminDashboard />;
+      case 'credits':
+        return <CreditRecords />;
+      default:
+        return children;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       {/* 顶部导航栏 */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+      <nav className="bg-white border-b">
+        <div className="pl-4">
           <div className="flex justify-between items-center h-14">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
@@ -42,10 +48,9 @@ const AdminLayout = ({ children }) => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 mr-4">
               <span className="text-gray-700 text-sm">管理员</span>
-
-           
+              
               <button
                 onClick={handleLogout}
                 className="flex items-center px-2 py-1.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
@@ -61,48 +66,56 @@ const AdminLayout = ({ children }) => {
       {/* 主体内容区 */}
       <div className="flex">
         {/* 侧边栏 */}
-        <aside className="w-48 bg-white shadow-sm">
-          <nav className="mt-3">
-            <a 
-              href="#" 
+        <aside className="fixed left-0 top-14 w-40 bg-white h-[calc(100vh-3.5rem)]">
+          <nav className="pt-2">
+            <a
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setActivePage('overview');
               }}
-              className={`group flex justify-center items-center py-2.5 text-sm font-medium ${
-                activePage === 'overview' 
-                  ? 'bg-gray-100 text-gray-900' 
+              className={`block px-4 py-2.5 text-sm font-medium ${
+                activePage === 'overview'
+                  ? 'bg-gray-50 text-gray-900'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               系统概览
             </a>
-            <a 
-              href="#" 
+            <a
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setActivePage('institutions');
               }}
-              className={`group flex justify-center items-center py-2.5 text-sm font-medium ${
-                activePage === 'institutions' 
-                  ? 'bg-gray-100 text-gray-900' 
+              className={`block px-4 py-2.5 text-sm font-medium ${
+                activePage === 'institutions'
+                  ? 'bg-gray-50 text-gray-900'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               机构管理
             </a>
-            <a 
-              href="#" 
-              className="group flex justify-center items-center py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setActivePage('credits');
+              }}
+              className={`block px-4 py-2.5 text-sm font-medium ${
+                activePage === 'credits'
+                  ? 'bg-gray-50 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }`}
             >
-              系统配置
+              信用扣除
             </a>
           </nav>
         </aside>
 
         {/* 主内容区 */}
-        <main className="flex-1 px-4 py-4">
-          {activePage === 'institutions' ? <AdminManagement /> : children}
+        <main className="flex-1 ml-40 py-4 px-4 bg-white min-h-[calc(100vh-3.5rem)]">
+          {renderContent()}
         </main>
       </div>
     </div>

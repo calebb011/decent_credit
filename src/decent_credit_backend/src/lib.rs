@@ -1,13 +1,10 @@
 use ic_cdk_macros::*;
 use candid::Principal;
 
-// 导出模块
-pub mod api;
-pub mod models;
-pub mod services;
-
-
-
+// 内部模块声明
+mod models;  // 不需要 pub,因为只在内部使用
+mod services;  // 不需要 pub,因为只在内部使用
+pub mod api;  // 需要 pub,因为要暴露给前端
 
 #[init]
 fn init() {
@@ -15,7 +12,15 @@ fn init() {
     services::crypto_service::init_crypto_service();
 }
 
+// 只重导出前端需要的 API 接口
+pub use api::credit_route::*;        // 信用相关接口
+pub use api::dashboard_route::*;     // 仪表盘接口
+pub use api::history_route::*;       // 历史记录接口
+pub use api::record_route::*;        // 记录相关接口
+pub use api::admin_route::*;        // 记录相关接口
 
-// 重新导出 API 接口
-pub use api::admin_route::*;
-pub use api::record_route::*;
+// admin 接口可能需要特殊权限,可以单独控制
+pub use api::admin_route::*;         
+
+// 定义接口可能用到的公共类型
+pub type Result<T> = std::result::Result<T, String>;

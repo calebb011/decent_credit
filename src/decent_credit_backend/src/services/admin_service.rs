@@ -47,6 +47,8 @@ pub struct AdminService {
     caller_institutions: HashMap<Principal, Vec<Principal>>,
     name_to_id: HashMap<String, Principal>,
     next_id: u64,
+    dcc_transactions: Vec<DCCTransactionRequest>, // 新增
+    usdt_rate: f64,                              // 新增
 }
 
 thread_local! {
@@ -61,6 +63,8 @@ impl AdminService {
             caller_institutions: HashMap::new(),
             name_to_id: HashMap::new(),
             next_id: 0,
+            dcc_transactions: Vec::new(),
+            usdt_rate: 1.0,
         }
     }
 
@@ -276,6 +280,143 @@ impl AdminService {
         if let Some(institution) = self.institutions.get_mut(&id) {
             institution.credit_score.score = score;
             institution.credit_score.last_update = time();
+        }
+    }
+     /// 获取机构DCC余额
+     pub fn get_institution_balance(&self, id: Principal) -> Result<BalanceResponse, String> {
+        let institution = self.institutions
+            .get(&id)
+            .ok_or_else(|| "机构不存在".to_string())?;
+            
+        let dcc_balance = institution.token_trading.bought
+            .saturating_sub(institution.token_trading.sold);
+        
+        let usdt_value = (dcc_balance as f64) * self.usdt_rate;
+        
+        Ok(BalanceResponse {
+            dcc: dcc_balance,
+            usdt_value,
+        })
+    }
+
+    /// 处理DCC充值
+    pub fn process_dcc_recharge(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+        let institution = self.institutions
+            .get_mut(&id)
+            .ok_or_else(|| "机构不存在".to_string())?;
+            
+        institution.token_trading.bought += request.dcc_amount;
+        self.dcc_transactions.push(request);
+        institution.last_active = time();
+        
+        Ok(())
+    }
+
+    /// 处理DCC扣除
+    pub fn process_dcc_deduction(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+        let institution = self.institutions
+            .get_mut(&id)
+            .ok_or_else(|| "机构不存在".to_string())?;
+            
+        let balance = institution.token_trading.bought.saturating_sub(institution.token_trading.sold);
+        if balance < request.dcc_amount {
+            return Err("DCC余额不足".to_string());
+        }
+
+        institution.token_trading.sold += request.dcc_amount;
+        institution.dcc_consumed += request.dcc_amount;
+        self.dcc_transactions.push(request);
+        institution.last_active = time();
+        
+        Ok(())
+    }
+
+    /// 更新USDT汇率
+    pub fn update_usdt_rate(&mut self, rate: f64) -> Result<(), String> {
+        if rate <= 0.0 {
+            return Err("汇率必须大于0".to_string());
+        }
+        self.usdt_rate = rate;
+        Ok(())
+    }
+
+    // 获取管理员看板数据
+    pub fn get_admin_dashboard(&self) -> DashboardStats {
+        let total_institutions = self.institutions.len() as u64;
+        let active_institutions = self.institutions
+            .values()
+            .filter(|i| matches!(i.status, InstitutionStatus::Active))
+            .count() as u64;
+            
+        // 获取今日的起始时间戳
+        let today_start = {
+            let now = time();
+            now - (now % (24 * 60 * 60 * 1_000_000_000))
+        };
+
+        // 计算今日数据
+        let today_institutions = self.institutions
+            .values()
+            .filter(|i| i.join_time >= today_start)
+            .count() as u64;
+
+        let today_records = self.institutions
+            .values()
+            .map(|i| i.data_uploads)
+            .sum::<u64>();
+
+        let today_calls = self.institutions
+            .values()
+            .map(|i| i.api_calls)
+            .sum::<u64>();
+
+        let total_rewards: u64 = self.institutions
+            .values()
+            .map(|i| i.token_trading.bought)
+            .sum();
+
+        let total_consumption: u64 = self.institutions
+            .values()
+            .map(|i| i.token_trading.sold)
+            .sum();
+
+        DashboardStats {
+            institution_stats: InstitutionStats {
+                total_count: total_institutions,
+                active_count: active_institutions,
+                today_new_count: today_institutions,
+            },
+            data_stats: DataStats {
+                total_records: self.institutions.values().map(|i| i.data_uploads).sum(),
+                today_records,
+                growth_rate: self.calculate_growth_rate(total_records, today_records),
+            },
+            api_stats: ApiStats {
+                total_calls: self.institutions.values().map(|i| i.api_calls).sum(),
+                today_calls,
+                success_rate: 99.9, // 固定值或根据实际错误率计算
+            },
+            token_stats: TokenStats {
+                total_rewards,
+                total_consumption,
+                today_rewards: self.dcc_transactions
+                    .iter()
+                    .filter(|tx| tx.timestamp >= today_start)
+                    .map(|tx| tx.dcc_amount)
+                    .sum(),
+                today_consumption: self.institutions
+                    .values()
+                    .map(|i| i.dcc_consumed)
+                    .sum(),
+            },
+        }
+    }
+
+    fn calculate_growth_rate(&self, total: u64, today: u64) -> f64 {
+        if total == 0 {
+            0.0
+        } else {
+            (today as f64 / total as f64) * 100.0
         }
     }
 }

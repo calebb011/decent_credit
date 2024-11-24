@@ -541,6 +541,89 @@ export function isAdmin() {
   }
 }
 
+// API base URL
+const API_BASE_URL = '/api';  // 根据实际情况修改API基础URL
+
+/**
+ * DCC充值方法
+ * @param {string} institutionId - 机构ID
+ * @param {Object} data - 充值数据
+ * @param {number} data.dccAmount - DCC数量
+ * @param {number} data.usdtAmount - USDT金额
+ * @param {string} data.txHash - 交易哈希
+ * @param {string} data.remarks - 备注信息
+ * @returns {Promise} - 返回充值结果
+ */
+export const rechargeDCC = async (institutionId, data) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/institutions/${institutionId}/recharge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // 如果需要认证token，在这里添加
+        // 'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        dcc_amount: data.dccAmount,
+        usdt_amount: data.usdtAmount,
+        tx_hash: data.txHash,
+        remarks: data.remarks || ''
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '充值操作失败');
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('DCC充值失败:', error);
+    throw new Error(error.message || '充值操作失败，请稍后重试');
+  }
+};
+
+/**
+ * DCC扣除方法
+ * @param {string} institutionId - 机构ID
+ * @param {Object} data - 扣除数据
+ * @param {number} data.dccAmount - DCC数量
+ * @param {number} data.usdtAmount - USDT金额
+ * @param {string} data.txHash - 交易哈希
+ * @param {string} data.remarks - 备注信息
+ * @returns {Promise} - 返回扣除结果
+ */
+export const deductDCC = async (institutionId, data) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/institutions/${institutionId}/deduct`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // 如果需要认证token，在这里添加
+        // 'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        dcc_amount: data.dccAmount,
+        usdt_amount: data.usdtAmount,
+        tx_hash: data.txHash,
+        remarks: data.remarks || ''
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '扣除操作失败');
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('DCC扣除失败:', error);
+    throw new Error(error.message || '扣除操作失败，请稍后重试');
+  }
+};
+
 // 登出
 export function logout() {
   try {

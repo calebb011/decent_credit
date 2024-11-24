@@ -108,3 +108,115 @@ pub struct RecordStatistics {
     pub total_rewards: u64
 }
 
+
+
+
+
+// 数据模型定义
+#[derive(CandidType, Deserialize, Serialize, Clone)]
+pub struct RecordContent {
+    amount: f64,
+    timestamp: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    term: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    interest_rate: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    original_loan_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    overdue_days: Option<u32>,
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct RecordSubmissionRequest {
+    pub record_type: String,
+    pub user_did: String,
+    pub content: RecordContent,
+}
+
+#[derive(CandidType, Serialize)]
+pub struct RecordSubmissionResponse {
+    pub record_id: String,
+    pub timestamp: u64,
+    pub status: String,
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct BatchSubmissionRequest {
+    pub records: Vec<RecordSubmissionRequest>,
+}
+
+#[derive(CandidType, Serialize)]
+pub struct BatchSubmissionResponse {
+    pub submitted: usize,
+    pub failed: usize,
+    pub record_ids: Vec<String>,
+    pub timestamp: u64,
+    pub status: String,
+}
+
+#[derive(CandidType, Serialize, Clone)]
+pub struct CreditRecord {
+    pub id: String,
+    pub institution_id: Principal,
+    pub record_type: String,
+    pub content: RecordContent,
+    pub status: String,
+    pub timestamp: u64,
+    pub user_did: String,
+    pub canister_id: Principal,
+}
+
+#[derive(CandidType, Serialize)]
+pub struct GetRecordsResponse {
+    pub status: String,
+    pub records: Vec<CreditRecord>,
+}
+
+
+
+// 数据结构定义
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UploadHistoryParams {
+    status: Option<String>,
+    start_date: Option<String>,
+    end_date: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ReviewResult {
+    passed: bool,
+    reason: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UploadRecord {
+    id: String,
+    user_did: String,
+    institution_id: Principal,
+    status: String,
+    submitted_at: String,
+    review_result: ReviewResult,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UploadHistoryResponse {
+    data: Vec<UploadRecord>,
+    total: usize,
+}
+
+
+// === 批量提交相关结构 ===
+#[derive(CandidType, Deserialize)]
+pub struct BatchSubmissionRequest {
+    pub records: Vec<RecordSubmissionRequest>
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct BatchSubmissionResponse {
+    pub submitted: usize,
+    pub failed: usize,
+    pub record_ids: Vec<String>,
+    pub timestamp: u64,
+    pub status: RecordStatus
+}

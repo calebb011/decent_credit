@@ -5,6 +5,7 @@ import { useWallet } from '../hooks/useWallet';
 import InstitutionDashboard from './InstitutionDashboard';
 import CreditRecordQuery from './CreditRecordQuery';
 import InstitutionDataSubmission from './InstitutionDataSubmission';
+import UploadHistory from './UploadHistory';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ const AdminLayout = ({ children }) => {
         return <InstitutionDataSubmission />;
       case 'credits':
         return < CreditRecordQuery/>;
+        case 'history':
+          return < UploadHistory/>;
       default:
         return children;
     }
@@ -44,6 +47,12 @@ const AdminLayout = ({ children }) => {
     {
       id: 'credits',
       label: '数据查询',
+      icon: FileText,
+    }
+    ,
+    {
+      id: 'history',
+      label: '数据历史',
       icon: FileText,
     }
   ];

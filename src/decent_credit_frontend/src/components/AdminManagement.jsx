@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, Database, AlertCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/icpService';
+import { getAllInstitutions, registerInstitution, updateInstitutionStatus, rechargeDCC, deductDCC } from '../services/icpService';
 import InstitutionDialog from './InstitutionDialog';
+
+// DCC to USDT conversion rate (e.g., 1 DCC = 0.1 USDT)
+const DCC_TO_USDT_RATE = 0.1;
 
 const InstitutionList = () => {
   const [institutions, setInstitutions] = useState([]);
@@ -64,20 +67,17 @@ const InstitutionList = () => {
     e.preventDefault();
     
     try {
+      const operationData = {
+        dccAmount: parseFloat(formData.amount),
+        usdtAmount: parseFloat(formData.usdtAmount),
+        txHash: formData.txHash,
+        remarks: formData.remarks
+      };
+
       if (transactionType === 'recharge') {
-        await rechargeDCC(selectedInstitution.id, {
-          dccAmount: parseFloat(formData.amount),
-          usdtAmount: parseFloat(formData.usdtAmount),
-          txHash: formData.txHash,
-          remarks: formData.remarks
-        });
+        await rechargeDCC(selectedInstitution.id, operationData);
       } else {
-        await deductDCC(selectedInstitution.id, {
-          dccAmount: parseFloat(formData.amount),
-          usdtAmount: parseFloat(formData.usdtAmount),
-          txHash: formData.txHash,
-          remarks: formData.remarks
-        });
+        await deductDCC(selectedInstitution.id, operationData);
       }
       
       setIsDCCModalOpen(false);
@@ -98,6 +98,17 @@ const InstitutionList = () => {
       usdtAmount: '',
       txHash: '',
       remarks: ''
+    });
+  };
+
+  // Function to handle DCC amount change and automatically calculate USDT
+  const handleDCCAmountChange = (value) => {
+    const dccAmount = parseFloat(value) || 0;
+    const usdtAmount = (dccAmount * DCC_TO_USDT_RATE).toFixed(2);
+    setFormData({
+      ...formData,
+      amount: value,
+      usdtAmount: usdtAmount
     });
   };
 
@@ -230,7 +241,7 @@ const InstitutionList = () => {
                       onClick={() => handleOpenDCCModal(institution, 'deduct')}
                     >
                       <ArrowDownCircle className="w-4 h-4 mr-2" />
-                      扣除DCC
+                      卖出DCC
                     </button>
                     <button 
                       className="px-3 py-1.5 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100"
@@ -277,18 +288,19 @@ const InstitutionList = () => {
                       type="number"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       value={formData.amount}
-                      onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                      onChange={(e) => handleDCCAmountChange(e.target.value)}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">USDT金额</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      USDT金额 (自动计算: 1 DCC = {DCC_TO_USDT_RATE} USDT)
+                    </label>
                     <input
                       type="number"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50"
                       value={formData.usdtAmount}
-                      onChange={(e) => setFormData({...formData, usdtAmount: e.target.value})}
-                      required
+                      readOnly
                     />
                   </div>
                   <div>

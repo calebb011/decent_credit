@@ -88,3 +88,47 @@ pub struct RecordQueryParams {
     pub end_date: Option<String>,
     pub status: Option<RecordStatus>
 }
+
+
+
+// 信用扣分记录数据结构
+#[derive(CandidType, Deserialize, Serialize, Clone)]
+pub struct CreditDeductionRecord {
+    pub id: String,
+    pub record_id: String,
+    pub institution_id: Principal,
+    pub institution_name: String,
+    pub deduction_points: u32,
+    pub reason: String,
+    pub data_quality_issue: String,
+    pub created_at: u64,
+    pub operator_id: Principal,
+    pub operator_name: String,
+}
+
+// 创建信用扣分记录请求
+#[derive(CandidType, Deserialize)]
+pub struct CreateCreditRecordRequest {
+    pub institution_id: Principal,
+    pub deduction_points: u32,
+    pub reason: String,
+    pub data_quality_issue: String,
+}
+
+// 查询机构记录返回结构
+#[derive(CandidType, Serialize)]
+pub struct InstitutionRecordResponse {
+    pub institution_id: Principal,
+    pub institution_name: String,
+    pub user_did: String,
+    pub records: Vec<CreditRecord>,
+}
+
+// 风险评估结果
+#[derive(CandidType, Serialize)]
+pub struct RiskAssessment {
+    pub credit_score: u32,
+    pub risk_level: String,
+    pub assessment_details: Vec<String>,
+    pub suggestions: Vec<String>,
+}

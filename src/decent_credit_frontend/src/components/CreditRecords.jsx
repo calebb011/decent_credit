@@ -1,7 +1,7 @@
 // CreditRecords.jsx
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Search, FileText } from 'lucide-react';
-import { getCreditRecords, createCreditRecord } from '../services/creditService';
+import { getCreditRecords, createCreditRecord } from '../services/InstitutionCreditService';
 
 const CreditRecords = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

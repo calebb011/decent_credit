@@ -1,101 +1,58 @@
-use candid::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
 use ic_cdk::api::print as log_info;
-use crate::models::institution::{
-    Institution,
-    LoginRequest,
-    LoginResponse,
-    RegisterRequest
-};
-use crate::services::admin_service::{ADMIN_SERVICE};
+use serde::Serialize;
 
-// 机构管理接口
+use crate::services::admin_service::ADMIN_SERVICE;
+use crate::models::*;
+
+
+/// 注册新机构
 #[update]
-pub fn register_institution(request: RegisterRequest) -> Principal {
-    log_info(
-        format!("Registering new institution: {}", request.name)
-    );
-    
-    let result = ADMIN_SERVICE.with(|service| {
+pub async fn register_institution(request: RegisterRequest) -> Result<Principal, String> {
+    let caller = ic_cdk::caller();
+    log_info(format!(
+        "Institution registration attempt by {} for: {}", 
+        caller.to_text(),
+        request.name
+    ));
+
+    ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.register_institution(request)
-    });
-    
-    log_info(
-        format!("Institution registered with ID: {}", result.to_text())
-    );
-    
-    result
-}
-
-// 登录接口
-#[update]
-pub fn login(request: LoginRequest) -> LoginResponse {
-    log_info(
-        format!("Login attempt for institution: {}", request.name)
-    );
-    
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.login(request)
     })
 }
 
-// 修改密码接口
+/// 修改机构状态
 #[update]
-pub fn change_password(old_password: String, new_password: String) -> Result<(), String> {
+pub async fn update_institution_status(id: Principal, is_active: bool) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(
-        format!("Password change attempt for institution: {}", caller.to_text())
-    );
-    
-    if old_password.is_empty() || new_password.is_empty() {
-        return Err("密码不能为空".to_string());
-    }
+    log_info(format!(
+        "Institution status update attempt for: {}", 
+        id.to_text()
+    ));
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.change_password(caller, old_password, new_password)
+        service.update_status(id, is_active)
     })
 }
 
-// 重置密码接口
-#[update]
-pub fn reset_password(id: Principal) -> Result<String, String> {
-    let caller = ic_cdk::caller();
-    log_info(
-        format!("Password reset attempt for institution {} by {}", id.to_text(), caller.to_text())
-    );
-
-    if id == Principal::anonymous() {
-        return Err("无效的机构ID".to_string());
-    }
-
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.reset_password(id)
-    })
-}
-
+/// 获取机构信息
 #[query]
 pub fn get_institution(id: Principal) -> Option<Institution> {
-    log_info(
-        format!("Fetching institution details for ID: {}", id.to_text())
-    );
+    log_info(format!("Fetching institution: {}", id.to_text()));
     
-    if id == Principal::anonymous() {
-        return None;
-    }
-
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
         service.get_institution(id)
     })
 }
 
+/// 获取所有机构列表
 #[query]
 pub fn get_all_institutions() -> Vec<Institution> {
-    log_info("Fetching all institutions".to_string());
+    log_info("Fetching all institutions");
     
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
@@ -103,76 +60,177 @@ pub fn get_all_institutions() -> Vec<Institution> {
     })
 }
 
-#[query]
-pub fn get_caller_institutions() -> Vec<Institution> {
+/// 更新信用分数
+#[update]
+pub async fn update_credit_score(id: Principal, score: u64) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(
-        format!("Fetching institutions for caller: {}", caller.to_text())
-    );
+    log_info(format!(
+        "Credit score update attempt for: {}", 
+        id.to_text()
+    ));
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        service.update_credit_score(id, score)
+    })
+}
+
+// === DCC交易相关接口 ===
+
+/// DCC充值
+#[update]
+pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    log_info(format!(
+        "DCC recharge attempt for: {}", 
+        id.to_text()
+    ));
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        service.process_dcc_recharge(id, request)
+    })
+}
+
+/// DCC扣除
+#[update]
+pub async fn deduct_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    log_info(format!(
+        "DCC deduction attempt for: {}", 
+        id.to_text()
+    ));
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        service.process_dcc_deduction(id, request)
+    })
+}
+
+/// 获取DCC余额
+#[query]
+pub fn get_balance(id: Principal) -> Result<BalanceResponse, String> {
+    log_info(format!(
+        "Fetching balance for: {}", 
+        id.to_text()
+    ));
 
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
-        service.get_caller_institutions(caller)
+        service.get_institution_balance(id)
     })
 }
 
+/// 更新USDT汇率
 #[update]
-pub fn update_institution_status(id: Principal, is_active: bool) {
+pub async fn update_usdt_rate(rate: f64) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(
-        format!("Status update attempt for institution {} by {}", id.to_text(), caller.to_text())
-    );
+    log_info(format!(
+        "USDT rate update attempt: {}", 
+        rate
+    ));
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.update_status(id, is_active);
+        service.update_usdt_rate(rate)
     })
 }
 
-#[update]
-pub fn delete_institution(id: Principal) -> bool {
-    let caller = ic_cdk::caller();
-    log_info(
-        format!("Delete attempt for institution {} by {}", id.to_text(), caller.to_text())
-    );
+// === 记录相关接口 ===
 
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.delete_institution(id)
-    })
-}
-
-
-
-// 记录相关接口
+/// 记录API调用
 #[update]
 pub fn record_api_call(id: Principal, count: u64) {
+    log_info(format!("Recording API calls: {}", count));
+
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_api_call(id, count);
     })
 }
 
+/// 记录数据上传
 #[update]
 pub fn record_data_upload(id: Principal, count: u64) {
+    log_info(format!("Recording data upload: {}", count));
+
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_data_upload(id, count);
     })
 }
 
+/// 记录代币交易
 #[update]
 pub fn record_token_trading(id: Principal, is_buy: bool, amount: u64) {
+    log_info(format!(
+        "Recording token trading: {} {}", 
+        if is_buy { "buy" } else { "sell" },
+        amount
+    ));
+
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_token_trading(id, is_buy, amount);
     })
 }
 
+// === 统计和仪表板接口 ===
+
+/// 获取管理员统计数据
+#[query]
+pub fn get_admin_statistics() -> AdminStatistics {
+    log_info("Fetching admin statistics");
+
+    ADMIN_SERVICE.with(|service| {
+        let service = service.borrow();
+        service.get_statistics()
+    })
+}
+
+/// 获取管理员仪表板数据
+#[query]
+pub fn get_admin_dashboard() -> DashboardStats {
+    log_info("Fetching admin dashboard stats");
+
+    ADMIN_SERVICE.with(|service| {
+        let service = service.borrow();
+        service.get_admin_dashboard()
+    })
+}
+
+// === 会话相关接口 ===
+
+/// 登录接口
 #[update]
-pub fn update_credit_score(id: Principal, score: u64) {
+pub async fn login(request: LoginRequest) -> LoginResponse {
+    log_info(format!("Login attempt: {}", request.name));
+
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.update_credit_score(id, score);
+        service.login(request)
+    })
+}
+
+/// 修改密码
+#[update]
+pub async fn change_password(old_password: String, new_password: String) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    log_info(format!("Password change attempt for: {}", caller.to_text()));
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        service.change_password(caller, old_password, new_password)
+    })
+}
+
+/// 重置密码
+#[update]
+pub async fn reset_password(id: Principal) -> Result<String, String> {
+    log_info(format!("Password reset attempt for: {}", id.to_text()));
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        service.reset_password(id)
     })
 }

@@ -1,5 +1,5 @@
-pub mod admin_route;
-pub mod record_route;
-pub mod credit_route;
-pub mod dashboard_route;
-pub mod history_route;
+pub mod admin_api;
+pub mod record_api;
+pub mod credit_api;
+pub mod dashboard_api;
+pub mod history_api;

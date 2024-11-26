@@ -3,7 +3,10 @@ use ic_cdk_macros::*;
 use ic_cdk::api::print as log_info;
 use serde::Serialize;
 use std::collections::HashMap;
-use crate::models::*;
+use crate::models::credit::{
+    CreateCreditRecordRequest, CreditDeductionRecord,
+    RiskAssessment, InstitutionRecordResponse, CreditRecord
+};
 
 
 /// 创建信用扣分记录

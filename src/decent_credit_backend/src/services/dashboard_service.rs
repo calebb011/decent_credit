@@ -5,7 +5,7 @@ use ic_cdk::api::time;
 
 use crate::models::{
     dashboard::*,
-    institution::Institution,
+    institution::{Institution,InstitutionStatus},
 };
 
 thread_local! {
@@ -40,13 +40,13 @@ impl DashboardService {
     }
 
     /// 获取管理员看板数据
-    pub fn get_admin_dashboard(&self) -> AdminDashboardData {
+    pub fn get_admin_dashboard(&mut self) -> AdminDashboardData {
         self.check_and_update_stats();
 
         // 统计机构数据
         let active_institutions = self.institutions
             .values()
-            .filter(|inst| inst.status == "active")
+            .filter(|inst| inst.status == InstitutionStatus::Active)
             .count() as u64;
 
         let total_api_calls = self.institutions.values().map(|inst| inst.api_calls).sum();
@@ -90,7 +90,7 @@ impl DashboardService {
             basic_info: BasicInfo {
                 name: institution.name,
                 id: institution_id.to_text(),
-                status: institution.status,
+                status: InstitutionStatus::Active,
                 join_time: institution.join_time,
             },
             submission_stats: SubmissionStats {
@@ -123,7 +123,6 @@ impl DashboardService {
         })
     }
 
-    // === 内部辅助方法 ===
     
     fn check_and_update_stats(&mut self) {
         let now = time();

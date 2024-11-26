@@ -2,9 +2,11 @@ use candid::{CandidType, Principal};
 use ic_cdk::api::{call, time};
 use std::collections::HashMap;
 use std::cell::RefCell;
-use crate::services::record_services::call::call;
+use crate::services::record_service::call::call;
 use crate::services::crypto_service::{self, CryptoService, with_crypto_service};  // 修改这里
-use crate::services::storage_service::{self, StorageService, with_storage_service};  // 修改这里
+use crate::services::storage_service::{self, with_storage_service};  // 修改这里
+use crate::services::zk_proof_service::ZKProofService;
+
 
 use crate::models::credit::{
     RecordData,
@@ -17,9 +19,6 @@ use crate::models::credit::{
     RecordSubmissionRequest
 };
 // 导入其他服务
-use crate::services::{
-    zk_proof_service::ZKProofService,
-};
 
 
 
@@ -50,7 +49,6 @@ impl RecordService {
             zk_service: ZKProofService::new()
         }
     }
-
     pub fn submit_record(&mut self, request: RecordSubmissionRequest) -> Result<String, Error> {
         // 校验内容
         self.validate_record_content(&request.record_type, &request.content)?;
@@ -60,71 +58,127 @@ impl RecordService {
             .map_err(|_| Error::SerializationFailed)?;
     
         let record_id = self.generate_record_id();
+        
+        // 生成加密内容和证明
+        let encrypted_content = with_crypto_service(|service| {
+            service.encrypt(&content_bytes)
+        }).map_err(|e| Error::EncryptionFailed(format!("Failed to encrypt: {:?}", e)))?;
+
+        let proof = self.zk_service.generate_proof(&content_bytes);
+
+          // 在使用 encrypted_content 之前先克隆一份
+    let encrypted_content_for_storage = encrypted_content.clone();
+        // 完整初始化 CreditRecord
         let record = CreditRecord {
             id: record_id.clone(),
             institution_id: ic_cdk::caller(),
             record_type: request.record_type,
+            user_did: request.user_did.clone(),
+            event_date: request.event_date.clone(),  // 使用请求中的日期
             content: request.content,
+            encrypted_content,  // 使用加密后的内容
+            proof: proof.clone(),  // 使用生成的证明
             canister_id: self.storage_canister_id.to_string(),
             timestamp: time(),
             status: RecordStatus::Pending,
-            user_did: request.user_did
+            reward_amount: None // 初始时没有奖励
         };
     
-        // 生成证明
-        let proof = self.zk_service.generate_proof(&record);
-    
-        // 存储记录和证明
+        // 存储记录
         self.records.insert(record_id.clone(), record.clone());
-        self.proofs.insert(record_id.clone(), proof.clone());
-        
-        // 加密和存储过程
-        let encrypted_content = with_crypto_service(|service| {
-            service.encrypt(&content_bytes)
-        }).map_err(|e| Error::EncryptionFailed(format!("Failed to encrypt: {:?}", e)))?;
-    
+
+        // 存储到服务中
         let storage_id = with_storage_service(|service| {
-            service.store_data(encrypted_content.clone())  
+            service.store_data(encrypted_content_for_storage)  
         }).map_err(|e| Error::StorageFailed)?;
-    
+
         // 上链
         with_storage_service(|service| {
             service.store_on_chain(record_id.clone(), storage_id, proof)
-        }).map_err(|e| Error::StorageFailed)?;
+        }).map_err(|_| Error::StorageFailed)?;
     
         Ok(record_id)
     }
    
 
     pub async fn verify_and_commit(&mut self, record_id: &str) -> Result<bool, Error> {
-        let record = self.records.get(record_id)
+           // 获取临时拷贝用于重构数据
+        let record_copy = self.records.get(record_id)
+            .ok_or(Error::RecordNotFound)?
+            .clone();
+
+        // 在获取可变引用之前重构数据
+        let record_data = self.reconstruct_record_data(&record_copy)?;
+            
+        // 获取记录的可变引用
+        let record = self.records.get_mut(record_id)
             .ok_or(Error::RecordNotFound)?;
 
-        // 重构记录数据以供验证
-        let record_data = self.reconstruct_record_data(record)?;
-        
-        // 序列化数据
+        // 检查记录状态
+        if record.status != RecordStatus::Pending {
+            return Err(Error::InvalidData("Record is not in pending status".to_string()));
+        }
+                // 序列化数据
         let record_data_bytes = candid::encode_one(&record_data)
             .map_err(|_| Error::SerializationFailed)?;
-            
-        // 验证ZK证明
-        // let is_valid = self.zk_service.verify_proof(&record_data_bytes, &record.proof)
-        //     .map_err(|e| Error::VerificationFailed(e))?;
         
-        // let new_status = if is_valid {
-        //     RecordStatus::Confirmed
-        // } else {
-        //     RecordStatus::Rejected
-        // };
+        // 从存储服务获取证明数据
+        let chain_data = with_storage_service(|service| {
+            service.get_chain_data(&record_id)
+        }).ok_or_else(|| Error::InvalidProof)?;
 
-        // 更新记录状态
-        // if let Some(record) = self.records.get_mut(record_id) {
-        //     record.status = new_status;
-        // }
-        let is_valid = true; // 假设验证总是成功
-        Ok(is_valid)
+        // 验证存储的证明与记录中的证明匹配
+        if chain_data.1.as_slice() != record.proof.as_slice() {
+            return Err(Error::InvalidProof);
+        }
 
-        // Ok()
+        // 解密和验证内容
+        let decrypted_content = with_crypto_service(|service| {
+            service.decrypt(&record.encrypted_content)
+        }).map_err(|e| Error::EncryptionFailed(format!("Decryption failed: {:?}", e)))?;
+
+        // 验证内容完整性
+        let original_content = candid::encode_one(&record.content)
+            .map_err(|_| Error::SerializationFailed)?;
+
+        if decrypted_content != original_content {
+            return Err(Error::InvalidData("Content integrity check failed".to_string()));
+        }
+
+        // 通过zk服务进行证明验证
+        let is_valid = self.zk_service.verify_proof(&record, &record.proof)
+            .map_err(|e| Error::VerificationFailed(format!("Proof verification failed: {}", e)))?;
+
+        if is_valid {
+            // 更新记录状态
+            record.status = RecordStatus::Confirmed;
+            
+            // 存储更新后的状态到链上
+            with_storage_service(|service| {
+                service.store_data(candid::encode_one(&record).unwrap())
+            }).map_err(|_| Error::StorageFailed)?;
+
+            // 记录验证结果
+            ic_cdk::println!(
+                "Record {} verified successfully. New status: {:?}", 
+                record_id, 
+                record.status
+            );
+
+            Ok(true)
+        } else {
+            // 更新为拒绝状态
+            record.status = RecordStatus::Rejected;
+            
+            // 记录拒绝原因
+            ic_cdk::println!(
+                "Record {} verification failed. New status: {:?}", 
+                record_id, 
+                record.status
+            );
+
+            Ok(false)
+        }
     }
 
     fn reconstruct_record_data(&self, record: &CreditRecord) -> Result<RecordData, Error> {
@@ -288,19 +342,18 @@ impl RecordService {
     
 }
 
-#[derive(Debug)]
+#[derive(CandidType, Debug)]
 pub enum Error {
     InvalidData(String),
-    InvalidDID,
-    InvalidProof,
     SerializationFailed,
     EncryptionFailed(String),
-    ProofGenerationFailed(String),
     StorageFailed,
+    InvalidProof,
     RecordNotFound,
     VerificationFailed(String),
-    TokenRewardFailed(String),
-    InitializationError(String),  // 添加这个
+    InvalidStatus,
+    NotAuthorized,
+    // 添加其他你需要的错误类型
 }
 
 // 扩展 RecordType
@@ -319,4 +372,20 @@ pub fn init_record_service() {
         let mut service = service.borrow_mut();
         service.records.clear();
     });
+}
+
+impl Error {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Error::InvalidData(msg) => msg,
+            Error::SerializationFailed => "Serialization failed",
+            Error::EncryptionFailed(msg) => msg,
+            Error::StorageFailed => "Storage operation failed",
+            Error::InvalidProof => "Invalid proof",
+            Error::RecordNotFound => "Record not found",
+            Error::VerificationFailed(msg) => msg,
+            Error::InvalidStatus => "Invalid record status",
+            Error::NotAuthorized => "Not authorized",
+        }
+    }
 }

@@ -3,8 +3,12 @@ use ic_cdk_macros::*;
 use ic_cdk::api::print as log_info;
 use crate::models::*;
 
-use crate::services::record_services::{RECORD_SERVICE, Error};
-use crate::models::*;
+use crate::services::record_service::{RECORD_SERVICE};
+use crate::api::record_api::credit::{
+    RecordSubmissionRequest, RecordSubmissionResponse,
+    BatchSubmissionRequest, BatchSubmissionResponse,
+    CreditRecord, RecordQueryParams, RecordStatus
+};
 
 
 
@@ -77,24 +81,7 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
     })
 }
 
-/// 记录验证与确认
-#[update]
-pub async fn verify_and_commit(record_id: String) -> Result<bool, String> {
-    log_info(format!(
-        "Record verification attempt for record: {}", 
-        record_id
-    ));
 
-    RECORD_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        match service.verify_and_commit(&record_id).await {
-            Ok(is_valid) => Ok(is_valid),
-            Err(e) => Err(format!("记录验证失败: {:?}", e))
-        }
-    })
-}
-
-// === 记录查询接口 ===
 
 /// 按用户DID查询记录
 #[query]
@@ -121,65 +108,58 @@ pub fn query_records(params: RecordQueryParams) -> Vec<CreditRecord> {
     })
 }
 
-// === 批量验证接口 ===
+// // === 批量验证接口 ===
 
-/// 批量验证记录
-#[update]
-pub async fn verify_records_batch(record_ids: Vec<String>) -> Result<Vec<(String, bool)>, String> {
-    log_info(format!(
-        "Batch verifying {} records", 
-        record_ids.len()
-    ));
+// /// 记录验证与确认
+// #[update]
+// pub  fn verify_and_commit(record_id: String) -> Result<bool,Error> {  // 添加 async
+//     log_info(format!(
+//         "Record verification attempt for record: {}", 
+//         record_id
+//     ));
 
-    let mut results = Vec::new();
+//     RECORD_SERVICE.with(|service| {
+//         let mut service = service.borrow_mut();
+//         service.verify_and_commit(&record_id)
+//     })；  // 添加 .await
+// }
 
-    for record_id in record_ids {
-        RECORD_SERVICE.with(|service| {
-            let mut service = service.borrow_mut();
-            match service.verify_and_commit(&record_id).await {
-                Ok(is_valid) => {
-                    results.push((record_id.clone(), is_valid));
-                }
-                Err(e) => {
-                    results.push((record_id.clone(), false));
-                    log_info(format!("Verification failed for record {}: {:?}", record_id, e));
-                }
-            }
-        });
-    }
+// /// 批量验证记录
+// #[update]
+// pub async fn verify_records_batch(record_ids: Vec<String>) -> Result<Vec<(String, bool)>, String> {
+//     log_info(format!(
+//         "Batch verifying {} records", 
+//         record_ids.len()
+//     ));
 
-    Ok(results)
+//     let mut results = Vec::new();
+
+//     for record_id in record_ids {
+//         // 创建拥有所有权的克隆
+//         let record_id_clone = record_id.clone();
+        
+//         // 修改服务调用方式
+//         let result = RECORD_SERVICE.with(|s| {
+//             let service = &mut *s.borrow_mut();
+//             // 克隆或移动所需数据,避免引用
+//             service.verify_and_commit(&record_id_clone)
+//         }).await;
+
+//         match result {
+//             Ok(is_valid) => {
+//                 results.push((record_id.clone(), is_valid));
+//             }
+//             Err(e) => {
+//                 results.push((record_id.clone(), false));
+//                 log_info(format!("Verification failed for record {}: {:?}", record_id, e));
+//             }
+//         }
+//     }
+
+//     Ok(results)
+// }
+#[derive(CandidType, Debug)]
+pub enum Error {
+    // ... 你的错误类型
 }
-
-// === 错误处理 ===
-impl From<Error> for String {
-    fn from(error: Error) -> Self {
-        match error {
-            Error::InvalidData(msg) => format!("无效的数据: {}", msg),
-            Error::InvalidDID => "无效的DID".to_string(),
-            Error::InvalidProof => "无效的证明".to_string(),
-            Error::SerializationFailed => "序列化失败".to_string(),
-            Error::EncryptionFailed(msg) => format!("加密失败: {}", msg),
-            Error::ProofGenerationFailed(msg) => format!("证明生成失败: {}", msg),
-            Error::StorageFailed => "存储失败".to_string(),
-            Error::RecordNotFound => "记录未找到".to_string(),
-            Error::VerificationFailed(msg) => format!("验证失败: {}", msg),
-            Error::TokenRewardFailed(msg) => format!("代币奖励失败: {}", msg),
-            Error::InitializationError(msg) => format!("初始化错误: {}", msg),
-        }
-    }
-}
-
-// === 初始化函数 ===
-#[init]
-pub fn init() {
-    crate::services::record_services::init_record_service();
-}
-
-#[post_upgrade]
-pub fn post_upgrade() {
-    init();
-}
-
-
 candid::export_service!(); 

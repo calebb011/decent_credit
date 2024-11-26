@@ -1,52 +1,20 @@
 // models/credit.rs
 use candid::{CandidType, Deserialize};
 use candid::Principal;
-
+use serde::Serialize;
 // === 统计相关结构 ===
-#[derive(CandidType, Serialize)]
-pub struct DashboardStats {
-    pub institution_stats: InstitutionStats,
-    pub data_stats: DataStats,
-    pub api_stats: ApiStats,
-    pub token_stats: TokenStats,
-}
+use crate::models::institution::*;
 
-#[derive(CandidType, Serialize)]
-pub struct InstitutionStats {
-    pub total_count: u64,
-    pub active_count: u64,
-    pub today_new_count: u64,
-}
 
-#[derive(CandidType, Serialize)]
-pub struct DataStats {
-    pub total_records: u64,
-    pub today_records: u64,
-    pub growth_rate: f64,
-}
 
-#[derive(CandidType, Serialize)]
-pub struct ApiStats {
-    pub total_calls: u64,
-    pub today_calls: u64,
-    pub success_rate: f64,
-}
 
-#[derive(CandidType, Serialize)]
-pub struct TokenStats {
-    pub total_rewards: u64,
-    pub total_consumption: u64,
-    pub today_rewards: u64,
-    pub today_consumption: u64,
-}
-
-#[derive(CandidType, Serialize)]
+// 统计信息结构
+#[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct AdminStatistics {
     pub total_institutions: u64,
     pub active_institutions: u64,
     pub total_dcc_consumed: u64,
 }
-
 
 
 // 管理员看板数据
@@ -102,7 +70,7 @@ pub struct InstitutionDashboardData {
 pub struct BasicInfo {
     pub name: String,
     pub id: String,
-    pub status: String,
+    pub status: InstitutionStatus,
     pub join_time: u64,
 }
 

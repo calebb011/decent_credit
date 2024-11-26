@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize, Principal};
+use serde::Serialize;
 
 #[derive(CandidType, Deserialize, Clone)]
 pub struct Institution {
@@ -28,7 +29,7 @@ pub struct TokenTrading {
     pub sold: u64,
 }
 
-#[derive(CandidType, Deserialize, Clone, PartialEq)]
+#[derive(CandidType,Serialize, Deserialize, Clone, PartialEq)]
 pub enum InstitutionStatus {
     Active,
     Inactive,

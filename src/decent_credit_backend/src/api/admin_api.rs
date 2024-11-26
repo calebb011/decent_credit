@@ -4,8 +4,11 @@ use ic_cdk::api::print as log_info;
 use serde::Serialize;
 
 use crate::services::admin_service::ADMIN_SERVICE;
-use crate::models::*;
-
+use crate::models::credit::{DCCTransactionRequest, BalanceResponse};
+use crate::models::dashboard::{AdminDashboardData};
+use crate::models::institution::{
+    Institution, LoginRequest, LoginResponse, RegisterRequest
+};
 
 /// 注册新机构
 #[update]
@@ -175,16 +178,6 @@ pub fn record_token_trading(id: Principal, is_buy: bool, amount: u64) {
 }
 
 
-/// 获取管理员仪表板数据
-#[query]
-pub fn get_admin_dashboard() -> DashboardStats {
-    log_info("Fetching admin dashboard stats");
-
-    ADMIN_SERVICE.with(|service| {
-        let service = service.borrow();
-        service.get_admin_dashboard()
-    })
-}
 
 // === 会话相关接口 ===
 

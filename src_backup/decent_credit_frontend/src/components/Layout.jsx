@@ -13,7 +13,7 @@ import TokenExchange from './TokenExchange';
 import { useWallet } from '../hooks/useWallet';
 import AdminManagement from './AdminManagement';
 
-const Layout = ({ children }) => {
+const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState('overview');
   const { account, error, connectWallet, isConnected, dccBalance } = useWallet();
@@ -132,4 +132,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default Layout;
+export default AdminLayout;

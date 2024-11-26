@@ -5,17 +5,11 @@ use std::collections::HashMap;
 use sha2::{Sha256, Digest};
 use crate::models::institution::*;
 use crate::models::credit::*;
-use crate::models::dashboard::*;
+use crate::models::dashboard::{AdminDashboardData,AdminStatistics,InstitutionStats,ApiStats,TokenStats,DataStats};
 
 const DEFAULT_PASSWORD: &str = "changeme123"; // 默认密码
 
-// 统计信息结构
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct AdminStatistics {
-    pub total_institutions: u64,
-    pub active_institutions: u64,
-    pub total_dcc_consumed: u64,
-}
+
 
 pub struct AdminService {
     institutions: HashMap<Principal, Institution>,
@@ -256,7 +250,7 @@ impl AdminService {
         }
     }
 
-    pub fn get_admin_dashboard(&self) -> DashboardStats {
+    pub fn get_admin_dashboard(&self) -> AdminDashboardData {
         let total_institutions = self.institutions.len() as u64;
         let active_institutions = self.institutions
             .values()
@@ -297,7 +291,7 @@ impl AdminService {
             .map(|i| i.token_trading.sold)
             .sum();
 
-        DashboardStats {
+            AdminDashboardData {
             institution_stats: InstitutionStats {
                 total_count: total_institutions,
                 active_count: active_institutions,
@@ -321,7 +315,7 @@ impl AdminService {
                 total_consumption,
                 today_rewards: self.dcc_transactions
                     .iter()
-                    .filter(|tx| tx.timestamp >= today_start)
+                    .filter(|tx| tx.created_at  >= today_start)
                     .map(|tx| tx.dcc_amount)
                     .sum(),
                 today_consumption: self.institutions

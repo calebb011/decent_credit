@@ -2,7 +2,7 @@ use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 // === 核心记录结构 ===
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct CreditRecord {
     pub id: String,                    // 记录ID
     pub institution_id: Principal,      // 机构ID
@@ -19,14 +19,14 @@ pub struct CreditRecord {
 }
 
 // === 记录类型和状态枚举 ===
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize,Serialize, Clone, Debug, PartialEq)]
 pub enum RecordType {
     LoanRecord,
     RepaymentRecord,
     NotificationRecord
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub enum RecordStatus {
     Pending,
     Confirmed,
@@ -34,14 +34,14 @@ pub enum RecordStatus {
 }
 
 // === 记录内容结构 ===
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub enum RecordContent {
     Loan(LoanContent),
     Repayment(RepaymentContent),
     Notification(NotificationContent)
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct LoanContent {
     pub amount: u64,           // 金额
     pub loan_id: String,       // 贷款编号
@@ -49,14 +49,14 @@ pub struct LoanContent {
     pub interest_rate: f64     // 年化利率(%)
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct RepaymentContent {
     pub amount: u64,           // 还款金额
     pub loan_id: String,       // 原贷款编号
     pub repayment_date: String // 还款日期
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct NotificationContent {
     pub amount: u64,           // 通知金额
     pub days: u64,             // 通期天数
@@ -64,7 +64,7 @@ pub struct NotificationContent {
 }
 
 // === 原始数据结构 ===
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct RecordData {
     pub amount: u64,
     pub user_id: Vec<u8>,
@@ -78,7 +78,7 @@ pub struct RecordData {
 }
 
 // === API 请求/响应结构 ===
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct RecordSubmissionRequest {
     pub record_type: RecordType,
     pub user_did: String,
@@ -86,7 +86,7 @@ pub struct RecordSubmissionRequest {
     pub content: RecordContent
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct RecordSubmissionResponse {
     pub record_id: String,
     pub status: RecordStatus,
@@ -95,12 +95,12 @@ pub struct RecordSubmissionResponse {
 }
 
 // === 批量提交相关结构 ===
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize)]  // Added Serialize
 pub struct BatchSubmissionRequest {
     pub records: Vec<RecordSubmissionRequest>
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Serialize)]  // Added Serialize
 pub struct BatchSubmissionResponse {
     pub submitted: usize,
     pub failed: usize,
@@ -216,6 +216,7 @@ pub struct DCCTransactionRequest {
     pub usdt_amount: f64,
     pub tx_hash: String,
     pub remarks: String,
+    pub created_at: u64,  // Add timestamp field
 }
 
 #[derive(CandidType, Serialize)]

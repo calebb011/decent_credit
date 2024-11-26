@@ -6,7 +6,7 @@ use crate::services::record_services::call::call;
 use crate::services::crypto_service::{self, CryptoService, with_crypto_service};  // 修改这里
 use crate::services::storage_service::{self, StorageService, with_storage_service};  // 修改这里
 
-use crate::models::record::{
+use crate::models::credit::{
     RecordData,
     CreditRecord,
     RecordQueryParams,

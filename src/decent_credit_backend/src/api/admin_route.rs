@@ -75,7 +75,6 @@ pub async fn update_credit_score(id: Principal, score: u64) -> Result<(), String
     })
 }
 
-// === DCC交易相关接口 ===
 
 /// DCC充值
 #[update]
@@ -175,18 +174,6 @@ pub fn record_token_trading(id: Principal, is_buy: bool, amount: u64) {
     })
 }
 
-// === 统计和仪表板接口 ===
-
-/// 获取管理员统计数据
-#[query]
-pub fn get_admin_statistics() -> AdminStatistics {
-    log_info("Fetching admin statistics");
-
-    ADMIN_SERVICE.with(|service| {
-        let service = service.borrow();
-        service.get_statistics()
-    })
-}
 
 /// 获取管理员仪表板数据
 #[query]
@@ -234,3 +221,5 @@ pub async fn reset_password(id: Principal) -> Result<String, String> {
         service.reset_password(id)
     })
 }
+
+candid::export_service!();

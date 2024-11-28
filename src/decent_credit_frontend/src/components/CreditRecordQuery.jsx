@@ -11,7 +11,6 @@ import dayjs from 'dayjs';
 import {
   queryRecordsByUserDid,
   queryRecordDetails,
-  deductTokenForQuery,
   getRiskAssessment
 } from '../services/InstitutionCreditService';
 
@@ -33,8 +32,8 @@ const CreditRecordQuery = () => {
   const handleSearch = async (values) => {
     setLoading(true);
     try {
-      const response = await queryRecordsByUserDid(values.userDid);
-      setRecords(response.data);
+      // const response = await queryRecordsByUserDid(values.userDid);
+      // setRecords(response.data);
       setSearchPerformed(true);
       setCurrentUserDid(values.userDid);
     } catch (error) {

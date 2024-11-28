@@ -1,5 +1,5 @@
 // creditRecordService.js
-import { createActor } from './institutionService';
+import { createActor } from './IDL';
 
 /**
  * 获取记录类型的变体格式

@@ -167,7 +167,7 @@ const InstitutionList = () => {
                     <div>
                       <div className="flex items-center space-x-3">
                         <h3 className="text-base font-medium text-gray-900">
-                          {institution.name}
+                        {institution.id} - {institution.name}
                         </h3>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                          institution.status === 'active' 

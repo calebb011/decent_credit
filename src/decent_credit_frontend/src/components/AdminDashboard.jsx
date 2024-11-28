@@ -120,12 +120,6 @@ const AdminDashboard = () => {
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-500">成功率</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {dashboardData.apiStats.successRate}%
-                </p>
-              </div>
             </div>
           </div>
         </div>

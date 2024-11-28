@@ -1,5 +1,5 @@
 import { Principal } from '@dfinity/principal';
-import { createActor } from './institutionService';
+import { createActor } from './IDL';
 
 // DCC代币充值
 export async function rechargeDCC(institutionId, { dccAmount, usdtAmount, txHash, remarks }) {

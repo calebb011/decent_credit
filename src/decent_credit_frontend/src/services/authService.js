@@ -1,4 +1,4 @@
-import { createActor } from './institutionService';
+import { createActor } from './IDL';
 
 export async function loginInstitution(formData) {
   try {

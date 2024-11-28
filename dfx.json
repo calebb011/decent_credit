@@ -3,32 +3,33 @@
     "decent_credit_backend": {
       "candid": "src/decent_credit_backend/decent_credit_backend.did",
       "package": "decent_credit_backend",
+      "type": "rust",
+      "wasm": "target/wasm32-unknown-unknown/release/decent_credit_backend.wasm"
+    },
+    "admin_api": {
+      "candid": "src/decent_credit_backend/src/api/admin_api.rs",
+      "package": "decent_credit_backend",
       "type": "rust"
     },
-    "decent_credit_frontend": {
-      "dependencies": [
-        "decent_credit_backend"
-      ],
-      "frontend": {
-        "entrypoint": "src/decent_credit_frontend/src/index.html"
-      },
-      "source": [
-        "src/decent_credit_frontend/assets",
-        "dist/decent_credit_frontend/"
-      ],
-      "type": "assets"
+    "credit_api": {
+      "candid": "src/decent_credit_backend/src/api/credit_api.rs",
+      "package": "decent_credit_backend", 
+      "type": "rust"
+    },
+    "dashboard_api": {
+      "candid": "src/decent_credit_backend/src/api/dashboard_api.rs",
+      "package": "decent_credit_backend",
+      "type": "rust" 
+    },
+    "history_api": {
+      "candid": "src/decent_credit_backend/src/api/history_api.rs",
+      "package": "decent_credit_backend",
+      "type": "rust"
+    },
+    "record_api": {
+      "candid": "src/decent_credit_backend/src/api/record_api.rs",
+      "package": "decent_credit_backend", 
+      "type": "rust"
     }
-  },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
-    }
-  },
-  "networks": {
-    "local": {
-      "bind": "127.0.0.1:4943"
-    }
-  },
-  "version": 1
+  }
 }

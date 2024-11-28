@@ -2,14 +2,19 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Search, FileText } from 'lucide-react';
 import { getCreditRecords, createCreditRecord } from '../services/InstitutionCreditService';
-
+import { Loader } from 'lucide-react';
 const CreditRecords = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [records, setRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+
   const [searchForm, setSearchForm] = useState({
+    
     institutionId: '',
   });
 
@@ -45,20 +50,27 @@ const CreditRecords = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
+    setError('');
+  
     try {
       const response = await createCreditRecord(newRecord);
       if (response.success) {
-        setIsCreateDialogOpen(false);
-        fetchRecords();
+        await fetchRecords();
         setNewRecord({
           institutionId: '',
           deductionPoints: '',
           reason: '',
           dataQualityIssue: ''
         });
+        setIsCreateDialogOpen(false);
+      } else {
+        setError(response.message || '创建记录失败');
       }
     } catch (error) {
-      console.error('创建记录失败:', error);
+      setError(error.message || '创建记录失败');
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -66,7 +78,16 @@ const CreditRecords = () => {
     setSelectedRecord(record);
     setIsDetailDialogOpen(true);
   };
-
+  const closeCreateDialog = () => {
+    setIsCreateDialogOpen(false);
+    setError('');
+    setNewRecord({
+      institutionId: '',
+      deductionPoints: '',
+      reason: '',
+      dataQualityIssue: ''
+    });
+  };
   return (
     <div className="p-6">
       {/* 页面标题 */}
@@ -193,12 +214,13 @@ const CreditRecords = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700">机构ID</label>
                 <input
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                  value={newRecord.institutionId}
-                  onChange={(e) => setNewRecord({...newRecord, institutionId: e.target.value})}
-                  required
-                />
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                value={newRecord.institutionId}
+                onChange={(e) => setNewRecord({...newRecord, institutionId: e.target.value})}
+                disabled={submitLoading}
+                required
+              />
               </div>
 
               <div>
@@ -244,9 +266,17 @@ const CreditRecords = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center"
+                  disabled={submitLoading}
                 >
-                  确认扣分
+                  {submitLoading ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      处理中...
+                    </>
+                  ) : (
+                    '确认扣分'
+                  )}
                 </button>
               </div>
             </form>

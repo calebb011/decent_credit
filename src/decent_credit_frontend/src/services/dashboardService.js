@@ -1,5 +1,5 @@
 // dashboardService.js
-import { createActor } from './institutionService';
+import { createActor } from './IDL';
 import { Principal } from '@dfinity/principal';
 
 // 模拟数据

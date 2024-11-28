@@ -1,15 +1,18 @@
 use ic_cdk_macros::*;
 use candid::Principal;
+use log::{debug, info, warn, error};
 
 // 内部模块声明
 mod models;  // 不需要 pub,因为只在内部使用
 mod services;  // 不需要 pub,因为只在内部使用
 pub mod api;  // 需要 pub,因为要暴露给前端
-
+mod utils;
 #[init]
 fn init() {
     services::record_service::init_record_service();
     services::crypto_service::init_crypto_service();
+    utils::logger::init_logger();
+    info!("Service initialized");
 }
 
 // 只重导出前端需要的 API 接口

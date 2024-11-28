@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, Database, AlertCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-import { getAllInstitutions, registerInstitution, updateInstitutionStatus, rechargeDCC, deductDCC } from '../services/icpService';
-import InstitutionDialog from './InstitutionDialog';
+import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/institutionService';
+import {  rechargeDCC, deductDCC } from '../services/dccService';
+
+import InstitutionDialog from './RegisterInstitutionDialog';
 
 // DCC to USDT conversion rate (e.g., 1 DCC = 0.1 USDT)
 const DCC_TO_USDT_RATE = 0.1;
@@ -26,7 +28,8 @@ const InstitutionList = () => {
       if (editingInstitution) {
         console.log('修改机构:', formData);
       } else {
-        await registerInstitution(formData.name, formData.full_name, formData.password);
+
+        await registerInstitution(formData);
       }
       const data = await getAllInstitutions();
       setInstitutions(data);
@@ -51,18 +54,30 @@ const InstitutionList = () => {
     fetchInstitutions();
   }, []);
 
-  const handleUnbind = async (institution) => {
-    if (window.confirm(`确认解除与 ${institution.name} 的绑定吗？`)) {
+  const handleStatusChange = async (institution) => {
+    const newStatus = institution.status !== 'active';
+    const actionText = newStatus ? '接入' : '解除接入';
+    
+    if (window.confirm(`确认${actionText}机构 ${institution.name} 吗？`)) {
       try {
-        await updateInstitutionStatus(institution.id, false);
-        const data = await getAllInstitutions();
+        const principalId = typeof institution.id === 'string' 
+          ? institution.id 
+          : institution.id.toText();
+        
+        await updateInstitutionStatus(principalId, newStatus);
+        const data =await getAllInstitutions();
         setInstitutions(data);
       } catch (error) {
-        console.error('解除绑定失败:', error);
+        console.error(`${actionText}失败:`, error);
+        alert(error.message || `${actionText}失败`);
       }
     }
   };
-
+ 
+  const dealQuery = async() =>{
+    const data = await getAllInstitutions();
+    setInstitutions(data);
+  }
   const handleDCCOperation = async (e) => {
     e.preventDefault();
     
@@ -123,6 +138,14 @@ const InstitutionList = () => {
           <button 
             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
             onClick={() => {
+              dealQuery();
+            }}
+          >
+            刷新
+          </button>
+          <button 
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+            onClick={() => {
               setEditingInstitution(null);
               setIsDialogOpen(true);
             }}
@@ -147,12 +170,12 @@ const InstitutionList = () => {
                           {institution.name}
                         </h3>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          institution.status === 'active' 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {institution.status === 'active' ? '已接入' : '未接入'}
-                        </span>
+                         institution.status === 'active' 
+                           ? 'bg-green-100 text-green-800'
+                           : 'bg-red-100 text-red-800'
+                       }`}>
+                         {institution.status === 'active' ? '已接入' : '未接入'}
+                       </span>
                       </div>
                       <p className="mt-1 text-sm text-gray-500">{institution.full_name}</p>
                     </div>
@@ -243,18 +266,16 @@ const InstitutionList = () => {
                       <ArrowDownCircle className="w-4 h-4 mr-2" />
                       卖出DCC
                     </button>
-                    <button 
-                      className="px-3 py-1.5 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100"
-                      onClick={() => console.log('查看详情:', institution.id)}
-                    >
-                      查看详情
-                    </button>
-                    <button 
-                      className="px-3 py-1.5 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100"
-                      onClick={() => handleUnbind(institution)}
-                    >
-                      解除绑定
-                    </button>
+                   <button 
+                     className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                       institution.status === 'active'
+                         ? 'text-red-700 bg-red-50 hover:bg-red-100'
+                         : 'text-green-700 bg-green-50 hover:bg-green-100'
+                     }`}
+                     onClick={() => handleStatusChange(institution)}
+                   >
+                     {institution.status === 'active' ? '解除接入' : '接入'}
+                   </button>
                   </div>
                 </div>
               </div>

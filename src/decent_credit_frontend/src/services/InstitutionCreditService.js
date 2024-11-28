@@ -115,7 +115,7 @@ async function getActor() {
  * @param {boolean} useMock 是否使用模拟数据
  * @returns {Promise<Object>} 信用扣分记录列表
  */
-export async function getCreditRecords(institutionId = '', useMock = true) {
+export async function getCreditRecords(institutionId = '', useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -124,7 +124,7 @@ export async function getCreditRecords(institutionId = '', useMock = true) {
           data = data.filter(record => record.institutionId === institutionId);
         }
         resolve({ success: true, data });
-      }, 500);
+      }, 0);
     });
   }
 
@@ -166,7 +166,7 @@ export async function getCreditRecords(institutionId = '', useMock = true) {
 /**
  * 创建信用扣分记录
  */
-export async function createCreditRecord(record, useMock = true) {
+export async function createCreditRecord(record, useMock =false) {
   if (!record.institutionId || !record.deductionPoints || !record.reason || !record.dataQualityIssue) {
     return {
       success: false,
@@ -188,7 +188,7 @@ export async function createCreditRecord(record, useMock = true) {
             operatorName: '当前管理员'
           }
         });
-      }, 500);
+      }, 0);
     });
   }
 
@@ -241,7 +241,7 @@ export async function createCreditRecord(record, useMock = true) {
 /**
  * 查询机构详细信用记录
  */
-export async function queryRecordDetails(institutionId, userDid, useMock = true) {
+export async function queryRecordDetails(institutionId, userDid, useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -257,7 +257,7 @@ export async function queryRecordDetails(institutionId, userDid, useMock = true)
             message: '未找到机构记录'
           });
         }
-      }, 500);
+      }, 0);
     });
   }
 
@@ -284,7 +284,7 @@ export async function queryRecordDetails(institutionId, userDid, useMock = true)
 /**
  * 查询用户信用记录
  */
-export async function queryRecordsByUserDid(userDid, useMock = true) {
+export async function queryRecordsByUserDid(userDid, useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -294,7 +294,7 @@ export async function queryRecordsByUserDid(userDid, useMock = true) {
           user_did: userDid
         }));
         resolve({ success: true, data: records });
-      }, 500);
+      }, 0);
     });
   }
 
@@ -321,12 +321,12 @@ export async function queryRecordsByUserDid(userDid, useMock = true) {
 /**
  * 扣除查询代币
  */
-export async function deductTokenForQuery(institutionId, useMock = true) {
+export async function deductTokenForQuery(institutionId, useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({ success: true, deducted: true });
-      }, 500);
+      }, 0);
     });
   }
 
@@ -350,7 +350,7 @@ export async function deductTokenForQuery(institutionId, useMock = true) {
 /**
  * 获取用户风险评估
  */
-export async function getRiskAssessment(userDid, useMock = true) {
+export async function getRiskAssessment(userDid, useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -368,7 +368,7 @@ export async function getRiskAssessment(userDid, useMock = true) {
             '定期检查信用报告，确保信息准确性'
           ]
         });
-      }, 500);
+      }, 0);
     });
   }
 

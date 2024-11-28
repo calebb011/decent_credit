@@ -1,6 +1,6 @@
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
-use ic_cdk::api::print as log_info;
+use log::{info, debug, warn, error};  // 替换原来的 log_info
 use serde::Serialize;
 
 use crate::services::admin_service::ADMIN_SERVICE;
@@ -14,15 +14,21 @@ use crate::models::institution::{
 #[update]
 pub async fn register_institution(request: RegisterRequest) -> Result<Principal, String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "Institution registration attempt by {} for: {}", 
-        caller.to_text(),
-        request.name
-    ));
+    info!("Institution registration attempt by {}", caller.to_text());
+    debug!("Registration details - Name: {}, ", request.name);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.register_institution(request)
+        match service.register_institution(request) {
+            Ok(id) => {
+                info!("Successfully registered institution with ID: {}", id.to_text());
+                Ok(id)
+            },
+            Err(e) => {
+                error!("Failed to register institution: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
@@ -30,36 +36,54 @@ pub async fn register_institution(request: RegisterRequest) -> Result<Principal,
 #[update]
 pub async fn update_institution_status(id: Principal, is_active: bool) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "Institution status update attempt for: {}", 
-        id.to_text()
-    ));
+    info!("Institution status update by {} for ID: {}", caller.to_text(), id.to_text());
+    debug!("New status: {}", if is_active { "Active" } else { "Inactive" });
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.update_status(id, is_active)
+        match service.update_status(id, is_active) {
+            Ok(_) => {
+                info!("Successfully updated institution status");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to update institution status: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
 /// 获取机构信息
 #[query]
 pub fn get_institution(id: Principal) -> Option<Institution> {
-    log_info(format!("Fetching institution: {}", id.to_text()));
+    debug!("Fetching institution info for ID: {}", id.to_text());
     
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
-        service.get_institution(id)
+        match service.get_institution(id) {
+            Some(inst) => {
+                debug!("Found institution: {}", inst.name);
+                Some(inst)
+            },
+            None => {
+                warn!("Institution not found for ID: {}", id.to_text());
+                None
+            }
+        }
     })
 }
 
 /// 获取所有机构列表
 #[query]
 pub fn get_all_institutions() -> Vec<Institution> {
-    log_info("Fetching all institutions");
+    debug!("Fetching all institutions");
     
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
-        service.get_all_institutions()
+        let institutions = service.get_all_institutions();
+        info!("Retrieved {} institutions", institutions.len());
+        institutions
     })
 }
 
@@ -67,30 +91,43 @@ pub fn get_all_institutions() -> Vec<Institution> {
 #[update]
 pub async fn update_credit_score(id: Principal, score: u64) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "Credit score update attempt for: {}", 
-        id.to_text()
-    ));
+    info!("Credit score update initiated by {} for ID: {}", caller.to_text(), id.to_text());
+    debug!("New credit score: {}", score);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.update_credit_score(id, score)
+        match service.update_credit_score(id, score) {
+            Ok(_) => {
+                info!("Successfully updated credit score");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to update credit score: {}", e);
+                Err(e)
+            }
+        }
     })
 }
-
 
 /// DCC充值
 #[update]
 pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "DCC recharge attempt for: {}", 
-        id.to_text()
-    ));
+    info!("DCC recharge initiated by {} for institution: {}", caller.to_text(), id.to_text());
+    debug!("Recharge details - Amount: {}", request.dcc_amount);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.process_dcc_recharge(id, request)
+        match service.process_dcc_recharge(id, request) {
+            Ok(_) => {
+                info!("Successfully processed DCC recharge");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to process DCC recharge: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
@@ -98,28 +135,41 @@ pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Resu
 #[update]
 pub async fn deduct_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "DCC deduction attempt for: {}", 
-        id.to_text()
-    ));
+    info!("DCC deduction initiated by {} for institution: {}", caller.to_text(), id.to_text());
+    debug!("Deduction details - Amount: {}", request.dcc_amount);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.process_dcc_deduction(id, request)
+        match service.process_dcc_deduction(id, request) {
+            Ok(_) => {
+                info!("Successfully processed DCC deduction");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to process DCC deduction: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
 /// 获取DCC余额
 #[query]
 pub fn get_balance(id: Principal) -> Result<BalanceResponse, String> {
-    log_info(format!(
-        "Fetching balance for: {}", 
-        id.to_text()
-    ));
+    debug!("Fetching balance for institution: {}", id.to_text());
 
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
-        service.get_institution_balance(id)
+        match service.get_institution_balance(id) {
+            Ok(balance) => {
+                debug!("Balance retrieved successfully");
+                Ok(balance)
+            },
+            Err(e) => {
+                warn!("Failed to get balance: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
@@ -127,14 +177,21 @@ pub fn get_balance(id: Principal) -> Result<BalanceResponse, String> {
 #[update]
 pub async fn update_usdt_rate(rate: f64) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "USDT rate update attempt: {}", 
-        rate
-    ));
+    info!("USDT rate update initiated by {}", caller.to_text());
+    debug!("New USDT rate: {}", rate);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.update_usdt_rate(rate)
+        match service.update_usdt_rate(rate) {
+            Ok(_) => {
+                info!("Successfully updated USDT rate");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to update USDT rate: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
@@ -143,52 +200,62 @@ pub async fn update_usdt_rate(rate: f64) -> Result<(), String> {
 /// 记录API调用
 #[update]
 pub fn record_api_call(id: Principal, count: u64) {
-    log_info(format!("Recording API calls: {}", count));
+    info!("Recording API calls for institution: {}", id.to_text());
+    debug!("API call count: {}", count);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_api_call(id, count);
+        debug!("Successfully recorded API calls");
     })
 }
 
 /// 记录数据上传
 #[update]
 pub fn record_data_upload(id: Principal, count: u64) {
-    log_info(format!("Recording data upload: {}", count));
+    info!("Recording data upload for institution: {}", id.to_text());
+    debug!("Upload count: {}", count);
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_data_upload(id, count);
+        debug!("Successfully recorded data upload");
     })
 }
 
 /// 记录代币交易
 #[update]
 pub fn record_token_trading(id: Principal, is_buy: bool, amount: u64) {
-    log_info(format!(
-        "Recording token trading: {} {}", 
-        if is_buy { "buy" } else { "sell" },
+    info!("Recording token trading for institution: {}", id.to_text());
+    debug!("Trading details - Type: {}, Amount: {}", 
+        if is_buy { "Buy" } else { "Sell" }, 
         amount
-    ));
+    );
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         service.record_token_trading(id, is_buy, amount);
+        debug!("Successfully recorded token trading");
     })
 }
-
-
 
 // === 会话相关接口 ===
 
 /// 登录接口
 #[update]
-pub async fn login(request: LoginRequest) -> LoginResponse {
-    log_info(format!("Login attempt: {}", request.name));
+pub async fn institution_login(request: LoginRequest) -> LoginResponse {
+    info!("Login attempt for user: {}", request.name);
+    debug!("Login attempt received");
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.login(request)
+        let response = service.institution_login(request);
+        if response.success {
+            info!("Login successful for message: {}", response.message);
+        } else {
+            warn!("Login failed for user");
+        }
+        response
     })
 }
 
@@ -196,22 +263,42 @@ pub async fn login(request: LoginRequest) -> LoginResponse {
 #[update]
 pub async fn change_password(old_password: String, new_password: String) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    log_info(format!("Password change attempt for: {}", caller.to_text()));
+    info!("Password change attempt for user: {}", caller.to_text());
+    debug!("Password change request received");
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.change_password(caller, old_password, new_password)
+        match service.change_password(caller, old_password, new_password) {
+            Ok(_) => {
+                info!("Successfully changed password");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to change password: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 
 /// 重置密码
 #[update]
 pub async fn reset_password(id: Principal) -> Result<String, String> {
-    log_info(format!("Password reset attempt for: {}", id.to_text()));
+    info!("Password reset attempt for user: {}", id.to_text());
+    debug!("Password reset request received");
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.reset_password(id)
+        match service.reset_password(id) {
+            Ok(new_password) => {
+                info!("Successfully reset password");
+                Ok(new_password)
+            },
+            Err(e) => {
+                error!("Failed to reset password: {}", e);
+                Err(e)
+            }
+        }
     })
 }
 

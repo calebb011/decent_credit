@@ -52,11 +52,10 @@ const Dashboard = () => {
           <p className="mt-1 text-sm text-gray-600">
             机构名称: {dashboardData.basicInfo.name}
             <span className={`ml-4 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-              dashboardData.basicInfo.status === 'active' 
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              dashboardData.basicInfo.status = 'bg-green-100 text-green-800'
+               
             }`}>
-              {dashboardData.basicInfo.status === 'active' ? '已接入' : '未接入'}
+              {dashboardData.basicInfo.status = '已接入'}
             </span>
           </p>
         </div>

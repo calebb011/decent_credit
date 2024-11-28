@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createActor } from '../services/icpService';
+import { createActor } from '../services/institutionService';
 
 export function useICP() {
   const [actor, setActor] = useState(null);

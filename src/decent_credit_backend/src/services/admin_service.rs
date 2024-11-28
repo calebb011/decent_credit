@@ -76,7 +76,7 @@ impl AdminService {
         let institution = Institution {
             id: institution_id,
             name: request.name.clone(),
-            full_name: request.full_name,
+            full_name: request.full_name.clone(),
             password_hash,
             status: InstitutionStatus::Active,
             join_time: time(),
@@ -329,7 +329,7 @@ impl AdminService {
 
     // === 认证和会话相关方法 ===
 
-    pub fn login(&mut self, request: LoginRequest) -> LoginResponse {
+    pub fn institution_login(&mut self, request: LoginRequest) -> LoginResponse {
         match self.name_to_id.get(&request.name) {
             Some(&id) => {
                 if let Some(institution) = self.institutions.get_mut(&id) {
@@ -439,7 +439,7 @@ impl AdminService {
     }
 
     pub async fn login_async(&mut self, request: LoginRequest) -> LoginResponse {
-        self.login(request)
+        self.institution_login(request)
     }
 
     pub async fn change_password_async(&mut self, id: Principal, old_password: String, new_password: String) -> Result<(), String> {

@@ -1,4 +1,4 @@
-import { createActor } from './icpService';
+import { createActor } from './institutionService';
 import { Principal } from '@dfinity/principal';
 
 // 模拟数据
@@ -34,12 +34,12 @@ const MOCK_DATA = {
  * @param {boolean} useMock 是否使用模拟数据
  * @returns {Promise<AdminDashboardData>} 管理员看板数据
  */
-export async function getAdminDashboardData(useMock = true) {
+export async function getAdminDashboardData(useMock =false) {
   if (useMock) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(MOCK_DATA);
-      }, 500);
+      }, 0);
     });
   }
 

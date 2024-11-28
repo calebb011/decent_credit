@@ -1,5 +1,5 @@
 // dashboardService.js
-import { createActor } from './icpService';
+import { createActor } from './institutionService';
 import { Principal } from '@dfinity/principal';
 
 // 模拟数据
@@ -47,13 +47,13 @@ const MOCK_DATA = {
  * @param {boolean} useMock 是否使用模拟数据
  * @returns {Promise<DashboardData>} 机构概览数据
  */
-export async function getDashboardData(useMock = true) {
+export async function getDashboardData(useMock =false) {
     if (useMock) {
         // 返回模拟数据
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(MOCK_DATA);
-            }, 500); // 添加500ms延迟模拟网络请求
+            }, 0); // 添加500ms延迟模拟网络请求
         });
     }
 

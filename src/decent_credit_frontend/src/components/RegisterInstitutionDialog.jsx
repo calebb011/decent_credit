@@ -11,9 +11,8 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react';
 const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'register' }) => {
   const [formData, setFormData] = useState({
     name: '',
-    fullName: '',
+    full_name: '',
     password: '',
-    confirm_password: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -24,16 +23,14 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
     if (institution) {
       setFormData({
         name: institution.name,
-        fullName: institution.fullName,
+        full_name: institution.full_name,
         password: '',
-        confirm_password: '',
       });
     } else {
       setFormData({
         name: '',
-        fullName: '',
+        full_name: '',
         password: '',
-        confirm_password: '',
       });
     }
   }, [institution]);
@@ -43,12 +40,7 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
     setError('');
     setLoading(true);
 
-    // 注册时的密码验证
-    if (type === 'register' && formData.password && formData.password !== formData.confirm_password) {
-      setError('两次输入的密码不一致');
-      setLoading(false);
-      return;
-    }
+
 
     try {
       await onSubmit(formData);
@@ -96,8 +88,8 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
                   </label>
                   <input
                     type="text"
-                    value={formData.fullName}
-                    onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                    value={formData.full_name}
+                    onChange={e => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="例如：阿里巴巴金融科技有限公司"
                     required
@@ -133,22 +125,7 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
                 )}
               </div>
 
-              {type === 'register' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    确认密码
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={formData.confirm_password}
-                      onChange={e => setFormData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="请再次输入密码"
-                    />
-                  </div>
-                </div>
-              )}
+
             </div>
 
             {error && (

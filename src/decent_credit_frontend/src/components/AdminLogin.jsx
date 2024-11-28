@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Row, Col, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { loginAdmin } from '../services/icpService';
+import { loginAdmin } from '../services/institutionService';
 
 const AdminLogin = () => {
   const [form] = Form.useForm();

@@ -4,7 +4,7 @@ import { LogOut, LayoutDashboard, Building2, FileText } from 'lucide-react';
 import { useWallet } from '../hooks/useWallet';
 import InstitutionDashboard from './InstitutionDashboard';
 import CreditRecordQuery from './CreditRecordQuery';
-import InstitutionDataSubmission from './InstitutionDataSubmission';
+import InstitutionRecordSubmission from './InstitutionRecordSubmission';
 import UploadHistory from './UploadHistory';
 
 const AdminLayout = ({ children }) => {
@@ -22,7 +22,7 @@ const AdminLayout = ({ children }) => {
       case 'overview':
         return <InstitutionDashboard />;
       case 'submit':
-        return <InstitutionDataSubmission />;
+        return <InstitutionRecordSubmission />;
       case 'credits':
         return < CreditRecordQuery/>;
         case 'history':

@@ -1,3 +1,4 @@
+// InstitutionRecordSubmission.jsx
 import React, { useState } from 'react';
 import { 
   Card, Form, Input, Select, Button, DatePicker, message, Alert, 
@@ -5,11 +6,11 @@ import {
 } from 'antd';
 import { InfoCircleOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { submitRecord, submitRecordsBatch, parseExcelRecords } from '../services/creditSubmissionService';
+import recordSubmissionService from '../services/recordSubmissionService';
 
 const { Option } = Select;
 
-const InstitutionDataSubmission = () => {
+const InstitutionRecordSubmission = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [recordType, setRecordType] = useState('loan');
@@ -18,61 +19,30 @@ const InstitutionDataSubmission = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFile, setUploadFile] = useState(null);
 
-  // 模拟当前登录机构信息
   const currentInstitution = {
-    id: localStorage.getItem('institutionId') || 'bkyz2-fmaaa-aaaaa-qaaaq-cai',
-    name: localStorage.getItem('institutionName') || '测试金融机构A'
+    id: localStorage.getItem('institutionId'),
+    name: localStorage.getItem('institutionName')
   };
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      const request = {
-        record_type: values.recordType,
-        user_did: values.userDid,
-        content: formatRecordContent(values)
-      };
+      const result = await recordSubmissionService.submitRecord(values);
       
-      await submitRecord(request);
-      message.success('数据提交成功');
-      form.resetFields();
+      if (result.success) {
+        message.success('数据提交成功');
+        form.resetFields();
+      } else {
+        throw new Error(result.message || '提交失败');
+      }
     } catch (error) {
-      message.error('提交失败: ' + error.message);
+      console.error('Submit failed:', error);
+      message.error(error.message || '提交失败');
     } finally {
       setLoading(false);
     }
   };
 
-  // 格式化记录内容
-  const formatRecordContent = (values) => {
-    const baseContent = {
-      amount: Number(values.amount),
-      timestamp: values.eventDate.valueOf() * 1000000 // 转换为纳秒时间戳
-    };
-
-    switch (values.recordType) {
-      case 'loan':
-        return {
-          ...baseContent,
-          term: Number(values.term),
-          interestRate: Number(values.interestRate)
-        };
-      case 'repayment':
-        return {
-          ...baseContent,
-          originalLoanId: values.originalLoanId
-        };
-      case 'overdue':
-        return {
-          ...baseContent,
-          overdueDays: Number(values.overdueDays)
-        };
-      default:
-        return baseContent;
-    }
-  };
-
-  // 处理批量上传
   const handleBatchUpload = async () => {
     if (!uploadFile) {
       message.error('请先选择Excel文件');
@@ -83,60 +53,31 @@ const InstitutionDataSubmission = () => {
     setUploadProgress(0);
     
     try {
-      // 解析Excel文件
-      const records = await parseExcelRecords(uploadFile);
-      
-      // 模拟上传进度
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 300);
+      const records = await recordSubmissionService.parseExcelRecords(uploadFile);
+      setUploadProgress(30);
 
-      // 批量提交记录
-      const result = await submitRecordsBatch(records);
-      
-      clearInterval(progressInterval);
+      const result = await recordSubmissionService.submitRecordsBatch(records);
       setUploadProgress(100);
-      
-      message.success(`成功提交 ${result.data.submitted} 条记录`);
-      setBatchModalVisible(false);
-      setUploadFile(null);
-      setUploadProgress(0);
+
+      if (result.success) {
+        message.success(`成功提交 ${result.data.submitted} 条记录`);
+        if (result.data.failed > 0) {
+          message.warning(`${result.data.failed} 条记录提交失败`);
+        }
+        setBatchModalVisible(false);
+        setUploadFile(null);
+      }
     } catch (error) {
-      message.error('批量上传失败: ' + error.message);
+      console.error('Batch upload failed:', error);
+      message.error(error.message || '批量上传失败');
     } finally {
       setBatchProcessing(false);
+      setUploadProgress(0);
     }
   };
 
-  // 下载Excel模板
   const handleDownloadTemplate = () => {
-    const templateData = [
-      'recordType,userDid,eventDate,amount,term,interestRate,originalLoanId,overdueDays,remarks',
-      'loan,did:example:123,2024-03-24,100000,12,4.35,,,首次贷款',
-      'loan,did:example:456,2024-03-24,50000,6,3.85,,,小额贷款',
-      'repayment,did:example:123,2024-03-24,5000,,,REC123,,正常还款',
-      'repayment,did:example:456,2024-03-24,3000,,,REC456,,提前还款',
-      'overdue,did:example:789,2024-03-24,2000,,,,30,首次逾期',
-      'overdue,did:example:789,2024-03-24,3000,,,,45,持续逾期',
-      '',
-      '# 字段说明：',
-      '# recordType: 记录类型（loan-贷款记录, repayment-还款记录, overdue-逾期记录）',
-      '# userDid: 用户DID',
-      '# eventDate: 发生日期（格式：YYYY-MM-DD）',
-      '# amount: 金额（必填）',
-      '# term: 贷款期限（月），仅贷款记录需填写',
-      '# interestRate: 年化利率（%），仅贷款记录需填写',
-      '# originalLoanId: 原贷款编号，仅还款记录需填写',
-      '# overdueDays: 逾期天数，仅逾期记录需填写',
-      '# remarks: 备注（选填）'
-    ].join('\n');
-
+    const templateData = recordSubmissionService.getCsvTemplateData();
     const blob = new Blob([templateData], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -148,7 +89,6 @@ const InstitutionDataSubmission = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  // 机构信息展示
   const renderInstitutionInfo = () => (
     <div className="bg-gray-50 p-4 rounded-lg mb-6">
       <Descriptions title="提交机构信息" column={1} size="small">
@@ -158,7 +98,6 @@ const InstitutionDataSubmission = () => {
     </div>
   );
 
-  // 根据记录类型显示不同的表单字段
   const renderExtraFields = () => {
     switch (recordType) {
       case 'loan':
@@ -260,10 +199,7 @@ const InstitutionDataSubmission = () => {
               <Form.Item
                 name="amount"
                 label="金额"
-                rules={[
-                  { required: true, message: '请输入金额' },
-                  { type: 'number', min: 0.01, message: '金额必须大于0' }
-                ]}
+                rules={[{ required: true, message: '请输入金额' }]}
               >
                 <Input type="number" placeholder="请输入金额" min={0.01} step={0.01} />
               </Form.Item>
@@ -357,7 +293,6 @@ const InstitutionDataSubmission = () => {
         </Card>
       </div>
 
-      {/* 批量上传模态框 */}
       <Modal
         title="批量上传信用记录"
         open={batchModalVisible}
@@ -424,4 +359,4 @@ const InstitutionDataSubmission = () => {
   );
 };
 
-export default InstitutionDataSubmission;
+export default InstitutionRecordSubmission;

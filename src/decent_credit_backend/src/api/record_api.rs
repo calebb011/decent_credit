@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
-use ic_cdk::api::print as log_info;
 use crate::models::*;
+use log::{info, debug, warn, error};  // 替换原来的 log_info
 
 use crate::services::record_service::{RECORD_SERVICE};
 use crate::api::record_api::credit::{
@@ -16,10 +16,9 @@ use crate::api::record_api::credit::{
 #[update]
 pub async fn submit_record(request: RecordSubmissionRequest) -> Result<RecordSubmissionResponse, String> {
     let caller = ic_cdk::caller();
-    log_info(format!(
-        "Record submission attempt for user: {}", 
-        request.user_did
-    ));
+    info!("Institution registration attempt by {}", caller.to_text());
+    debug!("Registration details - event_date: {}, ", request.event_date);
+
 
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
@@ -38,10 +37,9 @@ pub async fn submit_record(request: RecordSubmissionRequest) -> Result<RecordSub
 /// 批量提交记录
 #[update]
 pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<BatchSubmissionResponse, String> {
-    log_info(format!(
-        "Batch submitting {} records", 
-        request.records.len()
-    ));
+    let caller = ic_cdk::caller();
+
+    info!("Institution registration attempt by {}", caller.to_text());
 
     // 批量提交限制检查
     if request.records.is_empty() {
@@ -86,10 +84,7 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
 /// 按用户DID查询记录
 #[query]
 pub fn query_records_by_user_did(user_did: String) -> Vec<CreditRecord> {
-    log_info(format!(
-        "Querying records for user: {}", 
-        user_did
-    ));
+
 
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
@@ -100,7 +95,6 @@ pub fn query_records_by_user_did(user_did: String) -> Vec<CreditRecord> {
 /// 按参数查询记录
 #[query]
 pub fn query_records(params: RecordQueryParams) -> Vec<CreditRecord> {
-    log_info("Querying records with params");
 
     RECORD_SERVICE.with(|service| {
         let service = service.borrow();

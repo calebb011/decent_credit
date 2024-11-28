@@ -1,4 +1,4 @@
-import { createActor } from './icpService';
+import { createActor } from './institutionService';
 import { Principal } from '@dfinity/principal';
 
 /**

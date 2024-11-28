@@ -5,7 +5,7 @@ import AdminLogin from './components/AdminLogin';
 import InstitutionLogin from './components/InstitutionLogin';
 import AdminLayout from './components/AdminLayout';
 import InstitutionLayout from './components/InstitutionLayout';
-import InstitutionDataSubmission from './components/InstitutionDataSubmission';
+import InstitutionRecordSubmission from './components/InstitutionRecordSubmission';
 import InstitutionDashboard from './components/InstitutionDashboard';
 import CreditRecords from './components/CreditRecords';
 
@@ -27,7 +27,7 @@ function App() {
       <Route path="/" element={<Navigate to="/admin/login" />} />
       <Route path="/institution/*" element={<InstitutionLayout />} />
       <Route path="/institution/login" element={<InstitutionLogin />} />
-      <Route path="/institution/submit" element={<InstitutionDataSubmission />} />
+      <Route path="/institution/submit" element={<InstitutionRecordSubmission />} />
       <Route path="/institution/dashboard" element={<InstitutionDashboard />} />
       <Route path="/institution/history" element={<UploadHistory />} />
 

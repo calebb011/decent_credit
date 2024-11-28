@@ -62,7 +62,7 @@ type RecordStatus = variant {
 };
 
 type RecordSubmissionRequest = record {
-    record_type: RecordType;
+    record_type: nat64;
     user_did: text;
     event_date: text;
     content: RecordContent;

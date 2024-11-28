@@ -30,96 +30,6 @@ impl CreditService {
         }
     }
 
-    // === 权限检查 ===
-    pub fn is_admin(&self, principal: Principal) -> bool {
-        self.admin_principals.contains(&principal)
-    }
-
-    // === 记录提交相关方法 ===
-    pub fn submit_record(
-        &mut self,
-        caller: Principal,
-        request: RecordSubmissionRequest
-    ) -> Result<RecordSubmissionResponse, String> {
-        let record_id = format!("CR{}{:03}", 
-            time() / 1_000_000_000,
-            self.credit_records.len() + 1
-        );
-
-        let record = CreditRecord {
-            id: record_id.clone(),
-            institution_id: caller,
-            record_type: request.record_type,
-            user_did: request.user_did.clone(),
-            event_date: request.event_date,
-            content: request.content,
-            encrypted_content: Vec::new(), // TODO: Implement encryption
-            proof: Vec::new(), // TODO: Implement zk-SNARK proof
-            canister_id: ic_cdk::id().to_string(),
-            timestamp: time(),
-            status: RecordStatus::Pending,
-            reward_amount: Some(10), // Default reward amount
-        };
-
-        // Store the record
-        self.credit_records.push(record.clone());
-        
-        // Update institution records
-        self.institution_records
-            .entry(caller)
-            .or_insert_with(Vec::new)
-            .push(record);
-
-        // Add to upload history
-        self.upload_history.push(UploadRecord {
-            id: record_id.clone(),
-            user_did: request.user_did,
-            institution_id: caller,
-            status: "PENDING".to_string(),
-            submitted_at: format!("{}", time() / 1_000_000_000),
-            review_result: ReviewResult {
-                passed: true,
-                reason: None,
-            },
-        });
-
-        Ok(RecordSubmissionResponse {
-            record_id,
-            status: RecordStatus::Pending,
-            timestamp: time(),
-            reward_amount: Some(10),
-        })
-    }
-
-    pub fn batch_submit_records(
-        &mut self,
-        caller: Principal,
-        request: BatchSubmissionRequest
-    ) -> Result<BatchSubmissionResponse, String> {
-        let mut submitted = 0;
-        let mut failed = 0;
-        let mut record_ids = Vec::new();
-
-        for record_request in request.records {
-            match self.submit_record(caller, record_request) {
-                Ok(response) => {
-                    submitted += 1;
-                    record_ids.push(response.record_id);
-                }
-                Err(_) => {
-                    failed += 1;
-                }
-            }
-        }
-
-        Ok(BatchSubmissionResponse {
-            submitted,
-            failed,
-            record_ids,
-            timestamp: time(),
-            status: RecordStatus::Pending,
-        })
-    }
 
     // === 查询相关方法 ===
     pub fn query_records(
@@ -237,6 +147,38 @@ pub fn create_deduction_record(
     Ok(record)
 }
 
+pub fn deduct_query_token(
+    &mut self,
+    institution_id: Principal,
+    user_did: String
+) -> Result<bool, String> {
+    // 1. 从 ADMIN_SERVICE 获取机构当前代币余额
+    let balance = ADMIN_SERVICE.with(|service| {
+        let service = service.borrow();
+        service.get_institution_balance(institution_id)
+            .map(|balance| balance.dcc)
+            .map_err(|e| e.to_string())
+    })?;
+    
+    // 2. 扣减代币
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        let request = DCCTransactionRequest {
+            dcc_amount: 1,
+            usdt_amount: 0.0,  // 不涉及USDT
+            tx_hash: format!("QRY{}_{}", 
+                time() / 1_000_000_000,
+                user_did.chars().take(8).collect::<String>()
+            ),
+            remarks: format!("查询用户{}的信用记录", user_did),
+            created_at: time(),
+        };
+        
+        service.process_dcc_deduction(institution_id, request)
+    })?;
+
+    Ok(true)
+}
     pub fn get_deduction_records(&self, institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {
         match institution_id {
             Some(id) => self.deduction_records
@@ -337,22 +279,6 @@ pub fn create_deduction_record(
         (risk_level.to_string(), details, suggestions)
     }
 
-    // === 异步方法封装 ===
-    pub async fn submit_record_async(
-        &mut self,
-        caller: Principal,
-        request: RecordSubmissionRequest
-    ) -> Result<RecordSubmissionResponse, String> {
-        self.submit_record(caller, request)
-    }
-
-    pub async fn batch_submit_records_async(
-        &mut self,
-        caller: Principal,
-        request: BatchSubmissionRequest
-    ) -> Result<BatchSubmissionResponse, String> {
-        self.batch_submit_records(caller, request)
-    }
 
     pub async fn create_deduction_record_async(
         &mut self,

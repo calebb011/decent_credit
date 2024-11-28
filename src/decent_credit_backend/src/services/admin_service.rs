@@ -337,6 +337,8 @@ impl AdminService {
                     
                     if institution.password_hash == password_hash {
                         institution.last_active = time();
+                          // 保存机构ID到本地存储
+                     localStorage.setItem('institutionId', response.institution_id.toString());
                         LoginResponse {
                             success: true,
                             institution_id: Some(id),

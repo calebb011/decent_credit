@@ -1,6 +1,7 @@
 // creditRecordService.js
 import { createActor } from './IDL';
 
+
 /**
  * 获取记录类型的变体格式
  */
@@ -8,11 +9,11 @@ function getRecordType(type) {
   const recordType = type.toLowerCase();
   switch(recordType) {
     case 'loan':
-      return { 'Loan': null };  // 使用字符串键，确保格式正确
+      return { 'LoanRecord': null };  // 修改为对应后端的 RecordType 枚举
     case 'repayment':
-      return { 'Repayment': null };
-    case 'overdue':
-      return { 'Overdue': null };
+      return { 'RepaymentRecord': null };
+    case 'notification':
+      return { 'NotificationRecord': null };
     default:
       throw new Error(`Invalid record type: ${type}`);
   }
@@ -48,20 +49,21 @@ function getStatusString(status) {
 /**
  * 格式化请求内容
  */
+
 function formatRecordRequest(formValues) {
   const recordType = formValues.recordType.toLowerCase();
   let request = {
-    record_type: { [recordType.charAt(0).toUpperCase() + recordType.slice(1)]: null }, // e.g., { Loan: null }
+    record_type: getRecordType(recordType),
     user_did: formValues.userDid,
     event_date: formValues.eventDate.format('YYYY-MM-DD'),
-    content: {} // 将根据类型填充
+    content: null
   };
 
-  // 根据记录类型生成对应的内容结构
+  // 根据记录类型格式化 content
   switch (recordType) {
     case 'loan':
       request.content = {
-        Loan: {
+        Loan: {  // 变为 Loan 而不是直接的数据结构
           amount: BigInt(Math.floor(Number(formValues.amount) * 100)),
           loan_id: `LOAN${formValues.eventDate.format('YYYYMMDD')}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
           term_months: BigInt(formValues.term),
@@ -72,7 +74,7 @@ function formatRecordRequest(formValues) {
 
     case 'repayment':
       request.content = {
-        Repayment: {
+        Repayment: {  // 变为 Repayment
           amount: BigInt(Math.floor(Number(formValues.amount) * 100)),
           loan_id: formValues.originalLoanId,
           repayment_date: formValues.eventDate.format('YYYY-MM-DD')
@@ -82,7 +84,7 @@ function formatRecordRequest(formValues) {
 
     case 'notification':
       request.content = {
-        Notification: {
+        Notification: {  // 变为 Notification
           amount: BigInt(Math.floor(Number(formValues.amount) * 100)),
           days: BigInt(formValues.days || 0),
           period_amount: BigInt(Math.floor(Number(formValues.periodAmount || formValues.amount) * 100))
@@ -183,7 +185,7 @@ export const submitRecordsBatch = async (records) => {
         failed: Number(response.Ok.failed),
         records: response.Ok.records.map(record => ({
           recordId: record.record_id,
-          timestamp: BigInt(formValues.eventDate.valueOf() * 1000000),  // 转换为 BigInt
+          timestamp: Number(response.Ok.timestamp),  // 转换为 BigInt
           record_type: getRecordTypeNumber(record.recordType), // 新增
   user_id: new Uint8Array(Buffer.from(record.userDid || '', 'utf-8')), // 新增
           status: getStatusString(record.status),
@@ -222,18 +224,24 @@ function validateRow(row) {
     return false;
   }
 
-  // 根据记录类型检查特定字段
-  switch (row.recordType) {
-    case 'loan':
-      return !isNaN(Number(row.term)) && Number(row.term) > 0 && 
-             !isNaN(Number(row.interestRate)) && Number(row.interestRate) >= 0;
-    case 'repayment':
-      return Boolean(row.originalLoanId);
-    case 'overdue':
-      return !isNaN(Number(row.overdueDays)) && Number(row.overdueDays) > 0;
-    default:
+    // 检查记录类型
+    if (!['loan', 'repayment', 'notification'].includes(row.recordType)) {
       return false;
-  }
+    }
+  
+    // 根据记录类型检查特定字段
+    switch (row.recordType) {
+      case 'loan':
+        return !isNaN(Number(row.term)) && Number(row.term) > 0 && 
+               !isNaN(Number(row.interestRate)) && Number(row.interestRate) >= 0;
+      case 'repayment':
+        return Boolean(row.originalLoanId);
+      case 'notification':
+        return !isNaN(Number(row.days)) && Number(row.days) > 0 &&
+               !isNaN(Number(row.periodAmount)) && Number(row.periodAmount) > 0;
+      default:
+        return false;
+    }
 }
 
 /**

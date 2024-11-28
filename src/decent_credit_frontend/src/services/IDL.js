@@ -70,27 +70,47 @@ export async function createActor() {
       });
   
   
-  // 记录内容结构
-  const RecordContent = IDL.Record({
-    'amount': IDL.Nat64,
-    'user_id': IDL.Vec(IDL.Nat8),
-    'record_type': IDL.Nat8,
-    'timestamp': IDL.Nat64,
-    'term_months': IDL.Opt(IDL.Nat64),
-    'interest_rate': IDL.Opt(IDL.Float64),
-    'loan_id': IDL.Opt(IDL.Text),
-    'days': IDL.Opt(IDL.Nat64),
-    'period_amount': IDL.Opt(IDL.Nat64)
-  }); 
-  
-  // 记录提交请求
-  const RecordSubmissionRequest = IDL.Record({
-    // 'record_type': IDL.RE,
-    'user_did': IDL.Text,
-    'event_date': IDL.Text
-    // 'content': RecordContent
-  });
-  
+ // 首先定义 RecordType 枚举
+const RecordType = IDL.Variant({
+  'LoanRecord': IDL.Null,
+  'RepaymentRecord': IDL.Null,
+  'NotificationRecord': IDL.Null
+});
+
+// 定义不同的内容类型结构
+const LoanContent = IDL.Record({
+  'amount': IDL.Nat64,
+  'loan_id': IDL.Text,
+  'term_months': IDL.Nat64,
+  'interest_rate': IDL.Float64
+});
+
+const RepaymentContent = IDL.Record({
+  'amount': IDL.Nat64,
+  'loan_id': IDL.Text,
+  'repayment_date': IDL.Text
+});
+
+const NotificationContent = IDL.Record({
+  'amount': IDL.Nat64,
+  'days': IDL.Nat64,
+  'period_amount': IDL.Nat64
+});
+
+// 定义 RecordContent 类型
+const RecordContent = IDL.Variant({
+  'Loan': LoanContent,
+  'Repayment': RepaymentContent,
+  'Notification': NotificationContent
+});
+
+// 修改 RecordSubmissionRequest 定义
+const RecordSubmissionRequest = IDL.Record({
+  'record_type': RecordType,
+  'user_did': IDL.Text,
+  'event_date': IDL.Text,
+  'content': RecordContent
+});
   // 记录状态
   const RecordStatus = IDL.Variant({
     'Pending': IDL.Null,
@@ -132,13 +152,20 @@ export async function createActor() {
       'data_quality_issue': IDL.Text
     });
   
+        // 应该改为 (正确的定义，匹配后端结构)
     const CreditRecord = IDL.Record({
       'id': IDL.Text,
+      'institution_id': IDL.Principal,
+      'record_type': RecordType,    // 使用前面定义的 RecordType
       'user_did': IDL.Text,
-      'amount': IDL.Nat64,
-      'record_type': IDL.Text,
-      'created_at': IDL.Nat64,
-      'details': IDL.Text
+      'event_date': IDL.Text,
+      'content': RecordContent,     // 使用前面定义的 RecordContent
+      'encrypted_content': IDL.Vec(IDL.Nat8),
+      'proof': IDL.Vec(IDL.Nat8),
+      'canister_id': IDL.Text,
+      'timestamp': IDL.Nat64,
+      'status': RecordStatus,      // 使用前面定义的 RecordStatus
+      'reward_amount': IDL.Opt(IDL.Nat64)
     });
   
     const InstitutionRecordResponse = IDL.Record({
@@ -229,6 +256,22 @@ export async function createActor() {
     'get_risk_assessment': IDL.Func(
       [IDL.Text],
       [IDL.Variant({ 'Ok': RiskAssessment, 'Err': IDL.Text })],
+      ['query']
+    ),// 然后定义查询方法
+    'query_records_by_user_did': IDL.Func(
+      [IDL.Text],  // 输入参数: user_did (String)
+      [IDL.Vec(CreditRecord)],  // 返回值: Vec<CreditRecord>
+      ['query']  // 查询方法
+    ),
+    'deduct_query_token': IDL.Func(
+      [IDL.Principal, IDL.Text], // [机构ID, 用户DID]
+      [IDL.Variant({ 'Ok': IDL.Bool, 'Err': IDL.Text })],
+      ['update']
+    ),
+
+    'query_records_by_user_did': IDL.Func(
+      [IDL.Text], // user_did
+      [IDL.Vec(CreditRecord)],
       ['query']
     ),
       });

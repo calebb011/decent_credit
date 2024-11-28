@@ -62,6 +62,28 @@ pub async fn create_credit_record(request: CreateCreditRecordRequest) -> Result<
     })
 }
 
+/// 扣减查询代币
+#[update]
+pub async fn deduct_query_token(institution_id: Principal, user_did: String) -> Result<bool, String> {
+    let caller = ic_cdk::caller();
+    info!("Deduct query token by {}", caller.to_text());
+    debug!("Institution: {}, User DID: {}", institution_id.to_text(), user_did);
+
+    CREDIT_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        match service.deduct_query_token(institution_id, user_did) {
+            Ok(result) => {
+                info!("Successfully deducted query token for institution: {}", institution_id.to_text());
+                Ok(result)
+            },
+            Err(e) => {
+                error!("Failed to deduct query token: {}", e);
+                Err(e)
+            }
+        }
+    })
+}
+
 /// 获取信用扣分记录列表
 #[query]
 pub fn get_credit_records(institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {

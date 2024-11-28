@@ -8,11 +8,7 @@ import {
   AlertOutlined, EyeOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import {
-  queryRecordsByUserDid,
-  queryRecordDetails,
-  getRiskAssessment
-} from '../services/InstitutionCreditService';
+import { queryRecordsByUserDid, queryRecordDetails, getRiskAssessment } from '../services/queryRecordService';
 
 const { Title, Paragraph } = Typography;
 
@@ -28,16 +24,25 @@ const CreditRecordQuery = () => {
   const [currentUserDid, setCurrentUserDid] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [assessmentLoading, setAssessmentLoading] = useState(false);
-  
+
   const handleSearch = async (values) => {
     setLoading(true);
+    setSearchPerformed(true);
+    
     try {
-      // const response = await queryRecordsByUserDid(values.userDid);
-      // setRecords(response.data);
-      setSearchPerformed(true);
-      setCurrentUserDid(values.userDid);
+      const response = await queryRecordsByUserDid(values.userDid);
+      if (response.success) {
+        setRecords(response.data);
+        setCurrentUserDid(values.userDid);
+        if (response.data.length === 0) {
+          message.info('未找到相关记录');
+        }
+      } else {
+        message.error(response.message || '查询失败');
+      }
     } catch (error) {
-      message.error('查询失败: ' + error.message);
+      console.error('查询失败:', error);
+      message.error(error.message || '查询失败');
     } finally {
       setLoading(false);
     }
@@ -46,19 +51,23 @@ const CreditRecordQuery = () => {
   const handleViewDetails = async (record) => {
     setDetailLoading(true);
     try {
-      // 扣除代币
-      await deductTokenForQuery(record.institution_id);
-      message.success('代币扣除成功');
-      
-      // 获取详细信息
-      const details = await queryRecordDetails(record.institution_id, currentUserDid);
-      setCurrentDetails({
-        institution_name: record.institution_name,
-        ...details
-      });
-      setDetailVisible(true);
+      // 使用登录时缓存的 institution_id
+    const loginInstitutionId = localStorage.getItem('institutionId');
+    
+    if (!loginInstitutionId) {
+      throw new Error('请重新登录');
+    }
+      const details = await queryRecordDetails(loginInstitutionId, currentUserDid);
+      if (details) {
+        setCurrentDetails(details);
+        setDetailVisible(true);
+        message.success('查询成功');
+      } else {
+        throw new Error('未找到相关记录');
+      }
     } catch (error) {
-      message.error('获取详情失败: ' + error.message);
+      console.error('查询详情失败:', error);
+      message.error('查询详情失败: ' + (error.message || '未知错误'));
     } finally {
       setDetailLoading(false);
     }
@@ -142,13 +151,13 @@ const CreditRecordQuery = () => {
         let formattedContent = '';
         switch (record.record_type) {
           case 'loan':
-            formattedContent = `贷款金额: ${content.amount}元, 期限: ${content.term}月, 年化利率: ${content.interestRate}%`;
+            formattedContent = `贷款金额: ${content.amount}元, 期限: ${content.term_months}月, 年化利率: ${content.interest_rate}%`;
             break;
           case 'repayment':
-            formattedContent = `还款金额: ${content.amount}元, 原贷款ID: ${content.originalLoanId}`;
+            formattedContent = `还款金额: ${content.amount}元, 原贷款ID: ${content.loan_id}, 还款日期: ${content.repayment_date}`;
             break;
-          case 'overdue':
-            formattedContent = `逾期金额: ${content.amount}元, 逾期天数: ${content.overdueDays}天`;
+          case 'notification':
+            formattedContent = `涉及金额: ${content.amount}元, 天数: ${content.days}天, 期间金额: ${content.period_amount}元`;
             break;
           default:
             formattedContent = JSON.stringify(content);
@@ -162,7 +171,7 @@ const CreditRecordQuery = () => {
     const types = {
       'loan': '贷款记录',
       'repayment': '还款记录',
-      'overdue': '逾期记录'
+      'notification': '通知记录'
     };
     return types[type] || type;
   };

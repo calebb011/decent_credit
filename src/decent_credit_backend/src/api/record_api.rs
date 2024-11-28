@@ -12,28 +12,35 @@ use crate::api::record_api::credit::{
 
 
 
-/// 提交单条记录
 #[update]
 pub async fn submit_record(request: RecordSubmissionRequest) -> Result<RecordSubmissionResponse, String> {
     let caller = ic_cdk::caller();
-    info!("Institution registration attempt by {}", caller.to_text());
-    debug!("Registration details - event_date: {}, ", request.event_date);
-
+    info!("Submit record by caller: {}", caller.to_text());
+    debug!("Record submission details - User DID: {}, Event Date: {}, Record Type: {:?}", 
+        request.user_did,
+        request.event_date,
+        request.record_type
+    );
 
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
         match service.submit_record(request) {
-            Ok(record_id) => Ok(RecordSubmissionResponse {
-                record_id,
-                status: RecordStatus::Pending,
-                timestamp: ic_cdk::api::time(),
-                reward_amount: None // 奖励金额可以后续添加
-            }),
-            Err(e) => Err(format!("提交记录失败: {:?}", e))
+            Ok(record_id) => {
+                info!("Successfully submitted record: {}", record_id);
+                Ok(RecordSubmissionResponse {
+                    record_id,
+                    status: RecordStatus::Pending,
+                    timestamp: ic_cdk::api::time(),
+                    reward_amount: None
+                })
+            },
+            Err(e) => {
+                error!("Failed to submit record: {:?}", e);  
+                Err(format!("提交记录失败: {:?}", e))
+            }
         }
     })
 }
-
 /// 批量提交记录
 #[update]
 pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<BatchSubmissionResponse, String> {

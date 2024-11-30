@@ -6,6 +6,8 @@ use serde::Serialize;
 pub struct CreditRecord {
     pub id: String,                    // 记录ID
     pub institution_id: Principal,      // 机构ID
+    pub institution_name: String,      // 机构ID
+    pub institution_full_name: String,      // 机构ID
     pub record_type: RecordType,       // 记录类型
     pub user_did: String,              // 用户DID
     pub event_date: String,            // 发生日期
@@ -80,6 +82,7 @@ pub struct RecordData {
 // === API 请求/响应结构 ===
 #[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]  // Added Serialize
 pub struct RecordSubmissionRequest {
+    pub institution_id: Principal,
     pub record_type: RecordType,
     pub user_did: String,
     pub event_date: String,

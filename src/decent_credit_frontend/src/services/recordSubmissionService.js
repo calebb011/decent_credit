@@ -1,5 +1,6 @@
 // creditRecordService.js
 import { createActor } from './IDL';
+import { Principal } from '@dfinity/principal';
 
 
 /**
@@ -53,6 +54,7 @@ function getStatusString(status) {
 function formatRecordRequest(formValues) {
   const recordType = formValues.recordType.toLowerCase();
   let request = {
+    institution_id: Principal.fromText(localStorage.getItem('institutionId')),
     record_type: getRecordType(recordType),
     user_did: formValues.userDid,
     event_date: formValues.eventDate.format('YYYY-MM-DD'),

@@ -12,10 +12,12 @@ export const queryRecordsByUserDid = async (userDid) => {
   try {
     const actor = await createActor();
     const records = await actor.query_records_by_user_did(userDid);
-
+    console.log(records)
     const formattedRecords = records.map(record => ({
       id: record.id,
       institution_id: record.institution_id.toText(),
+      institution_name:record.institution_name,
+      institution_full_name:record.institution_full_name,
       user_did: record.user_did,
       event_date: record.event_date,
       record_type: formatRecordType(record.record_type),
@@ -45,19 +47,9 @@ export const queryRecordDetails = async (institutionId, userDid) => {
     
     // 将字符串转换为 Principal 类型
     const principal = Principal.fromText(institutionId);
-    
-    // 1. 扣除代币
-    const deductResult = await actor.deduct_query_token(
-      principal, // 使用转换后的 Principal
-      userDid
-    );
-    
-    if ('Err' in deductResult) {
-      throw new Error(deductResult.Err);
-    }
-
+   
     // 2. 查询机构记录详情
-    const detailsResult = await actor.query_institution_records(
+    const detailsResult = await actor.query_institution_records_details(
       principal, // 使用转换后的 Principal
       userDid
     );
@@ -68,7 +60,6 @@ export const queryRecordDetails = async (institutionId, userDid) => {
 
     return 'Ok' in detailsResult ? {
       institution_id: detailsResult.Ok.institution_id.toText(),
-      institution_name: detailsResult.Ok.institution_name,
       user_did: detailsResult.Ok.user_did,
       records: detailsResult.Ok.records.map(record => ({
         id: record.id,
@@ -89,7 +80,7 @@ export const getRiskAssessment = async (userDid) => {
   try {
     const actor = await createActor();
     const result = await actor.get_risk_assessment(userDid);
-    
+    console.log(result)
     if ('Err' in result) {
       throw new Error(result.Err);
     }

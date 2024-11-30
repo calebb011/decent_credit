@@ -123,7 +123,7 @@ const InstitutionList = () => {
                    <div className="border rounded-lg p-3">
                      <div className="flex items-center text-sm font-medium text-gray-500">
                        <BarChart2 className="w-4 h-4 mr-2" />
-                       API调用量
+                       信用记录查询次数
                      </div>
                      <div className="mt-1">
                        <div className="text-xl font-semibold text-gray-900">
@@ -138,7 +138,7 @@ const InstitutionList = () => {
                    <div className="border rounded-lg p-3">
                      <div className="flex items-center text-sm font-medium text-gray-500">
                        <Database className="w-4 h-4 mr-2" />
-                       数据上传量
+                       信用记录上传量
                      </div>
                      <div className="mt-1 text-xl font-semibold text-gray-900">
                        {institution.data_uploads.toLocaleString()}

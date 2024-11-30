@@ -62,7 +62,7 @@ const Dashboard = () => {
 
         {/* 状态卡片 */}
         <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-2">
-          {/* 数据提交统计 */}
+          {/* 信用上传统计 */}
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -70,7 +70,7 @@ const Dashboard = () => {
                   <Database className="h-8 w-8 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">数据提交统计</p>
+                  <p className="text-sm font-medium text-gray-500">信用上传统计</p>
                   <p className="text-xl font-semibold text-gray-900">
                     {dashboardData.submissionStats.todaySubmissions.toLocaleString()}
                   </p>
@@ -96,7 +96,7 @@ const Dashboard = () => {
                   <Activity className="h-8 w-8 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">API调用统计</p>
+                  <p className="text-sm font-medium text-gray-500">信用查询统计</p>
                   <p className="text-xl font-semibold text-gray-900">
                     {dashboardData.usageStats.todayQueries.toLocaleString()}
                   </p>

@@ -6,7 +6,7 @@ use crate::services::record_service::call::call;
 use crate::services::crypto_service::{self, CryptoService, with_crypto_service};  // 修改这里
 use crate::services::storage_service::{self, with_storage_service};  // 修改这里
 use crate::services::zk_proof_service::ZKProofService;
-
+use crate::services::admin_service::ADMIN_SERVICE;  // 移到顶部
 
 use crate::models::credit::{
     RecordData,
@@ -52,7 +52,15 @@ impl RecordService {
     pub fn submit_record(&mut self, request: RecordSubmissionRequest) -> Result<String, Error> {
         // 校验内容
         self.validate_record_content(&request.record_type, &request.content)?;
+         // 获取机构信息并提取机构名称
+        let institution = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(request.institution_id)
+                .ok_or_else(|| Error::InvalidData("机构不存在".to_string()))
+        })?;  // 注意这里添加了 ? 操作符
         
+        let institution_name = institution.name.clone();  // 假设机构结构中有 name 字段
+        let institution_full_name= institution.full_name.clone();
         // 序列化内容
         let content_bytes = candid::encode_one(&request.content)
             .map_err(|_| Error::SerializationFailed)?;
@@ -66,39 +74,49 @@ impl RecordService {
 
         let proof = self.zk_service.generate_proof(&content_bytes);
 
-          // 在使用 encrypted_content 之前先克隆一份
-    let encrypted_content_for_storage = encrypted_content.clone();
-        // 完整初始化 CreditRecord
-        let record = CreditRecord {
-            id: record_id.clone(),
-            institution_id: ic_cdk::caller(),
-            record_type: request.record_type,
-            user_did: request.user_did.clone(),
-            event_date: request.event_date.clone(),  // 使用请求中的日期
-            content: request.content,
-            encrypted_content,  // 使用加密后的内容
-            proof: proof.clone(),  // 使用生成的证明
-            canister_id: self.storage_canister_id.to_string(),
-            timestamp: time(),
-            status: RecordStatus::Pending,
-            reward_amount: None // 初始时没有奖励
-        };
-    
-        // 存储记录
-        self.records.insert(record_id.clone(), record.clone());
+            // 在使用 encrypted_content 之前先克隆一份
+        let encrypted_content_for_storage = encrypted_content.clone();
+            // 完整初始化 CreditRecord
+            let record = CreditRecord {
+                id: record_id.clone(),
+                institution_id: request.institution_id.clone(),
+                institution_name,
+                institution_full_name,
+                record_type: request.record_type,
+                user_did: request.user_did.clone(),
+                event_date: request.event_date.clone(),  // 使用请求中的日期
+                content: request.content,
+                encrypted_content,  // 使用加密后的内容
+                proof: proof.clone(),  // 使用生成的证明
+                canister_id: self.storage_canister_id.to_string(),
+                timestamp: time(),
+                status: RecordStatus::Pending,
+                reward_amount: None // 初始时没有奖励
+            };
+        
+            // 存储记录
+            self.records.insert(record_id.clone(), record.clone());
 
-        // 存储到服务中
-        let storage_id = with_storage_service(|service| {
-            service.store_data(encrypted_content_for_storage)  
-        }).map_err(|e| Error::StorageFailed)?;
+            // 存储到服务中
+            let storage_id = with_storage_service(|service| {
+                service.store_data(encrypted_content_for_storage)  
+            }).map_err(|e| Error::StorageFailed)?;
 
-        // 上链
-        with_storage_service(|service| {
-            service.store_on_chain(record_id.clone(), storage_id, proof)
-        }).map_err(|_| Error::StorageFailed)?;
-    
+            // 上链
+            with_storage_service(|service| {
+                service.store_on_chain(record_id.clone(), storage_id, proof)
+            }).map_err(|_| Error::StorageFailed)?;
+            
+            // 4. 记录API调用
+            ADMIN_SERVICE.with(|service| {
+                let mut service = service.borrow_mut();
+                service.institution_record_data_upload(request.institution_id.clone(), 1);
+            });
+        
         Ok(record_id)
     }
+   
+
    
 
     pub async fn verify_and_commit(&mut self, record_id: &str) -> Result<bool, Error> {
@@ -246,7 +264,7 @@ impl RecordService {
                 }
             }
         }
-    
+
         result
     }
     

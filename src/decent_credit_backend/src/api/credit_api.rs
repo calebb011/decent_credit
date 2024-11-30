@@ -96,14 +96,14 @@ pub fn get_credit_records(institution_id: Option<Principal>) -> Vec<CreditDeduct
     })
 }
 
-/// 查询机构详细信用记录
-#[query]
-pub fn query_institution_records(institution_id: Principal, user_did: String) -> Result<InstitutionRecordResponse, String> {
+/// 查询机构某个用户did的详细信用记录
+#[update]
+pub   fn query_institution_records_details(institution_id: Principal, user_did: String) -> Result<InstitutionRecordResponse, String> {
     let caller = ic_cdk::caller();
     debug!("Query institution records by {}", caller.to_text());
 
     CREDIT_SERVICE.with(|service| {
-        let service = service.borrow();
+        let mut service = service.borrow_mut();  // 获取可变引用
         match service.get_institution_records(institution_id, &user_did) {
             Ok(response) => {
                 debug!("Successfully retrieved institution records");
@@ -111,7 +111,7 @@ pub fn query_institution_records(institution_id: Principal, user_did: String) ->
             },
             Err(e) => {
                 warn!("Failed to get institution records: {}", e);
-                Err(e)
+                Err(e.to_string())
             }
         }
     })

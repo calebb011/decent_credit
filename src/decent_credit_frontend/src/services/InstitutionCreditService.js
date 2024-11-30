@@ -114,7 +114,7 @@ export async function queryRecordDetails(institutionId, userDid) {
 
   try {
     const institutionPrincipal = Principal.fromText(institutionId);
-    const details = await actorResult.actor.query_institution_records(institutionPrincipal, userDid);
+    const details = await actorResult.actor.query_institution_records_details(institutionPrincipal, userDid);
     
     if ('Err' in details) {
       return {

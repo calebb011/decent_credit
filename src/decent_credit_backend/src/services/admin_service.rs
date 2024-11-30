@@ -6,9 +6,9 @@ use sha2::{Sha256, Digest};
 use crate::models::institution::*;
 use crate::models::credit::*;
 use crate::models::dashboard::{AdminDashboardData,AdminStatistics,InstitutionStats,ApiStats,TokenStats,DataStats};
+use log::{info, debug, warn, error};
 
 const DEFAULT_PASSWORD: &str = "changeme123"; // 默认密码
-
 
 
 pub struct AdminService {
@@ -147,7 +147,25 @@ impl AdminService {
             Err("机构不存在".to_string())
         }
     }
+    pub fn institution_record_api_call(&mut self, id: Principal, count: u64) {
+        info!("institution_record_api_call: {}", id.to_text());
 
+        if let Some(institution) = self.institutions.get_mut(&id) {
+            institution.api_calls += count;
+            institution.last_active = time();
+        }
+    }
+
+    pub fn institution_record_data_upload(&mut self, id: Principal, count: u64) {
+        info!("institution_record_data_upload: {}", id.to_text());
+
+        if let Some(institution) = self.institutions.get_mut(&id) {
+            institution.data_uploads += count;
+            institution.last_active = time();
+            info!("institution_record_data_upload institution: {}",institution.data_uploads);
+
+        }
+    }
     // === DCC和代币相关方法 ===
 
     pub fn get_institution_balance(&self, id: Principal) -> Result<BalanceResponse, String> {
@@ -204,21 +222,7 @@ impl AdminService {
         Ok(())
     }
 
-    // === 统计和记录相关方法 ===
 
-    pub fn record_api_call(&mut self, id: Principal, count: u64) {
-        if let Some(institution) = self.institutions.get_mut(&id) {
-            institution.api_calls += count;
-            institution.last_active = time();
-        }
-    }
-
-    pub fn record_data_upload(&mut self, id: Principal, count: u64) {
-        if let Some(institution) = self.institutions.get_mut(&id) {
-            institution.data_uploads += count;
-            institution.last_active = time();
-        }
-    }
 
     pub fn record_token_trading(&mut self, id: Principal, is_buy: bool, amount: u64) {
         if let Some(institution) = self.institutions.get_mut(&id) {
@@ -230,6 +234,8 @@ impl AdminService {
             institution.last_active = time();
         }
     }
+
+
 
     pub fn get_statistics(&self) -> AdminStatistics {
         let total_institutions = self.institutions.len();
@@ -338,7 +344,6 @@ impl AdminService {
                     if institution.password_hash == password_hash {
                         institution.last_active = time();
                           // 保存机构ID到本地存储
-                     localStorage.setItem('institutionId', response.institution_id.toString());
                         LoginResponse {
                             success: true,
                             institution_id: Some(id),

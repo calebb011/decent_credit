@@ -106,6 +106,7 @@ const RecordContent = IDL.Variant({
 
 // 修改 RecordSubmissionRequest 定义
 const RecordSubmissionRequest = IDL.Record({
+  'institution_id': IDL.Principal,
   'record_type': RecordType,
   'user_did': IDL.Text,
   'event_date': IDL.Text,
@@ -156,6 +157,8 @@ const RecordSubmissionRequest = IDL.Record({
     const CreditRecord = IDL.Record({
       'id': IDL.Text,
       'institution_id': IDL.Principal,
+      'institution_name': IDL.Text,
+      'institution_full_name': IDL.Text,
       'record_type': RecordType,    // 使用前面定义的 RecordType
       'user_did': IDL.Text,
       'event_date': IDL.Text,
@@ -186,7 +189,7 @@ const RecordSubmissionRequest = IDL.Record({
       return IDL.Service({
         'institution_login': IDL.Func([LoginRequest], [LoginResponse], ['update']),
   
-  'register_institution': IDL.Func(
+    'register_institution': IDL.Func(
           [RegisterRequest], 
           [IDL.Variant({ 'Ok': IDL.Principal, 'Err': IDL.Text })], // 修改这里
           ['update']
@@ -241,10 +244,10 @@ const RecordSubmissionRequest = IDL.Record({
       ['query']
     ),
   
-    'query_institution_records': IDL.Func(
+    'query_institution_records_details': IDL.Func(
       [IDL.Principal, IDL.Text],
       [IDL.Variant({ 'Ok': InstitutionRecordResponse, 'Err': IDL.Text })],
-      ['query']
+      ['update']
     ),
   
     'deduct_query_token': IDL.Func(

@@ -11,7 +11,6 @@ import dayjs from 'dayjs';
 import { queryRecordsByUserDid, queryRecordDetails, getRiskAssessment } from '../services/queryRecordService';
 
 const { Title, Paragraph } = Typography;
-
 const CreditRecordQuery = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -25,12 +24,30 @@ const CreditRecordQuery = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [assessmentLoading, setAssessmentLoading] = useState(false);
 
+  // 根据记录类型获取显示文本和颜色
+  const getRecordTypeConfig = (type) => {
+    const config = {
+      'LoanRecord': { text: '贷款记录', color: 'blue' },
+      'RepaymentRecord': { text: '还款记录', color: 'green' },
+      'NotificationRecord': { text: '通知记录', color: 'orange' }
+    };
+    return config[type] || { text: type, color: 'default' };
+  };
+
+  // 格式化金额
+  const formatAmount = (amount) => {
+    return new Intl.NumberFormat('zh-CN', {
+      style: 'currency',
+      currency: 'CNY'
+    }).format(amount);
+  };
+
   const handleSearch = async (values) => {
     setLoading(true);
     setSearchPerformed(true);
-    
     try {
       const response = await queryRecordsByUserDid(values.userDid);
+      console.log(response)
       if (response.success) {
         setRecords(response.data);
         setCurrentUserDid(values.userDid);
@@ -51,19 +68,39 @@ const CreditRecordQuery = () => {
   const handleViewDetails = async (record) => {
     setDetailLoading(true);
     try {
-      // 使用登录时缓存的 institution_id
-    const loginInstitutionId = localStorage.getItem('institutionId');
-    
-    if (!loginInstitutionId) {
-      throw new Error('请重新登录');
-    }
-      const details = await queryRecordDetails(loginInstitutionId, currentUserDid);
-      if (details) {
-        setCurrentDetails(details);
+      const loginInstitutionId = localStorage.getItem('institutionId');
+      if (!loginInstitutionId) {
+        throw new Error('请重新登录');
+      }
+      
+      const response = await queryRecordDetails(loginInstitutionId, currentUserDid);
+      console.log('Details response:', response);
+  
+      // 检查响应数据
+      if (response && response.records && response.records.length > 0) {
+        const formattedDetails = {
+          institution_name: record.institution_full_name,
+          records: response.records.map(item => ({
+            id: item.id,
+            // 不需要额外添加 'Record' 后缀，因为 getRecordTypeConfig 已经处理了基础类型
+            record_type: item.record_type === 'loan' ? 'LoanRecord' :
+                        item.record_type === 'repayment' ? 'RepaymentRecord' :
+                        item.record_type === 'notification' ? 'NotificationRecord' : 
+                        item.record_type,
+            timestamp: item.timestamp,
+            status: item.status === 'pending' ? 'Pending' :
+                   item.status === 'confirmed' ? 'Confirmed' :
+                   item.status === 'failed' ? 'Failed' : 
+                   item.status,
+            content: item.content  // 直接使用 content
+          }))
+        };
+        
+        setCurrentDetails(formattedDetails);
         setDetailVisible(true);
         message.success('查询成功');
       } else {
-        throw new Error('未找到相关记录');
+        throw new Error('未获取到记录详情');
       }
     } catch (error) {
       console.error('查询详情失败:', error);
@@ -72,15 +109,26 @@ const CreditRecordQuery = () => {
       setDetailLoading(false);
     }
   };
-
+  
+ 
   const handleRiskAssessment = async () => {
     setAssessmentLoading(true);
     try {
-      const assessment = await getRiskAssessment(currentUserDid);
-      setRiskAssessment(assessment);
-      setRiskAssessmentVisible(true);
+      const loginInstitutionId = localStorage.getItem('institutionId');
+      if (!loginInstitutionId) {
+        throw new Error('请重新登录');
+      }
+      console.log(loginInstitutionId)
+      const response = await getRiskAssessment(loginInstitutionId);
+      console.log(response)
+      if (response.success) {
+        setRiskAssessment(response.data);
+        setRiskAssessmentVisible(true);
+      } else {
+        throw new Error(response.message);
+      }
     } catch (error) {
-      message.error('风险评估失败: ' + error.message);
+      message.error('风险评估失败: ' + (error.message || '未知错误'));
     } finally {
       setAssessmentLoading(false);
     }
@@ -90,28 +138,28 @@ const CreditRecordQuery = () => {
   const columns = [
     {
       title: '机构名称',
-      dataIndex: 'institution_name',
-      key: 'institution_name',
-      width: 200,
+      dataIndex: 'institution_full_name',
+      key: 'institution_full_name',
+      width: '30%',
+    },
+    {
+      title: '上传时间',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+      width: '25%',
+      render: (timestamp) => dayjs(Number(timestamp) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
       title: '机构ID',
       dataIndex: 'institution_id',
       key: 'institution_id',
-      width: 300,
-      ellipsis: true,
-    },
-    {
-      title: '用户DID',
-      dataIndex: 'user_did',
-      key: 'user_did',
-      width: 300,
+      width: '35%',
       ellipsis: true,
     },
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: '10%',
       render: (_, record) => (
         <Button 
           type="link" 
@@ -125,6 +173,7 @@ const CreditRecordQuery = () => {
     }
   ];
 
+
   // 详情记录列定义
   const detailColumns = [
     {
@@ -132,9 +181,10 @@ const CreditRecordQuery = () => {
       dataIndex: 'record_type',
       key: 'record_type',
       width: 120,
-      render: (type) => (
-        <Tag color="blue">{getRecordTypeTitle(type)}</Tag>
-      ),
+      render: (type) => {
+        const config = getRecordTypeConfig(type);
+        return <Tag color={config.color}>{config.text}</Tag>;
+      },
     },
     {
       title: '提交时间',
@@ -144,37 +194,42 @@ const CreditRecordQuery = () => {
       render: (timestamp) => dayjs(Number(timestamp) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      render: (status) => {
+        const statusConfig = {
+          'Pending': { color: 'processing', text: '处理中' },
+          'Confirmed': { color: 'success', text: '已确认' },
+          'Failed': { color: 'error', text: '失败' }
+        };
+        const config = statusConfig[status] || { color: 'default', text: status };
+        return <Tag color={config.color}>{config.text}</Tag>;
+      },
+    },
+    {
       title: '内容',
       dataIndex: 'content',
       key: 'content',
       render: (content, record) => {
-        let formattedContent = '';
-        switch (record.record_type) {
-          case 'loan':
-            formattedContent = `贷款金额: ${content.amount}元, 期限: ${content.term_months}月, 年化利率: ${content.interest_rate}%`;
-            break;
-          case 'repayment':
-            formattedContent = `还款金额: ${content.amount}元, 原贷款ID: ${content.loan_id}, 还款日期: ${content.repayment_date}`;
-            break;
-          case 'notification':
-            formattedContent = `涉及金额: ${content.amount}元, 天数: ${content.days}天, 期间金额: ${content.period_amount}元`;
-            break;
-          default:
-            formattedContent = JSON.stringify(content);
-        }
-        return formattedContent;
+        if (!content) return '-';
+  
+        // 直接使用 content 中的字段
+        return (
+          <Space direction="vertical">
+            {content.amount && <div>金额: {formatAmount(content.amount)}</div>}
+            {content.term_months && <div>期限: {content.term_months} 个月</div>}
+            {content.interest_rate && <div>年化利率: {content.interest_rate}%</div>}
+            {content.loan_id && <div>贷款ID: {content.loan_id}</div>}
+            {content.repayment_date && <div>还款日期: {content.repayment_date}</div>}
+            {content.days && <div>逾期天数: {content.days} 天</div>}
+            {content.period_amount && <div>期间金额: {formatAmount(content.period_amount)}</div>}
+          </Space>
+        );
       },
     }
   ];
-
-  const getRecordTypeTitle = (type) => {
-    const types = {
-      'loan': '贷款记录',
-      'repayment': '还款记录',
-      'notification': '通知记录'
-    };
-    return types[type] || type;
-  };
 
   return (
     <div className="p-6">
@@ -217,24 +272,22 @@ const CreditRecordQuery = () => {
           </Form>
         </Card>
 
-        {records.length > 0 && (
-          <Card className="shadow-sm">
-            <div className="flex justify-center mb-2">
-              <Button
-                type="primary"
-                icon={<SafetyCertificateOutlined />}
-                onClick={handleRiskAssessment}
-                size="large"
-                loading={assessmentLoading}
-              >
-                进行用户风险评估
-              </Button>
-            </div>
-          </Card>
-        )}
-
         <Card 
-          title={<Space><FileTextOutlined /> 查询结果</Space>}
+          title={
+            <div className="flex justify-between items-center">
+              <Space><FileTextOutlined /> 查询结果</Space>
+              {records.length > 0 && (
+                <Button
+                  type="primary"
+                  icon={<SafetyCertificateOutlined />}
+                  onClick={handleRiskAssessment}
+                  loading={assessmentLoading}
+                >
+                  进行用户风险评估
+                </Button>
+              )}
+            </div>
+          }
           className="shadow-sm"
         >
           {!searchPerformed ? (
@@ -245,7 +298,7 @@ const CreditRecordQuery = () => {
             <Table
               columns={columns}
               dataSource={records}
-              rowKey="institution_id"
+              rowKey={(record) => `${record.institution_id}_${record.timestamp}`}
               size="middle"
               pagination={false}
             />
@@ -255,20 +308,31 @@ const CreditRecordQuery = () => {
 
       {/* 详情模态框 */}
       <Modal
-        title={`信用记录详情 - ${currentDetails?.institution_name || ''}`}
+        title={
+          <Space>
+            <FileTextOutlined />
+            信用记录详情 - {currentDetails?.institution_name || ''}
+          </Space>
+        }
         open={detailVisible}
         onCancel={() => setDetailVisible(false)}
-        width={800}
-        footer={null}
+        width={900}
+        footer={[
+          <Button key="close" onClick={() => setDetailVisible(false)}>
+            关闭
+          </Button>
+        ]}
       >
-        {currentDetails && (
+        {currentDetails ? (
           <Table
             columns={detailColumns}
             dataSource={currentDetails.records}
-            rowKey="id"
+            rowKey={(record) => `${record.id}_${record.timestamp}`}
             pagination={false}
             size="middle"
           />
+        ) : (
+          <Empty description="暂无详细信息" />
         )}
       </Modal>
 

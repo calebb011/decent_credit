@@ -195,33 +195,7 @@ pub async fn update_usdt_rate(rate: f64) -> Result<(), String> {
     })
 }
 
-// === 记录相关接口 ===
 
-/// 记录API调用
-#[update]
-pub fn record_api_call(id: Principal, count: u64) {
-    info!("Recording API calls for institution: {}", id.to_text());
-    debug!("API call count: {}", count);
-
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.record_api_call(id, count);
-        debug!("Successfully recorded API calls");
-    })
-}
-
-/// 记录数据上传
-#[update]
-pub fn record_data_upload(id: Principal, count: u64) {
-    info!("Recording data upload for institution: {}", id.to_text());
-    debug!("Upload count: {}", count);
-
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.record_data_upload(id, count);
-        debug!("Successfully recorded data upload");
-    })
-}
 
 /// 记录代币交易
 #[update]

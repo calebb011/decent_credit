@@ -2,7 +2,6 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
 use crate::models::*;
 use log::{info, debug, warn, error};  // 替换原来的 log_info
-
 use crate::services::record_service::{RECORD_SERVICE};
 use crate::api::record_api::credit::{
     RecordSubmissionRequest, RecordSubmissionResponse,
@@ -88,7 +87,8 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
 
 
 
-/// 按用户DID查询记录
+/// 按用户DID查询记录 - 查询结果
+
 #[query]
 pub fn query_records_by_user_did(user_did: String) -> Vec<CreditRecord> {
 

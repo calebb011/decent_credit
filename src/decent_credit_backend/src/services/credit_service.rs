@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use log::{info, debug, warn, error};
 use crate::services::admin_service::ADMIN_SERVICE;  // 移到顶部
+use crate::services::record_service::RECORD_SERVICE;  // 移到顶部
 
 use crate::models::credit::*;
 
@@ -190,23 +191,38 @@ pub fn deduct_query_token(
         }
     }
 
-    // === 机构记录相关方法 ===
     pub fn get_institution_records(
-        &self,
+        &mut self,
         institution_id: Principal,
         user_did: &str,
     ) -> Result<InstitutionRecordResponse, String> {
-        let records = self.institution_records
-            .get(&institution_id)
-            .cloned()
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|r| r.user_did == user_did)
-            .collect();
-
+        // 1. 扣减代币
+        self.deduct_query_token(institution_id, user_did.to_string())?;
+        
+        // 2. 获取机构信息
+        let institution = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(institution_id)
+                .ok_or_else(|| "机构不存在".to_string())
+        })?;
+        info!("get_institution_records for institution full_name: {}", institution.full_name);
+    
+        // 3. 调用 RECORD_SERVICE 获取记录
+        let records = RECORD_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            service.get_record(user_did.to_string())
+        });
+    
+        // 4. 记录API调用
+        ADMIN_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            service.institution_record_api_call(institution_id, 1);
+        });
+    
+        // 5. 返回响应
         Ok(InstitutionRecordResponse {
             institution_id,
-            institution_name: "机构名称".to_string(), // TODO: 实际应用中需要查询
+            institution_name: institution.full_name,
             user_did: user_did.to_string(),
             records,
         })

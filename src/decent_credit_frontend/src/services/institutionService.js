@@ -45,12 +45,15 @@ function formatInstitution(raw) {
 // 机构管理功能
 export async function registerInstitution(formData) {
   console.log('创建机构:', formData);
+  console.log('Starting registration...');
 
   if (!formData.name || !formData.full_name) {
     throw new Error('机构名称和全称不能为空');
   }
 
   const actor = await createActor();
+  console.log('Actor created successfully');
+
   const request = {
     name: formData.name,
     full_name: formData.full_name,
@@ -63,7 +66,8 @@ export async function registerInstitution(formData) {
   if ('Err' in result) {
     throw new Error(result.Err);
   }
-  
+  console.log('Registration result:', result);
+
   return {
     success: true,
     institution_id: result.Ok,

@@ -4,22 +4,27 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
+  const canisters = {
+    decent_credit_backend: { local: "bkyz2-fmaaa-aaaaa-qaaaq-cai" },
+    decent_credit_frontend: { local: "bd3sg-teaaa-aaaaa-qaaba-cai" },
+    internet_identity: { local: "be2us-64aaa-aaaaa-qaabq-cai" }
+  };
 
   try {
-    localCanisters = require(path.resolve(".dfx", "local", "canister_ids.json"));
+    localCanisters = require(path.resolve(__dirname, "../../.dfx", "local", "canister_ids.json"));
   } catch (error) {
-    console.log("No local canister_ids.json found");
+    console.log("No local canister_ids.json found, using defaults");
+    localCanisters = canisters;
   }
 
   try {
-    prodCanisters = require(path.resolve("canister_ids.json"));
+    prodCanisters = require(path.resolve(__dirname, "../../canister_ids.json"));
   } catch (error) {
-    console.log("No production canister_ids.json found");
+    console.log("No production canister_ids.json found, using defaults");
+    prodCanisters = canisters;
   }
 
-  const network =
-    process.env.DFX_NETWORK ||
-    (process.env.NODE_ENV === "production" ? "ic" : "local");
+  const network = process.env.DFX_NETWORK || "local";
   const canisterConfig = network === "local" ? localCanisters : prodCanisters;
 
   const env = {
@@ -47,8 +52,7 @@ module.exports = {
     path: path.join(__dirname, "dist"),
     filename: "index.js",
     sourceMapFilename: "[name].js.map",
-    publicPath: '/'  // 添加这行
-
+    publicPath: '/'
   },
   devtool: "source-map",
   optimization: {
@@ -98,38 +102,57 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "public", "index.html"),
+      template: path.join(__dirname, "src", "index.html"),
       cache: false,
     }),
     new webpack.EnvironmentPlugin(initCanisterEnv()),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.env.DFX_NETWORK': JSON.stringify('local')
+    }),
     new webpack.ProvidePlugin({
       Buffer: ["buffer", "Buffer"],
       process: "process/browser",
     }),
   ],
   devServer: {
-    port: 3000,
+    port: 8000,
     proxy: {
-      "/api": {
-        target: "http://127.0.0.1:4943",
+      '/api': {
+        target: 'http://127.0.0.1:4943',
         changeOrigin: true,
-        pathRewrite: {
-          "^/api": "/api",
-        },
+        secure: false,
       },
+      '/.well-known': {
+        target: 'http://127.0.0.1:4943',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/v2/canister': {
+        target: 'http://127.0.0.1:4943',
+        changeOrigin: true,
+        secure: false,
+      }
     },
     hot: true,
+    liveReload: true,
     historyApiFallback: true,
-    static: {            // 添加静态文件配置
-      directory: path.join(__dirname, 'public'),
-  },
+    static: {
+      directory: path.join(__dirname, 'src'),
+    },
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "X-Requested-With, content-type, Authorization",
+      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
+      "Access-Control-Allow-Credentials": "true"
     },
-    compress: true,     // 启用 gzip 压缩
-    open: true,         // 自动打开浏览器
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
+      }
+      return middlewares;
+    },
+    compress: true,
+    open: true,
   },
 };

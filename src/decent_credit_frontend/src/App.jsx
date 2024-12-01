@@ -8,6 +8,7 @@ import InstitutionLayout from './components/InstitutionLayout';
 import InstitutionRecordSubmission from './components/InstitutionRecordSubmission';
 import InstitutionDashboard from './components/InstitutionDashboard';
 import CreditRecords from './components/CreditRecords';
+import LoginWithInternet from './components/LoginWithInternet';
 
 import { useICP } from './hooks/useICP';
 import UploadHistory from './components/UploadHistory';
@@ -24,6 +25,7 @@ function App() {
   <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/credit" element={<CreditRecords />} />
+      <Route path="/admin/login1" element={<LoginWithInternet />} />
       <Route path="/" element={<Navigate to="/admin/login" />} />
       <Route path="/institution/*" element={<InstitutionLayout />} />
       <Route path="/institution/login" element={<InstitutionLogin />} />

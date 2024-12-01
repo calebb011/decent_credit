@@ -137,6 +137,12 @@ const CreditRecordQuery = () => {
   // 列定义
   const columns = [
     {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: '30%',
+    },
+    {
       title: '机构名称',
       dataIndex: 'institution_full_name',
       key: 'institution_full_name',

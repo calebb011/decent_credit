@@ -2,7 +2,7 @@ import { Actor,HttpAgent } from "@dfinity/agent";
 
 
 // Constants
-const DFX_HOST = "http://127.0.0.1:4943";
+const DFX_HOST = "http://127.0.0.1:8000";
 const CANISTER_ID = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
 
 
@@ -11,17 +11,30 @@ const agent = new HttpAgent({
     host: DFX_HOST,
     retryTimes: 3,
     fetchOptions: { timeout: 30000 }
+
   });
-  
+  // 在创建 agent 后立即禁用验证
+if (process.env.NODE_ENV !== "production") {
+  agent.fetchRootKey().catch(console.error);
+  // 明确禁用证书验证
+  agent._isLocal = true;  // 标记为本地环境
+}
 // Actor 单例
 let _actor = null;// 创建 Actor 实例
 export async function createActor() {
     if (_actor) return _actor;
   
-    if (process.env.NODE_ENV !== "production") {
+   
+  // 开发环境下禁用证书验证
+  if (process.env.NODE_ENV !== "production") {
+    try {
       await agent.fetchRootKey();
+      agent._isLocal = true;
+    } catch (err) {
+      console.warn("Failed to fetch root key, continuing anyway:", err);
     }
-  
+  }
+
     _actor = Actor.createActor(({ IDL }) => {
       // 添加 DCCTransactionRequest 类型定义
     const DCCTransactionRequest = IDL.Record({

@@ -1,5 +1,5 @@
 import { Principal } from '@dfinity/principal';
-import { createActor } from './IDL';
+import { getActor } from './IDL';
 
 export const queryRecordsByUserDid = async (userDid) => {
   if (!userDid?.trim()) {
@@ -10,7 +10,7 @@ export const queryRecordsByUserDid = async (userDid) => {
   }
 
   try {
-    const actor = await createActor();
+    const actor = await getActor();
     const records = await actor.query_records_by_user_did(userDid);
     console.log(records)
     const formattedRecords = records.map(record => ({
@@ -41,15 +41,15 @@ export const queryRecordsByUserDid = async (userDid) => {
   }
 };
 
-export const queryRecordDetails = async (institutionId, userDid) => {
+export const queryRecordList = async (institutionId, userDid) => {
   try {
-    const actor = await createActor();
+    const actor = await getActor();
     
     // 将字符串转换为 Principal 类型
     const principal = Principal.fromText(institutionId);
    
     // 2. 查询机构记录详情
-    const detailsResult = await actor.query_institution_records_details(
+    const detailsResult = await actor.query_institution_records_list(
       principal, // 使用转换后的 Principal
       userDid
     );
@@ -76,26 +76,61 @@ export const queryRecordDetails = async (institutionId, userDid) => {
   }
 };
 
-export const getRiskAssessment = async (userDid) => {
+export const getRiskAssessment = async (institutionId, userDid) => {
   try {
-    const actor = await createActor();
-    const result = await actor.get_risk_assessment(userDid);
+    const actor = await getActor();
+    const principal = Principal.fromText(institutionId);
+    const result = await actor.get_risk_assessment(principal, userDid);
     console.log(result)
     if ('Err' in result) {
       throw new Error(result.Err);
     }
-    
-    return 'Ok' in result ? {
-      creditScore: Number(result.Ok.credit_score),
-      riskLevel: result.Ok.risk_level,
-      assessmentDetails: result.Ok.assessment_details,
-      suggestions: result.Ok.suggestions
-    } : null;
+
+    // 直接返回正确格式的数据
+    return {
+      success: true,
+      data: {
+        creditScore: result.Ok.credit_score,
+        riskLevel: result.Ok.risk_level,
+        assessmentDetails: result.Ok.assessment_details,
+        suggestions: result.Ok.suggestions
+      }
+    };
   } catch (error) {
-    throw new Error(error.message || '获取风险评估失败');
+    console.error('Risk assessment error:', error);
+    return {
+      success: false,
+      message: error.message || '获取风险评估失败'
+    };
   }
 };
-
+export const queryAssessmentReports = async (institutionId, days = 30) => {
+  try {
+    const actor = await getActor();
+    const principal = Principal.fromText(institutionId);
+    
+    const response = await actor.query_assessment_reports(principal, [days]);
+    console.log(response)
+    return {
+      success: true,
+      data: response.data.map(report => ({
+        ...report,
+        assessment: {
+          creditScore: Number(report.assessment.credit_score),
+          riskLevel: report.assessment.risk_level,
+          assessmentDetails: report.assessment.assessment_details,
+          suggestions: report.assessment.suggestions
+        }
+      }))
+    };
+  } catch (error) {
+    console.error('Query assessment reports error:', error);
+    return {
+      success: false,
+      message: error.message || '获取报告列表失败'
+    };
+  }
+};
 // 辅助格式化函数
 function formatRecordType(type) {
   if ('LoanRecord' in type) return 'loan';
@@ -145,6 +180,6 @@ function formatRecordContent(content) {
 
 export default {
   queryRecordsByUserDid,
-  queryRecordDetails,
+  queryRecordList,
   getRiskAssessment
 };

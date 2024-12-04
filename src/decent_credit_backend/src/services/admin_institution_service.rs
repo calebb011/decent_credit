@@ -5,8 +5,10 @@ use std::collections::HashMap;
 use sha2::{Sha256, Digest};
 use crate::models::institution::*;
 use crate::models::credit::*;
-use crate::models::dashboard::{AdminDashboardData,AdminStatistics,InstitutionStats,ApiStats,TokenStats,DataStats};
+use crate::models::record::*;
+use crate::models::dashboard::*;
 use log::{info, debug, warn, error};
+use crate::utils::error::Error;
 
 const DEFAULT_PASSWORD: &str = "changeme123"; // 默认密码
 
@@ -44,13 +46,16 @@ impl AdminService {
         format!("{:x}", hasher.finalize())
     }
 
-    fn generate_id(&mut self) -> Principal {
-        let id = self.next_id;
-        self.next_id += 1;
-        let bytes = id.to_be_bytes();
-        Principal::from_slice(&bytes)
+    fn generate_id(&mut self, id_str: &str) -> Principal {
+        match Principal::from_text(id_str) {
+            Ok(principal) => principal,
+            Err(_) => {
+                warn!("Failed to parse principal from text: {}", id_str);
+                Principal::anonymous() // 或者其他默认处理
+            }
+        }
     }
-
+    
     fn calculate_growth_rate(&self, total: u64, today: u64) -> f64 {
         if total == 0 {
             0.0
@@ -62,9 +67,11 @@ impl AdminService {
     // === 机构管理相关方法 ===
 
     pub fn register_institution(&mut self, request: RegisterRequest) -> Result<Principal, String> {
-        let caller = ic_cdk::caller();
-        let institution_id = self.generate_id();
-        
+        let caller =ic_cdk::caller();
+        let institution_id = match Principal::from_text(&request.principal) {
+            Ok(principal) => principal,
+            Err(_) => return Err("Invalid Principal ID format".to_string()),
+        };        
         // 检查机构名是否已存在
         if self.name_to_id.contains_key(&request.name) {
             return Err("机构名已存在".to_string());
@@ -78,7 +85,7 @@ impl AdminService {
             name: request.name.clone(),
             full_name: request.full_name.clone(),
             password_hash,
-            status: InstitutionStatus::Active,
+            status: InstitutionStatus::Inactive,
             join_time: time(),
             last_active: time(),
             api_calls: 0,
@@ -346,6 +353,7 @@ impl AdminService {
                           // 保存机构ID到本地存储
                         LoginResponse {
                             success: true,
+                            full_name:institution.full_name.clone(),
                             institution_id: Some(id),
                             message: "登录成功".to_string(),
                         }
@@ -353,6 +361,7 @@ impl AdminService {
                         LoginResponse {
                             success: false,
                             institution_id: None,
+                            full_name:"".to_string(),
                             message: "密码错误".to_string(),
                         }
                     }
@@ -360,6 +369,7 @@ impl AdminService {
                     LoginResponse {
                         success: false,
                         institution_id: None,
+                        full_name:"".to_string(),
                         message: "机构不存在".to_string(),
                     }
                 }
@@ -367,6 +377,7 @@ impl AdminService {
             None => LoginResponse {
                 success: false,
                 institution_id: None,
+                full_name:"".to_string(),
                 message: "机构不存在".to_string(),
             },
         }
@@ -416,44 +427,5 @@ impl AdminService {
             institution.last_active = time();
             // 这里可以添加事件日志记录逻辑
         }
-    }
-}
-
-// 实现对外公开的异步接口包装
-impl AdminService {
-    pub async fn register_institution_async(&mut self, request: RegisterRequest) -> Result<Principal, String> {
-        self.register_institution(request)
-    }
-
-    pub async fn update_status_async(&mut self, id: Principal, is_active: bool) -> Result<(), String> {
-        self.update_status(id, is_active)
-    }
-
-    pub async fn update_credit_score_async(&mut self, id: Principal, score: u64) -> Result<(), String> {
-        self.update_credit_score(id, score)
-    }
-
-    pub async fn process_dcc_recharge_async(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
-        self.process_dcc_recharge(id, request)
-    }
-
-    pub async fn process_dcc_deduction_async(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
-        self.process_dcc_deduction(id, request)
-    }
-
-    pub async fn update_usdt_rate_async(&mut self, rate: f64) -> Result<(), String> {
-        self.update_usdt_rate(rate)
-    }
-
-    pub async fn login_async(&mut self, request: LoginRequest) -> LoginResponse {
-        self.institution_login(request)
-    }
-
-    pub async fn change_password_async(&mut self, id: Principal, old_password: String, new_password: String) -> Result<(), String> {
-        self.change_password(id, old_password, new_password)
-    }
-
-    pub async fn reset_password_async(&mut self, id: Principal) -> Result<String, String> {
-        self.reset_password(id)
     }
 }

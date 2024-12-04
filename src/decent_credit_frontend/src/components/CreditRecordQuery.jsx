@@ -8,9 +8,11 @@ import {
   AlertOutlined, EyeOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { queryRecordsByUserDid, queryRecordDetails, getRiskAssessment } from '../services/queryRecordService';
+import { queryRecordsByUserDid } from '../services/institutionQueryRecordService';
+import { queryRecordList, getRiskAssessment } from '../services/institutionQueryRecordService';
 
-const { Title, Paragraph } = Typography;
+import RiskAssessmentReport from './RiskAssessmentReport';
+
 const CreditRecordQuery = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,7 @@ const CreditRecordQuery = () => {
   const [currentUserDid, setCurrentUserDid] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [assessmentLoading, setAssessmentLoading] = useState(false);
+  const [userDid, setUserDid] = useState('');
 
   // 根据记录类型获取显示文本和颜色
   const getRecordTypeConfig = (type) => {
@@ -41,11 +44,12 @@ const CreditRecordQuery = () => {
       currency: 'CNY'
     }).format(amount);
   };
-
   const handleSearch = async (values) => {
     setLoading(true);
     setSearchPerformed(true);
     try {
+       // 保存 userDid 到状态中
+       setUserDid(values.userDid);
       const response = await queryRecordsByUserDid(values.userDid);
       console.log(response)
       if (response.success) {
@@ -68,12 +72,12 @@ const CreditRecordQuery = () => {
   const handleViewDetails = async (record) => {
     setDetailLoading(true);
     try {
-      const loginInstitutionId = localStorage.getItem('institutionId');
+      const loginInstitutionId = localStorage.getItem('userPrincipal');
       if (!loginInstitutionId) {
         throw new Error('请重新登录');
       }
       
-      const response = await queryRecordDetails(loginInstitutionId, currentUserDid);
+      const response = await queryRecordList(loginInstitutionId, currentUserDid);
       console.log('Details response:', response);
   
       // 检查响应数据
@@ -114,12 +118,12 @@ const CreditRecordQuery = () => {
   const handleRiskAssessment = async () => {
     setAssessmentLoading(true);
     try {
-      const loginInstitutionId = localStorage.getItem('institutionId');
+      const loginInstitutionId = localStorage.getItem('userPrincipal');
       if (!loginInstitutionId) {
         throw new Error('请重新登录');
       }
       console.log(loginInstitutionId)
-      const response = await getRiskAssessment(loginInstitutionId);
+      const response = await getRiskAssessment(loginInstitutionId,userDid);
       console.log(response)
       if (response.success) {
         setRiskAssessment(response.data);
@@ -238,173 +242,149 @@ const CreditRecordQuery = () => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">信用记录查询</h2>
-        <p className="text-gray-600">查询用户的历史信用记录信息</p>
-      </div>
+    <div className="space-y-4"> {/* 改外层容器 */}
+  <div>
+    <h2 className="text-xl font-semibold text-gray-200 mb-2">信用记录查询</h2>
+    <p className="text-gray-400">查询和管理用户的历史信用记录信息</p>
+  </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Card title="查询条件" className="shadow-sm">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSearch}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Form.Item
-                name="userDid"
-                label="用户DID"
-                rules={[{ required: true, message: '请输入用户DID' }]}
-              >
-                <Input 
-                  prefix={<SearchOutlined className="text-gray-400" />} 
-                  placeholder="请输入用户DID"
-                />
-              </Form.Item>
-
-              <Form.Item className="md:self-end">
-                <Button 
-                  type="primary" 
-                  icon={<SearchOutlined />}
-                  htmlType="submit"
-                  loading={loading}
-                  block
-                >
-                  查询记录
-                </Button>
-              </Form.Item>
-            </div>
-          </Form>
-        </Card>
-
-        <Card 
-          title={
-            <div className="flex justify-between items-center">
-              <Space><FileTextOutlined /> 查询结果</Space>
-              {records.length > 0 && (
-                <Button
-                  type="primary"
-                  icon={<SafetyCertificateOutlined />}
-                  onClick={handleRiskAssessment}
-                  loading={assessmentLoading}
-                >
-                  进行用户风险评估
-                </Button>
-              )}
-            </div>
-          }
-          className="shadow-sm"
+      <Card className="bg-black/20 border-gray-700">
+  <Form
+    form={form}
+    layout="inline"
+    className="w-full"
+    onFinish={handleSearch}
+  >
+    <Space wrap className="w-full justify-between">
+      <Space wrap>
+        <Form.Item
+          name="userDid"
+          label={<span className="text-gray-300">用户DID</span>}
+          rules={[{ required: true, message: '请输入用户DID' }]}
         >
-          {!searchPerformed ? (
-            <Empty description="请输入查询条件" />
-          ) : records.length === 0 ? (
-            <Empty description="未找到相关记录" />
-          ) : (
-            <Table
-              columns={columns}
-              dataSource={records}
-              rowKey={(record) => `${record.institution_id}_${record.timestamp}`}
-              size="middle"
-              pagination={false}
-            />
-          )}
-        </Card>
+          <Input 
+            prefix={<SearchOutlined className="text-gray-400" />} 
+            placeholder="请输入用户DID"
+            className="bg-gray-800 border-gray-700 text-gray-200"
+          />
+        </Form.Item>
+      </Space>
+
+      <Form.Item>
+        <Space>
+          <Button 
+            type="primary" 
+            icon={<SearchOutlined />}
+            htmlType="submit"
+            loading={loading}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+          >
+            查询记录
+          </Button>
+          <Button 
+            onClick={() => form.resetFields()}
+            className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+          >
+            重置
+          </Button>
+        </Space>
+      </Form.Item>
+        </Space>
+      </Form>
+    </Card>
+
+    <Card 
+  className="bg-black/20 border-gray-700"
+  title={
+    <div className="flex justify-between items-center text-gray-200">
+      <Space><FileTextOutlined /> 查询结果</Space>
+      {records.length > 0 && (
+        <Button
+          type="primary"
+          icon={<SafetyCertificateOutlined />}
+          onClick={handleRiskAssessment}
+          loading={assessmentLoading}
+          className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+        >
+          进行用户风险评估
+        </Button>
+      )}
+    </div>
+  }
+>
+  {!searchPerformed ? (
+    <Empty description={<span className="text-gray-400">请输入查询条件</span>} />
+  ) : records.length === 0 ? (
+    <Empty description={<span className="text-gray-400">未找到相关记录</span>} />
+  ) : (
+    <Table
+      columns={columns}
+      dataSource={records}
+      rowKey={(record) => `${record.institution_id}_${record.timestamp}`}
+      pagination={{
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total) => `共 ${total} 条记录`,
+        pageSize: 10,
+        className: "px-4 py-3"
+      }}
+      className="custom-table"
+    />
+  )}
+</Card>
       </div>
 
-      {/* 详情模态框 */}
       <Modal
-        title={
-          <Space>
-            <FileTextOutlined />
-            信用记录详情 - {currentDetails?.institution_name || ''}
-          </Space>
-        }
-        open={detailVisible}
-        onCancel={() => setDetailVisible(false)}
-        width={900}
-        footer={[
-          <Button key="close" onClick={() => setDetailVisible(false)}>
-            关闭
-          </Button>
-        ]}
-      >
-        {currentDetails ? (
-          <Table
-            columns={detailColumns}
-            dataSource={currentDetails.records}
-            rowKey={(record) => `${record.id}_${record.timestamp}`}
-            pagination={false}
-            size="middle"
-          />
-        ) : (
-          <Empty description="暂无详细信息" />
-        )}
-      </Modal>
+  title={
+    <Space className="text-gray-200">
+      <FileTextOutlined />
+      信用记录详情 - {currentDetails?.institution_name || ''}
+    </Space>
+  }
+  open={detailVisible}
+  onCancel={() => setDetailVisible(false)}
+  width={900}
+  footer={[
+    <Button 
+      key="close" 
+      onClick={() => setDetailVisible(false)}
+      className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+    >
+      关闭
+    </Button>
+  ]}
+  className="dark-modal"
+>
+  {currentDetails ? (
+    <Table
+      columns={detailColumns}
+      dataSource={currentDetails.records}
+      rowKey={(record) => `${record.id}_${record.timestamp}`}
+      pagination={false}
+      className="custom-table"
+    />
+  ) : (
+    <Empty description={<span className="text-gray-400">暂无详细信息</span>} />
+  )}
+</Modal>
 
-      {/* 风险评估模态框 */}
-      <Modal
-        title={
-          <Space>
-            <AlertOutlined />
-            用户风险评估报告
-          </Space>
-        }
-        open={riskAssessmentVisible}
-        onCancel={() => setRiskAssessmentVisible(false)}
-        width={800}
-        footer={null}
-      >
-        {riskAssessment && (
-          <div>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <Statistic
-                title="信用评分"
-                value={riskAssessment.creditScore}
-                suffix="/100"
-                valueStyle={
-                  riskAssessment.creditScore >= 80 
-                    ? { color: '#3f8600' }
-                    : riskAssessment.creditScore >= 60
-                      ? { color: '#faad14' }
-                      : { color: '#cf1322' }
-                }
-              />
-              <Statistic
-                title="风险等级"
-                value={riskAssessment.riskLevel}
-                valueStyle={
-                  riskAssessment.riskLevel === '低风险' 
-                    ? { color: '#3f8600' }
-                    : riskAssessment.riskLevel === '中风险'
-                      ? { color: '#faad14' }
-                      : { color: '#cf1322' }
-                }
-              />
-            </div>
-
-            <Divider orientation="left">评估详情</Divider>
-            <List
-              dataSource={riskAssessment.assessmentDetails}
-              renderItem={item => (
-                <List.Item>
-                  <Typography.Text>{item}</Typography.Text>
-                </List.Item>
-              )}
-            />
-
-            <Divider orientation="left">改进建议</Divider>
-            <List
-              dataSource={riskAssessment.suggestions}
-              renderItem={item => (
-                <List.Item>
-                  <Typography.Text>{item}</Typography.Text>
-                </List.Item>
-              )}
-            />
-          </div>
-        )}
-      </Modal>
+{/* 风险评估模态框 */}
+<Modal
+  title={
+    <Space className="text-gray-200">
+      <AlertOutlined />
+      用户风险评估报告
+    </Space>
+  }
+  open={riskAssessmentVisible}
+  onCancel={() => setRiskAssessmentVisible(false)}
+  width={800}
+  footer={null}
+  className="dark-modal"
+>
+  {riskAssessment && <RiskAssessmentReport data={riskAssessment} showCard={false} />}
+</Modal>
     </div>
   );
 };

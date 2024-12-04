@@ -2,6 +2,7 @@ use candid::Principal;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use ic_cdk::api::time;
+use crate::utils::error::Error;
 
 use crate::models::{
     dashboard::*,

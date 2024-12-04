@@ -1,21 +1,7 @@
 import { Principal } from '@dfinity/principal';
-import { createActor } from './IDL';
+import { getActor } from './IDL';
 
-async function getActor() {
-  try {
-    const actor = await createActor();
-    return {
-      success: true,
-      actor
-    };
-  } catch (error) {
-    console.error('Failed to create actor:', error);
-    return {
-      success: false,
-      error: error.message || '创建 Actor 实例失败'
-    };
-  }
-}
+
 
 // 获取信用扣分记录列表
 export async function getCreditRecords(institutionId = '') {
@@ -40,7 +26,7 @@ export async function getCreditRecords(institutionId = '') {
       }
     }
 
-    const records = await actorResult.actor.get_credit_records(option);
+    const records = await actorResult.get_credit_records(option);
     
     const formattedRecords = records
       .map(formatCreditRecord)
@@ -103,7 +89,7 @@ export async function createCreditRecord(record) {
   }
 }
 
-export async function queryRecordDetails(institutionId, userDid) {
+export async function queryRecordList(institutionId, userDid) {
   const actorResult = await getActor();
   if (!actorResult.success) {
     return {
@@ -114,7 +100,7 @@ export async function queryRecordDetails(institutionId, userDid) {
 
   try {
     const institutionPrincipal = Principal.fromText(institutionId);
-    const details = await actorResult.actor.query_institution_records_details(institutionPrincipal, userDid);
+    const details = await actorResult.actor.query_institution_records_list(institutionPrincipal, userDid);
     
     if ('Err' in details) {
       return {
@@ -145,7 +131,9 @@ export async function getRiskAssessment(userDid) {
   }
 
   try {
-    const result = await actorResult.actor.get_risk_assessment(userDid);
+    const institutionPrincipal = Principal.fromText(institutionId);
+
+    const result = await actorResult.actor.get_risk_assessment(institutionPrincipal,userDid);
     
     if ('Err' in result) {
       return {
@@ -196,6 +184,6 @@ function formatCreditRecord(raw) {
 export default {
   getCreditRecords,
   createCreditRecord,
-  queryRecordDetails,
+  queryRecordList,
   getRiskAssessment
 };

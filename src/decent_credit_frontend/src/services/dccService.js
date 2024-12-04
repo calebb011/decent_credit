@@ -1,9 +1,9 @@
 import { Principal } from '@dfinity/principal';
-import { createActor } from './IDL';
+import { getActor } from './IDL';
 
 // DCC代币充值
 export async function rechargeDCC(institutionId, { dccAmount, usdtAmount, txHash, remarks }) {
-  const actor = await createActor();
+  const actor = await getActor();
   try {
     // 记录代币交易（买入）
     await actor.record_token_trading(
@@ -35,7 +35,7 @@ export async function rechargeDCC(institutionId, { dccAmount, usdtAmount, txHash
 
 // DCC代币扣除
 export async function deductDCC(institutionId, { dccAmount, usdtAmount, txHash, remarks }) {
-  const actor = await createActor();
+  const actor = await getActor();
   try {
     // 记录代币交易（卖出）
     await actor.record_token_trading(

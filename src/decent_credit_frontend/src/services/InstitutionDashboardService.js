@@ -1,66 +1,20 @@
 // dashboardService.js
-import { createActor } from './IDL';
+import { getActor } from './IDL';
 import { Principal } from '@dfinity/principal';
 
-// 模拟数据
-const MOCK_DATA = {
-  success: true,
-  data: {
-    basicInfo: {
-      name: "测试金融机构",
-      id: "bkyz2-fmaaa-aaaaa-qaaaq-cai",
-      status: "active",
-      joinTime: "2024-01-15T08:00:00.000Z",
-    },
-    submissionStats: {
-      todaySubmissions: 156,
-      monthlySubmissions: 3478,
-      totalSubmissions: 12567,
-    },
-    usageStats: {
-      todayQueries: 892,
-      monthlyQueries: 15234,
-      totalQueries: 45678,
-      apiQuota: {
-        used: 15234,
-        total: 20000,
-      },
-    },
-    tokenInfo: {
-      balance: 25678,
-      monthlyEarned: 4567,
-      monthlySpent: 2345,
-    },
-    rewardInfo: {
-      todayReward: 234,
-      totalReward: 12456,
-    },
-    systemStatus: {
-      apiHealth: true,
-      hasAnnouncement: true,
-    }
-  }
-};
 
 /**
  * 获取机构概览页面数据
  * @param {boolean} useMock 是否使用模拟数据
  * @returns {Promise<DashboardData>} 机构概览数据
  */
-export async function getDashboardData(useMock =false) {
-    if (useMock) {
-        // 返回模拟数据
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(MOCK_DATA);
-            }, 0); // 添加500ms延迟模拟网络请求
-        });
-    }
+export async function getDashboardData() {
+    
 
-    const actor = await createActor();
     try {
+        const actor = await getActor();
         // 获取当前机构ID
-        const institutionId = localStorage.getItem('institutionId');
+        const institutionId = localStorage.getItem('userPrincipal');
         if (!institutionId) {
             throw new Error('未找到机构ID');
         }

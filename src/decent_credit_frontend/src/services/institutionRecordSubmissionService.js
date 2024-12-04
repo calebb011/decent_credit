@@ -1,6 +1,7 @@
 // creditRecordService.js
-import { createActor } from './IDL';
+import { createActor,getActor } from './IDL';
 import { Principal } from '@dfinity/principal';
+import { authClientService } from './authClient';
 
 
 /**
@@ -54,7 +55,7 @@ function getStatusString(status) {
 function formatRecordRequest(formValues) {
   const recordType = formValues.recordType.toLowerCase();
   let request = {
-    institution_id: Principal.fromText(localStorage.getItem('institutionId')),
+    institution_id: Principal.fromText(localStorage.getItem('userPrincipal')),
     record_type: getRecordType(recordType),
     user_did: formValues.userDid,
     event_date: formValues.eventDate.format('YYYY-MM-DD'),
@@ -111,14 +112,14 @@ export const submitRecord = async (formValues) => {
     console.log('Submitting record request:', JSON.stringify(request, (_, v) =>
       typeof v === 'bigint' ? v.toString() : v
     ));
-    
-    const actor = await createActor();
+    const actor = await getActor();
+
     const response = await actor.submit_record(request);
-    
+    console.log(response)
+
     if ('Err' in response) {
       throw new Error(response.Err);
     }
-
     return {
       success: true,
       data: {
@@ -172,7 +173,7 @@ export const submitRecordsBatch = async (records) => {
     const formattedRecords = records.map(formatBatchRecord);
     console.log('Submitting batch records:', formattedRecords);
 
-    const actor = await createActor();
+    const actor = await getActor();
     const batchRequest = { records: formattedRecords };
     const response = await actor.submit_records_batch(batchRequest);
 
@@ -189,7 +190,7 @@ export const submitRecordsBatch = async (records) => {
           recordId: record.record_id,
           timestamp: Number(response.Ok.timestamp),  // 转换为 BigInt
           record_type: getRecordTypeNumber(record.recordType), // 新增
-  user_id: new Uint8Array(Buffer.from(record.userDid || '', 'utf-8')), // 新增
+      user_id: new Uint8Array(Buffer.from(record.userDid || '', 'utf-8')), // 新增
           status: getStatusString(record.status),
           rewardAmount: record.reward_amount ? Number(record.reward_amount) : null
         }))

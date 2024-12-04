@@ -46,6 +46,7 @@ pub struct LoginRequest {
 pub struct LoginResponse {
     pub success: bool,
     pub institution_id: Option<Principal>,
+    pub full_name:String,
     pub message: String,
 }
 
@@ -55,4 +56,5 @@ pub struct RegisterRequest {
     pub name: String,
     pub full_name: String,
     pub password: Option<String>, // 可选密码，如果不提供则使用默认密码
+    pub principal: String
 }

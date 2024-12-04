@@ -2,25 +2,15 @@ use candid::{CandidType, Principal};
 use ic_cdk::api::{call, time};
 use std::collections::HashMap;
 use std::cell::RefCell;
+use log::{info, debug, warn, error};
 use crate::services::record_service::call::call;
 use crate::services::crypto_service::{self, CryptoService, with_crypto_service};  // 修改这里
 use crate::services::storage_service::{self, with_storage_service};  // 修改这里
 use crate::services::zk_proof_service::ZKProofService;
-use crate::services::admin_service::ADMIN_SERVICE;  // 移到顶部
+use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
+use crate::utils::error::Error;
 
-use crate::models::credit::{
-    RecordData,
-    CreditRecord,
-    RecordQueryParams,
-    RecordStatistics,
-    RecordType,
-    RecordContent,
-    RecordStatus,
-    RecordSubmissionRequest
-};
-// 导入其他服务
-
-
+use crate::models::record::*;
 
 thread_local! {
     pub static RECORD_SERVICE: RefCell<RecordService> = RefCell::new(
@@ -37,29 +27,67 @@ pub struct RecordService {
     proofs: HashMap<String, Vec<u8>>,      // 添加这个字段
     zk_service: ZKProofService,
     crypto_service:CryptoService,
+    credit_records: Vec<CreditRecord>,
+    deduction_records: Vec<CreditDeductionRecord>,
+    institution_records: HashMap<Principal, Vec<CreditRecord>>,
+    upload_history: Vec<UploadRecord>,
 }
 
 impl RecordService {
+  
+
     pub fn new(storage_canister_id: Principal) -> Self {
         Self {
             storage_canister_id,
             records: HashMap::new(),
             crypto_service: CryptoService::new(),
             proofs: HashMap::new(),
-            zk_service: ZKProofService::new()
+            zk_service: ZKProofService::new(),
+            credit_records: Vec::new(),
+            deduction_records: Vec::new(),
+            institution_records: HashMap::new(),
+            upload_history: Vec::new(),
         }
     }
+    pub fn get_record_statistics(
+        &self,
+        institution_id: Option<Principal>
+    ) -> Result<RecordStatistics, String> {
+        let records = match institution_id {
+            Some(id) => self.credit_records
+                .iter()
+                .filter(|r| r.institution_id == id)
+                .collect::<Vec<_>>(),
+            None => self.credit_records.iter().collect(),
+        };
+
+        Ok(RecordStatistics {
+            total_records: records.len() as u64,
+            pending_records: records.iter().filter(|r| matches!(r.status, RecordStatus::Pending)).count() as u64,
+            confirmed_records: records.iter().filter(|r| matches!(r.status, RecordStatus::Confirmed)).count() as u64,
+            rejected_records: records.iter().filter(|r| matches!(r.status, RecordStatus::Rejected)).count() as u64,
+            total_rewards: records.iter().filter_map(|r| r.reward_amount).sum(),
+        })
+    }
+
+    
     pub fn submit_record(&mut self, request: RecordSubmissionRequest) -> Result<String, Error> {
         // 校验内容
-        self.validate_record_content(&request.record_type, &request.content)?;
-         // 获取机构信息并提取机构名称
+        self.validate_record_content(
+            &request.record_type,
+            &request.content,
+            request.institution_id,
+            request.user_did.clone(),
+            request.event_date.clone()
+        )?;
+     // 获取机构信息并提取机构名称
         let institution = ADMIN_SERVICE.with(|service| {
             let service = service.borrow();
             service.get_institution(request.institution_id)
                 .ok_or_else(|| Error::InvalidData("机构不存在".to_string()))
         })?;  // 注意这里添加了 ? 操作符
         
-        let institution_name = institution.name.clone();  // 假设机构结构中有 name 字段
+        let institution_name = institution.name.clone();  
         let institution_full_name= institution.full_name.clone();
         // 序列化内容
         let content_bytes = candid::encode_one(&request.content)
@@ -237,7 +265,7 @@ impl RecordService {
         }
     }
 
-    pub  fn get_record(&mut self, user_did: String) ->Vec<CreditRecord> {
+    pub  fn get_record_userId(&mut self, user_did: String) ->Vec<CreditRecord> {
         let mut result = Vec::new();
         
         // 1. 从本地缓存获取记录
@@ -268,37 +296,169 @@ impl RecordService {
         result
     }
     
-
-    // validate_record_content 方法的实现
+    // failed 
+    pub fn get_failed_records(
+        &mut self,
+        institution_id: Principal,
+    ) -> Result<InstitutionRecordResponse, String> {
+        
+        // 2. 获取机构信息
+        let institution = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(institution_id)
+                .ok_or_else(|| "机构不存在".to_string())
+        })?;
+        info!("get_failed_records for institution full_name: {}", institution.full_name);
+    
+        // 3. 调用 RECORD_SERVICE 获取记录
+        let records = RECORD_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            service.get_failed_records_storage(institution_id)
+        });
+    
+    
+        // 5. 返回响应
+        Ok(InstitutionRecordResponse {
+            institution_id,
+            user_did: institution.full_name.clone(),
+            institution_name: institution.full_name.clone(),
+            records,
+        })
+    }
+    pub fn get_failed_records_storage(&mut self, institution_id: Principal) -> Vec<CreditRecord> {
+        let mut result = Vec::new();
+        
+        // 1. 从本地缓存获取失败的记录
+        let failed_records: Vec<&CreditRecord> = self.records.values()
+            .filter(|r| {
+                r.institution_id == institution_id && 
+                r.status == RecordStatus::Rejected  // 只获取失败的记录
+            })
+            .collect();
+        
+        for record in failed_records {
+            // 2. 从链上验证记录有效性
+            if let Some((storage_id, proof)) = with_storage_service(|service| {
+                service.get_chain_data(&record.id)
+                    .map(|(sid, p)| (sid.clone(), p.clone()))
+            }) {
+                // 3. 从 Canister 获取加密数据
+                if let Some(encrypted_data) = with_storage_service(|service| {
+                    service.get_data(&storage_id).cloned()
+                }) {
+                        result.push(record.clone());
+                } else {
+                    ic_cdk::println!("No encrypted data found for storage_id: {}", storage_id);
+                }
+            } else {
+                ic_cdk::println!("No chain data found for record: {}", record.id);
+            }
+        }
+        
+        // 按时间戳降序排序，最新的失败记录在前面
+        result.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+        
+        result
+    }
     pub fn validate_record_content(
-        &self,
+        &mut self,
         record_type: &RecordType,
-        content: &RecordContent
+        content: &RecordContent,
+        institution_id: Principal,
+        user_did: String,
+        event_date: String
     ) -> Result<(), Error> {
-        match (record_type, content) {
+        // 1. 首先进行基础验证
+        let validation_result = match (record_type, content) {
             (RecordType::LoanRecord, RecordContent::Loan(loan)) => {
                 if loan.amount == 0 || loan.loan_id.is_empty() || loan.term_months == 0 {
-                    return Err(Error::InvalidData("Invalid loan data".to_string()));
-                }
-                if loan.interest_rate <= 0.0 || loan.interest_rate > 100.0 {
-                    return Err(Error::InvalidData("Invalid interest rate".to_string()));
+                    Err("Invalid loan data: missing required fields")
+                } else if loan.interest_rate <= 0.0 || loan.interest_rate > 100.0 {
+                    Err("Invalid loan data: interest rate out of range")
+                } else {
+                    Ok(())
                 }
             },
             (RecordType::RepaymentRecord, RecordContent::Repayment(repayment)) => {
                 if repayment.amount == 0 || repayment.loan_id.is_empty() {
-                    return Err(Error::InvalidData("Invalid repayment data".to_string()));
+                    Err("Invalid repayment data: missing required fields")
+                } else {
+                    Ok(())
                 }
             },
             (RecordType::NotificationRecord, RecordContent::Notification(notification)) => {
                 if notification.amount == 0 || notification.days == 0 {
-                    return Err(Error::InvalidData("Invalid notification data".to_string()));
+                    Err("Invalid notification data: missing required fields")
+                } else {
+                    Ok(())
                 }
             },
-            _ => return Err(Error::InvalidData("Record type mismatch".to_string()))
+            _ => Err("Record type mismatch")
+        };
+    
+        // 2. 如果验证失败，创建失败记录并存储
+        if let Err(error_msg) = validation_result {
+            // 获取机构信息
+            let institution = ADMIN_SERVICE.with(|service| {
+                let service = service.borrow();
+                service.get_institution(institution_id)
+                    .ok_or_else(|| Error::InvalidData("机构不存在".to_string()))
+            })?;
+    
+            let record_id = self.generate_record_id();
+            
+            // 序列化内容并加密
+            let content_bytes = candid::encode_one(&content)
+                .map_err(|_| Error::SerializationFailed)?;
+    
+            let encrypted_content = with_crypto_service(|service| {
+                service.encrypt(&content_bytes)
+            }).map_err(|e| Error::EncryptionFailed(format!("Failed to encrypt: {:?}", e)))?;
+    
+            let proof = self.zk_service.generate_proof(&content_bytes);
+    
+            // 创建失败记录
+            let failed_record = CreditRecord {
+                id: record_id.clone(),
+                institution_id,
+                institution_name: institution.name,
+                institution_full_name: institution.full_name,
+                record_type: record_type.clone(),
+                user_did,
+                event_date,
+                content: content.clone(),
+                encrypted_content: encrypted_content.clone(),
+                proof: proof.clone(),
+                canister_id: self.storage_canister_id.to_string(),
+                timestamp: time(),
+                status: RecordStatus::Rejected,
+                reward_amount: None
+            };
+    
+            // 保存记录到本地和链上
+            self.records.insert(record_id.clone(), failed_record.clone());
+    
+            let storage_id = with_storage_service(|service| {
+                service.store_data(encrypted_content)
+            }).map_err(|_| Error::StorageFailed)?;
+    
+            with_storage_service(|service| {
+                service.store_on_chain(record_id, storage_id, proof)
+            }).map_err(|_| Error::StorageFailed)?;
+    
+            // 记录API调用
+            ADMIN_SERVICE.with(|service| {
+                let mut service = service.borrow_mut();
+                service.institution_record_data_upload(institution_id, 1);
+            });
+    
+            // 返回验证错误
+            return Err(Error::ValidationError(error_msg.to_string()));
         }
+    
+        // 3. 验证通过
         Ok(())
     }
-
     // store_encrypted_data 方法的实现
     pub async fn store_encrypted_data(&self, data: Vec<u8>) -> Result<String, Error> {
         let result: Result<(String,), _> = call(
@@ -313,17 +473,7 @@ impl RecordService {
         }
     }
 
-    // calculate_reward 方法的实现
-    // pub fn calculate_reward(&self, record_type: &RecordType, content: &RecordContent) -> u64 {
-        // match (record_type, content) {
-        //     (RecordType::LoanRecord, RecordContent::Loan(loan)) => {
-        //         // 根据贷款金额计算奖励
-        //         (loan.amount / 10000) * 1000 // 每万元奖励1000代币
-        //     },
-        //     (RecordType::RepaymentRecord, _) => 500_000, // 0.5 DCC
-        //     (RecordType::NotificationRecord, _) => 800_000, // 0.8 DCC
-        // }
-    // }
+
 
     // generate_record_id 方法的实现
     pub fn generate_record_id(&self) -> String {
@@ -358,21 +508,166 @@ impl RecordService {
     }
 
     
+
+    pub fn get_institution_records(
+        &mut self,
+        institution_id: Principal,
+        user_did: &str,
+    ) -> Result<InstitutionRecordResponse, String> {
+        // 1. 验证机构信息
+        let institution = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(institution_id)
+                .ok_or_else(|| "机构不存在".to_string())
+        })?;
+        
+        info!("Fetching records for institution: {}", institution.full_name);
+    
+        // 2. 扣减查询代币
+        self.deduct_query_token(institution_id, user_did.to_string())
+            .map_err(|e| format!("Token deduction failed: {}", e))?;
+    
+        // 3. 获取用户记录
+        let records = self.get_record_userId(user_did.to_string());
+        
+        if records.is_empty() {
+            info!("No records found for user: {}", user_did);
+        } else {
+            info!("Found {} records for user", records.len());
+        }
+    
+        // 4. 记录API调用
+        ADMIN_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            service.institution_record_api_call(institution_id, 1);
+        });
+    
+        // 5. 返回响应
+        Ok(InstitutionRecordResponse {
+            institution_id,
+            institution_name: institution.full_name,
+            user_did: user_did.to_string(),
+            records
+        })
+    }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    pub fn create_deduction_record(
+        &mut self,
+        operator: Principal,
+        request: CreateCreditRecordRequest
+    ) -> Result<CreditDeductionRecord, String> {
+        // 1. 通过 ADMIN_SERVICE 获取机构信息和分数
+        let current_score = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(request.institution_id)
+                .map(|inst| inst.credit_score.score)
+                .ok_or_else(|| "机构不存在".to_string())
+        })?;
+        
+        // 2. 检查扣分后是否会小于0
+        if current_score < request.deduction_points as u64 {
+            return Err(format!(
+                "扣分分数({})大于当前信用分数({})", 
+                request.deduction_points,
+                current_score
+            ));
+        }
+
+        // 3. 更新机构分数
+        let new_score = current_score - request.deduction_points as u64;
+        ADMIN_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            service.update_credit_score(request.institution_id, new_score)
+        })?;
+
+        // 4. 获取机构名称并创建扣分记录
+        let institution_name = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution(request.institution_id)
+                .map(|inst| inst.name)
+                .unwrap_or_else(|| "未知机构".to_string())
+        });
+
+        let record = CreditDeductionRecord {
+            id: format!("{}", self.deduction_records.len() + 1),
+            record_id: format!("CR{}{:03}", 
+                time() / 1_000_000_000,
+                self.deduction_records.len() + 1
+            ),
+            institution_id: request.institution_id,
+            institution_name,
+            deduction_points: request.deduction_points,
+            reason: request.reason,
+            data_quality_issue: request.data_quality_issue,
+            created_at: time(),
+            operator_id: operator,
+            operator_name: "管理员".to_string(), 
+        };
+
+        // 5. 保存记录
+        self.deduction_records.push(record.clone());
+        
+        Ok(record)
+    }
+
+    pub fn deduct_query_token(
+        &mut self,
+        institution_id: Principal,
+        user_did: String
+    ) -> Result<bool, String> {
+        // 1. 从 ADMIN_SERVICE 获取机构当前代币余额
+        let balance = ADMIN_SERVICE.with(|service| {
+            let service = service.borrow();
+            service.get_institution_balance(institution_id)
+                .map(|balance| balance.dcc)
+                .map_err(|e| e.to_string())
+        })?;
+        
+        // 2. 扣减代币
+        ADMIN_SERVICE.with(|service| {
+            let mut service = service.borrow_mut();
+            let request = DCCTransactionRequest {
+                dcc_amount: 1,
+                usdt_amount: 0.0,  // 不涉及USDT
+                tx_hash: format!("QRY{}_{}", 
+                    time() / 1_000_000_000,
+                    user_did.chars().take(8).collect::<String>()
+                ),
+                remarks: format!("查询用户{}的信用记录", user_did),
+                created_at: time(),
+            };
+            
+            service.process_dcc_deduction(institution_id, request)
+        })?;
+
+        Ok(true)
+    }
+    pub fn get_deduction_records(&self, institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {
+        match institution_id {
+            Some(id) => self.deduction_records
+                .iter()
+                .filter(|record| record.institution_id == id)
+                .cloned()
+                .collect(),
+            None => self.deduction_records.clone(),
+        }
+    }
+
 }
 
-#[derive(CandidType, Debug)]
-pub enum Error {
-    InvalidData(String),
-    SerializationFailed,
-    EncryptionFailed(String),
-    StorageFailed,
-    InvalidProof,
-    RecordNotFound,
-    VerificationFailed(String),
-    InvalidStatus,
-    NotAuthorized,
-    // 添加其他你需要的错误类型
-}
 
 // 扩展 RecordType
 impl RecordType {
@@ -390,20 +685,4 @@ pub fn init_record_service() {
         let mut service = service.borrow_mut();
         service.records.clear();
     });
-}
-
-impl Error {
-    pub fn as_str(&self) -> &str {
-        match self {
-            Error::InvalidData(msg) => msg,
-            Error::SerializationFailed => "Serialization failed",
-            Error::EncryptionFailed(msg) => msg,
-            Error::StorageFailed => "Storage operation failed",
-            Error::InvalidProof => "Invalid proof",
-            Error::RecordNotFound => "Record not found",
-            Error::VerificationFailed(msg) => msg,
-            Error::InvalidStatus => "Invalid record status",
-            Error::NotAuthorized => "Not authorized",
-        }
-    }
 }

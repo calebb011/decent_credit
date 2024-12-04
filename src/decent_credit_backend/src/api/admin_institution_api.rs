@@ -3,8 +3,8 @@ use ic_cdk_macros::*;
 use log::{info, debug, warn, error};  // 替换原来的 log_info
 use serde::Serialize;
 
-use crate::services::admin_service::ADMIN_SERVICE;
-use crate::models::credit::{DCCTransactionRequest, BalanceResponse};
+use crate::services::admin_institution_service::ADMIN_SERVICE;
+use crate::models::record::{DCCTransactionRequest, BalanceResponse};
 use crate::models::dashboard::{AdminDashboardData};
 use crate::models::institution::{
     Institution, LoginRequest, LoginResponse, RegisterRequest
@@ -58,7 +58,6 @@ pub async fn update_institution_status(id: Principal, is_active: bool) -> Result
 #[query]
 pub fn get_institution(id: Principal) -> Option<Institution> {
     debug!("Fetching institution info for ID: {}", id.to_text());
-    
     ADMIN_SERVICE.with(|service| {
         let service = service.borrow();
         match service.get_institution(id) {

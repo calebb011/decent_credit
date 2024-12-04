@@ -13,6 +13,7 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
     name: '',
     full_name: '',
     password: '',
+    principal: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -22,15 +23,17 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
   useEffect(() => {
     if (institution) {
       setFormData({
-        name: institution.name,
-        full_name: institution.full_name,
+        name: institution.name || '',
+        full_name: institution.full_name || '',
         password: '',
+        principal: institution.principal || ''
       });
     } else {
       setFormData({
         name: '',
         full_name: '',
         password: '',
+        principal: ''
       });
     }
   }, [institution]);
@@ -39,8 +42,6 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
     e.preventDefault();
     setError('');
     setLoading(true);
-
-
 
     try {
       await onSubmit(formData);
@@ -67,6 +68,23 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
 
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Principal ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.principal}
+                  onChange={e => setFormData(prev => ({ ...prev, principal: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="请输入机构提供的Principal ID"
+                  required
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  请向机构索要Principal ID
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   机构简称 <span className="text-red-500">*</span>
@@ -99,7 +117,7 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  密码 <span className="text-red-500">*</span>
+                  密码
                 </label>
                 <div className="relative">
                   <input
@@ -108,7 +126,6 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
                     onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder={type === 'login' ? "请输入登录密码" : "请设置密码"}
-                    required
                   />
                   <button
                     type="button"
@@ -124,8 +141,6 @@ const InstitutionDialog = ({ isOpen, onClose, institution, onSubmit, type = 'reg
                   </p>
                 )}
               </div>
-
-
             </div>
 
             {error && (

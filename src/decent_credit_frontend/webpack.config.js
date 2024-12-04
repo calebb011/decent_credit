@@ -1,46 +1,37 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const httpProxy = require('http-proxy'); // 需要添加这个导入
 
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
-  const canisters = {
-    decent_credit_backend: { local: "bkyz2-fmaaa-aaaaa-qaaaq-cai" },
-    decent_credit_frontend: { local: "bd3sg-teaaa-aaaaa-qaaba-cai" },
-    internet_identity: { local: "be2us-64aaa-aaaaa-qaabq-cai" }
-  };
-
   try {
-    localCanisters = require(path.resolve(__dirname, "../../.dfx", "local", "canister_ids.json"));
+    localCanisters = require(path.resolve(".dfx", "local", "canister_ids.json"));
   } catch (error) {
-    console.log("No local canister_ids.json found, using defaults");
-    localCanisters = canisters;
+    console.log("No local canister_ids.json found");
   }
 
   try {
-    prodCanisters = require(path.resolve(__dirname, "../../canister_ids.json"));
+    prodCanisters = require(path.resolve("canister_ids.json"));
   } catch (error) {
-    console.log("No production canister_ids.json found, using defaults");
-    prodCanisters = canisters;
+    console.log("No production canister_ids.json found");
   }
 
   const network = process.env.DFX_NETWORK || "local";
   const canisterConfig = network === "local" ? localCanisters : prodCanisters;
 
-  const env = {
+  return {
     DFX_NETWORK: network,
+    ...Object.entries(canisterConfig || {}).reduce((acc, [canisterName, config]) => {
+      const name = canisterName.toUpperCase() + "_CANISTER_ID";
+      acc[name] = config[network];
+      return acc;
+    }, {})
   };
-
-  if (canisterConfig) {
-    for (const canister in canisterConfig) {
-      const canisterName = canister.toUpperCase() + "_CANISTER_ID";
-      env[canisterName] = canisterConfig[canister][network];
-      console.log(`Setting ${canisterName}:`, env[canisterName]);
-    }
-  }
-
-  return env;
 }
+
+// 创建代理实例
+const proxy = httpProxy.createProxyServer();
 
 module.exports = {
   target: "web",
@@ -50,9 +41,9 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, "dist"),
-    filename: "index.js",
-    sourceMapFilename: "[name].js.map",
-    publicPath: '/'
+    filename: '[name].[contenthash].js',
+    publicPath: '/',
+    clean: true,
   },
   devtool: "source-map",
   optimization: {
@@ -84,19 +75,28 @@ module.exports = {
         test: /\.css$/i,
         use: [
           "style-loader",
-          "css-loader",
           {
-            loader: "postcss-loader",
+            loader: "css-loader",
             options: {
-              postcssOptions: {
-                plugins: [
-                  require("tailwindcss"),
-                  require("autoprefixer"),
-                ],
-              },
+              importLoaders: 1,
             },
           },
+          "postcss-loader",
         ],
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[hash][ext][query]'
+        }
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[hash][ext][query]'
+        }
       },
     ],
   },
@@ -106,53 +106,33 @@ module.exports = {
       cache: false,
     }),
     new webpack.EnvironmentPlugin(initCanisterEnv()),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development'),
-      'process.env.DFX_NETWORK': JSON.stringify('local')
-    }),
     new webpack.ProvidePlugin({
       Buffer: ["buffer", "Buffer"],
       process: "process/browser",
     }),
   ],
   devServer: {
-    port: 8000,
+    port: 8080,
+    host: 'localhost',
+    historyApiFallback: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:4943',
+        target: 'http://127.0.0.1:8000',  // 改回 8000 端口
         changeOrigin: true,
         secure: false,
       },
       '/.well-known': {
-        target: 'http://127.0.0.1:4943',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/v2/canister': {
-        target: 'http://127.0.0.1:4943',
+        target: 'http://127.0.0.1:8000',  // 改回 8000 端口
         changeOrigin: true,
         secure: false,
       }
     },
-    hot: true,
-    liveReload: true,
-    historyApiFallback: true,
     static: {
-      directory: path.join(__dirname, 'src'),
+      directory: path.join(__dirname, "dist"),
+      publicPath: '/'
     },
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
-      "Access-Control-Allow-Credentials": "true"
-    },
-    setupMiddlewares: (middlewares, devServer) => {
-      if (!devServer) {
-        throw new Error('webpack-dev-server is not defined');
-      }
-      return middlewares;
-    },
-    compress: true,
-    open: true,
-  },
+    devMiddleware: {
+      writeToDisk: true
+    }
+  }
 };

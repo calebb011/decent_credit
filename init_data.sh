@@ -15,9 +15,9 @@ echo "Bank A ID: $BANK_A_ID"
 
 echo "Registering Bank B..."
 BANK_B_ID=$(dfx canister call $CANISTER_ID register_institution '(record {
-    name = "Bank B1111";
+    name = "1";
     full_name = "Bank B Global";
-    password = opt "default_password"
+    password = opt "1"
 })' | grep -oP 'principal "\K[^"]+')
 
 echo "Bank B ID: $BANK_B_ID"

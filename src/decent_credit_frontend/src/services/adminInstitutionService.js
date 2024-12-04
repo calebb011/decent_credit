@@ -1,5 +1,6 @@
 import { Principal } from "@dfinity/principal";
-import { createActor } from './IDL';
+import { getActor } from './IDL';
+import { authClientService } from './authClient';
 
 
 // 工具函数
@@ -41,41 +42,55 @@ function formatInstitution(raw) {
   }
 }
 
-
-// 机构管理功能
 export async function registerInstitution(formData) {
-  console.log('创建机构:', formData);
-  console.log('Starting registration...');
+  try {
+    console.log('创建机构:', formData);
+    
+    if (!formData.name || !formData.full_name || !formData.principal) {
+      throw new Error('机构信息不完整');
+    }
 
-  if (!formData.name || !formData.full_name) {
-    throw new Error('机构名称和全称不能为空');
+    // 获取身份信息
+    const identity = await authClientService.getIdentity();
+    if (!identity) {
+      throw new Error('No identity found');
+    }
+
+    // 打印身份信息以便调试
+    console.log('Using identity:', identity.getPrincipal().toString());
+
+    // 创建 actor 实例时传入 identity
+    const actor = await getActor(identity);
+    
+    // 确保 password 字段是一个 Opt 类型
+    const request = {
+      name: formData.name,
+      full_name: formData.full_name,
+      password: formData.password ? [formData.password] : [], // 保持数组形式
+      principal: formData.principal.trim() // 去除空格
+    };
+    
+    console.log('Register request:', request);
+    
+    const result = await actor.register_institution(request);
+    console.log('Registration response:', result);
+
+    if ('Err' in result) {
+      throw new Error(result.Err);
+    }
+
+    return {
+      success: true,
+      institution_id: result.Ok,
+      message: '注册成功'
+    };
+  } catch (error) {
+    console.error('Registration failed:', error);
+    throw error;
   }
-
-  const actor = await createActor();
-  console.log('Actor created successfully');
-
-  const request = {
-    name: formData.name,
-    full_name: formData.full_name,
-    password: formData.password ? [formData.password] : []
-  };
-  
-  console.log('Register request:', request);
-  
-  const result = await actor.register_institution(request);
-  if ('Err' in result) {
-    throw new Error(result.Err);
-  }
-  console.log('Registration result:', result);
-
-  return {
-    success: true,
-    institution_id: result.Ok,
-    message: '注册成功'
-  };
 }
 export async function loginInstitution(formData) {
-  const actor = await createActor();
+  const actor = await getActor();
   const request = {
     name: formData.name,
     password: formData.password
@@ -84,20 +99,21 @@ export async function loginInstitution(formData) {
   const response = await actor.login(request);
   if (response.success && response.institution_id?.[0]) {
     const institutionId = response.institution_id[0].toText();
-    localStorage.setItem('institutionId', institutionId);
-    localStorage.setItem('institutionName', formData.name);
+    localStorage.setItem('adminUserPrincipal', institutionId);
+    localStorage.setItem('adminName', formData.name);
   }
   return response;
 }
-
+// 所有需要身份认证的方法都需要获取 identity
 export async function getAllInstitutions() {
-  const actor = await createActor();
+  const actor = await getActor();
   const institutions = await actor.get_all_institutions();
   return institutions.map(inst => formatInstitution(inst));
 }
 
 export async function getInstitution(id) {
-  const actor = await createActor();
+  const actor = await getActor();
+
   const institution = await actor.get_institution(id);
   if (!institution || institution.length === 0) {
     throw new Error('Institution not found');
@@ -105,18 +121,19 @@ export async function getInstitution(id) {
   return formatInstitution(institution[0]);
 }
 
+
 export async function changePassword(oldPassword, newPassword) {
-  const actor = await createActor();
+  const actor = await getActor();
   return await actor.change_password(oldPassword, newPassword);
 }
 
 export async function resetPassword(institutionId) {
-  const actor = await createActor();
+  const actor = await getActor();
   return await actor.reset_password(institutionId);
 }
 
 export async function updateInstitutionStatus(id, isActive) {
-  const actor = await createActor();
+  const actor = await getActor();
   try {
     // 确保 id 是有效的 Principal
     const principalId = typeof id === 'string' ? Principal.fromText(id) : id;
@@ -136,8 +153,8 @@ export async function updateInstitutionStatus(id, isActive) {
 }
 
 export async function buyDCC(amount) {
-  const actor = await createActor();
-  const account = localStorage.getItem('institutionId');
+  const actor = await getActor();
+  const account = localStorage.getItem('adminUserPrincipal');
   if (!account) throw new Error('No institution ID found');
     
   await actor.record_token_trading(Principal.fromText(account), true, BigInt(amount));
@@ -148,8 +165,8 @@ export async function buyDCC(amount) {
 }
 
 export async function sellDCC(amount) {
-  const actor = await createActor();
-  const account = localStorage.getItem('institutionId');
+  const actor = await getActor();
+  const account = localStorage.getItem('adminUserPrincipal');
   if (!account) throw new Error('No institution ID found');
     
   await actor.record_token_trading(Principal.fromText(account), false, BigInt(amount));
@@ -160,7 +177,7 @@ export async function sellDCC(amount) {
 }
 
 export async function getBalance() {
-  const account = localStorage.getItem('institutionId');
+  const account = localStorage.getItem('adminUserPrincipal');
   if (!account) throw new Error('No institution ID found');
     
   const institution = await getInstitution(account);
@@ -176,7 +193,7 @@ export async function getBalance() {
 
 // 记录 API 调用
 export async function recordApiCall(institutionId, calls = 1) {
-  const actor = await createActor();
+  const actor = await getActor();
   if (!institutionId) throw new Error('No institution ID provided');
   await actor.record_api_call(
     typeof institutionId === 'string' ? Principal.fromText(institutionId) : institutionId,
@@ -187,7 +204,7 @@ export async function recordApiCall(institutionId, calls = 1) {
 
 // 记录数据上传
 export async function recordDataUpload(institutionId, size = 1) {
-  const actor = await createActor();
+  const actor = await getActor();
   if (!institutionId) throw new Error('No institution ID provided');
   await actor.record_data_upload(
     typeof institutionId === 'string' ? Principal.fromText(institutionId) : institutionId,
@@ -198,7 +215,7 @@ export async function recordDataUpload(institutionId, size = 1) {
 
 // 更新信用分数
 export async function updateCreditScore(institutionId, score) {
-  const actor = await createActor();
+  const actor = await getActor();
   if (!institutionId) throw new Error('No institution ID provided');
   if (score < 0 || score > 1000) throw new Error('Invalid credit score');
     
@@ -234,12 +251,12 @@ export async function loginAdmin(formData) {
 
 // 工具函数
 export function getCurrentInstitutionId() {
-  const id = localStorage.getItem('institutionId');
+  const id = localStorage.getItem('adminUserPrincipal');
   return id || null;
 }
 
 export function getCurrentInstitutionName() {
-  const name = localStorage.getItem('institutionName');
+  const name = localStorage.getItem('adminName');
   return name || null;
 }
 
@@ -247,15 +264,10 @@ export function isAdmin() {
   return !!localStorage.getItem('adminToken');
 }
 
-export function logout() {
-  localStorage.removeItem('institutionId');
-  localStorage.removeItem('institutionName');
-  localStorage.removeItem('adminToken');
-}
 
 // 记录提交相关的方法
 export async function submitRecord(request) {
-  const actor = await createActor();
+  const actor = await getActor();
   try {
     console.log('Submitting record:', request);
     const response = await actor.submit_record(request);
@@ -280,7 +292,7 @@ export async function submitRecord(request) {
 }
 
 export async function submitRecordsBatch(records) {
-  const actor = await createActor();
+  const actor = await getActor();
   try {
     const batchRequest = {
       records: records.map(record => ({
@@ -326,7 +338,6 @@ export async function submitRecordsBatch(records) {
   }
 }
 
-// 辅助函数
 // 辅助函数
 function getRecordType(type) {
   const recordType = type.toLowerCase();

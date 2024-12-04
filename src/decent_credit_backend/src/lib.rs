@@ -42,10 +42,10 @@ fn post_upgrade() {
 }
 
 // 重导出 API 接口
-pub use api::credit_api::*;
+pub use api::credit_assessment_api::*;
 pub use api::dashboard_api::*;
 pub use api::record_api::*;
-pub use api::admin_api::*;
+pub use api::admin_institution_api::*;
 
 // 公共类型定义
 pub type Result<T> = std::result::Result<T, String>;

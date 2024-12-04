@@ -2,12 +2,9 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
 use crate::models::*;
 use log::{info, debug, warn, error};  // 替换原来的 log_info
-use crate::services::record_service::{RECORD_SERVICE};
-use crate::api::record_api::credit::{
-    RecordSubmissionRequest, RecordSubmissionResponse,
-    BatchSubmissionRequest, BatchSubmissionResponse,
-    CreditRecord, RecordQueryParams, RecordStatus
-};
+use crate::services::record_service::RECORD_SERVICE;
+use crate::models::record::*;
+use crate::services::credit_service::CREDIT_SERVICE;
 
 
 
@@ -87,15 +84,13 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
 
 
 
-/// 按用户DID查询记录 - 查询结果
 
 #[query]
 pub fn query_records_by_user_did(user_did: String) -> Vec<CreditRecord> {
 
-
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.get_record(user_did)
+        service.get_record_userId(user_did)
     })
 }
 
@@ -109,56 +104,125 @@ pub fn query_records(params: RecordQueryParams) -> Vec<CreditRecord> {
     })
 }
 
-// // === 批量验证接口 ===
 
-// /// 记录验证与确认
-// #[update]
-// pub  fn verify_and_commit(record_id: String) -> Result<bool,Error> {  // 添加 async
-//     log_info(format!(
-//         "Record verification attempt for record: {}", 
-//         record_id
-//     ));
+/// 获取记录统计信息
+#[query]
+pub fn get_record_statistics(institution_id: Option<Principal>) -> Result<RecordStatistics, String> {
+    let caller = ic_cdk::caller();
+    debug!("Get record statistics by {}", caller.to_text());
 
-//     RECORD_SERVICE.with(|service| {
-//         let mut service = service.borrow_mut();
-//         service.verify_and_commit(&record_id)
-//     })；  // 添加 .await
-// }
+    RECORD_SERVICE.with(|service| {
+        let service = service.borrow();
+        match service.get_record_statistics(institution_id) {
+            Ok(stats) => {
+                debug!("Successfully retrieved statistics");
+                Ok(stats)
+            },
+            Err(e) => {
+                warn!("Failed to get statistics: {}", e);
+                Err(e)
+            }
+        }
+    })
+}
 
-// /// 批量验证记录
-// #[update]
-// pub async fn verify_records_batch(record_ids: Vec<String>) -> Result<Vec<(String, bool)>, String> {
-//     log_info(format!(
-//         "Batch verifying {} records", 
-//         record_ids.len()
-//     ));
 
-//     let mut results = Vec::new();
+/// 创建信用扣分记录
+#[update]
+pub async fn create_credit_record(request: CreateCreditRecordRequest) -> Result<CreditDeductionRecord, String> {
+    let caller = ic_cdk::caller();
+    info!("Create credit deduction record by {}", caller.to_text());
+    debug!("Deduction points: {}", request.deduction_points);
 
-//     for record_id in record_ids {
-//         // 创建拥有所有权的克隆
-//         let record_id_clone = record_id.clone();
-        
-//         // 修改服务调用方式
-//         let result = RECORD_SERVICE.with(|s| {
-//             let service = &mut *s.borrow_mut();
-//             // 克隆或移动所需数据,避免引用
-//             service.verify_and_commit(&record_id_clone)
-//         }).await;
+    RECORD_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        match service.create_deduction_record(caller, request) {
+            Ok(record) => {
+                info!("Successfully created deduction record");
+                Ok(record)
+            },
+            Err(e) => {
+                error!("Failed to create deduction record: {}", e);
+                Err(e)
+            }
+        }
+    })
+}
 
-//         match result {
-//             Ok(is_valid) => {
-//                 results.push((record_id.clone(), is_valid));
-//             }
-//             Err(e) => {
-//                 results.push((record_id.clone(), false));
-//                 log_info(format!("Verification failed for record {}: {:?}", record_id, e));
-//             }
-//         }
-//     }
+/// 扣减查询代币
+#[update]
+pub async fn deduct_query_token(institution_id: Principal, user_did: String) -> Result<bool, String> {
+    let caller = ic_cdk::caller();
+    info!("Deduct query token by {}", caller.to_text());
+    debug!("Institution: {}, User DID: {}", institution_id.to_text(), user_did);
 
-//     Ok(results)
-// }
+    RECORD_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        match service.deduct_query_token(institution_id, user_did) {
+            Ok(result) => {
+                info!("Successfully deducted query token for institution: {}", institution_id.to_text());
+                Ok(result)
+            },
+            Err(e) => {
+                error!("Failed to deduct query token: {}", e);
+                Err(e)
+            }
+        }
+    })
+}
+
+/// 获取信用扣分记录列表
+#[query]
+pub fn get_credit_records(institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {
+    let caller = ic_cdk::caller();
+    debug!("Get credit deduction records by {}", caller.to_text());
+
+    RECORD_SERVICE.with(|service| {
+        let service = service.borrow();
+        service.get_deduction_records(institution_id)
+    })
+}
+
+/// 查询机构某个用户did的详细信用记录
+#[update]
+pub   fn query_institution_records_list(institution_id: Principal, user_did: String) -> Result<InstitutionRecordResponse, String> {
+    debug!("Query institution records by {}", institution_id);
+
+    RECORD_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();  // 获取可变引用
+        match service.get_institution_records(institution_id, &user_did) {
+            Ok(response) => {
+                debug!("Successfully retrieved institution records");
+                Ok(response)
+            },
+            Err(e) => {
+                warn!("Failed to get institution records: {}", e);
+                Err(e.to_string())
+            }
+        }
+    })
+}
+
+/// 查询机构某个用户did的详细信用记录
+#[update]
+pub   fn query_institution_records_failed_list(institution_id: Principal) -> Result<InstitutionRecordResponse, String> {
+    debug!("Query institution records by {}", institution_id);
+
+    RECORD_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();  // 获取可变引用
+        match service.get_failed_records(institution_id) {
+            Ok(response) => {
+                debug!("Successfully retrieved institution records");
+                Ok(response)
+            },
+            Err(e) => {
+                warn!("Failed to get institution records: {}", e);
+                Err(e.to_string())
+            }
+        }
+    })
+}
+
 #[derive(CandidType, Debug)]
 pub enum Error {
     // ... 你的错误类型

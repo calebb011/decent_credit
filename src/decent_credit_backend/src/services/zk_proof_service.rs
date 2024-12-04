@@ -1,6 +1,7 @@
 use sha2::{Sha256, Digest};
-use crate::models::credit::{CreditRecord, RecordContent, RecordStatus, RecordType};
+use crate::models::record::{CreditRecord, RecordContent, RecordStatus, RecordType};
 use ic_cdk::api::time;
+use crate::utils::error::Error;
 
 pub struct ZKProofService {
     verification_key: Vec<u8>,  // 添加验证密钥字段

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, Database, AlertCircle } from 'lucide-react';
-import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/institutionService';
+import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/adminInstitutionService';
 import InstitutionDialog from './InstitutionDialog';
 
 const InstitutionList = () => {
@@ -10,19 +10,22 @@ const InstitutionList = () => {
  const [editingInstitution, setEditingInstitution] = useState(null);
 
  const handleAddOrEdit = async (formData) => {
-   try {
-     if (editingInstitution) {
-       console.log('修改机构:', formData);
-     } else {
-       await registerInstitution(formData);
-     }
-     await fetchInstitutions();
-   } catch (error) {
-     console.error('操作失败:', error);
-     throw error;
-   }
- };
-
+  try {
+    if (editingInstitution) {
+      console.log('修改机构:', formData);
+    } else {
+      // 添加更详细的错误处理
+      const result = await registerInstitution(formData);
+      if (!result.success) {
+        throw new Error(result.message || '注册失败');
+      }
+    }
+    await fetchInstitutions(); // 刷新列表
+  } catch (error) {
+    console.error('操作失败:', error);
+    throw error; // 向上传递错误
+  }
+};
  const fetchInstitutions = async () => {
    setLoading(true);
    try {

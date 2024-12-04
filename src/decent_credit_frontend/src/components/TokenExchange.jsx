@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Info } from 'lucide-react';
-import { buyDCC, sellDCC, getBalance } from '../services/institutionService';
+import { buyDCC, sellDCC, getBalance } from '../services/adminInstitutionService';
 
 const TokenExchange = () => {
   // 状态管理

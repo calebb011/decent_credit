@@ -4,14 +4,9 @@ use ic_cdk::api::print as log_info;
 
 use crate::services::dashboard_service::DASHBOARD_SERVICE;
 use crate::models::dashboard::*;
-use crate::models::credit::{
-    CreateCreditRecordRequest, CreditDeductionRecord,
-    RiskAssessment, InstitutionRecordResponse, CreditRecord,
-    RecordSubmissionRequest, RecordSubmissionResponse,
-    BatchSubmissionRequest, BatchSubmissionResponse,
-    RecordQueryParams, GetRecordsResponse,
-    RecordStatistics, UploadHistoryParams, UploadHistoryResponse
-};
+use crate::models::record::*;
+use crate::models::credit::*;
+
 /// 获取管理员看板数据
 #[query]
 pub fn get_admin_dashboard_data() -> AdminDashboardData {

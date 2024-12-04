@@ -1,50 +1,20 @@
-import { createActor } from './IDL';
+import { getActor } from './IDL';
 import { Principal } from '@dfinity/principal';
+import { authClientService } from './authClient';
 
-// 模拟数据
-const MOCK_DATA = {
-  success: true,
-  data: {
-    institutionStats: {
-      totalCount: 125,
-      activeCount: 98,
-      todayNewCount: 3,
-    },
-    dataStats: {
-      totalRecords: 1234567,
-      todayRecords: 15678,
-      growthRate: 23.5,
-    },
-    apiStats: {
-      totalCalls: 987654,
-      todayCalls: 45678,
-      successRate: 99.8,
-    },
-    tokenStats: {
-      totalRewards: 1500000,    // 历史总奖励
-      totalConsumption: 850000, // 历史总消耗
-      todayRewards: 25000,      // 今日奖励
-      todayConsumption: 15000,  // 今日消耗
-    }
-  }
-};
+
 
 /**
  * 获取管理员看板数据
  * @param {boolean} useMock 是否使用模拟数据
  * @returns {Promise<AdminDashboardData>} 管理员看板数据
  */
-export async function getAdminDashboardData(useMock =false) {
-  if (useMock) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(MOCK_DATA);
-      }, 0);
-    });
-  }
+export async function getAdminDashboardData() {
 
-  const actor = await createActor();
-  try {
+
+
+ const actor = await getActor();
+ try {
     // 获取所有机构数据
     const institutions = await actor.get_all_institutions();
     const formattedInstitutions = institutions.map(formatInstitution);

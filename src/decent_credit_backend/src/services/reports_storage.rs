@@ -2,14 +2,15 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::api::time;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::borrow::Borrow;
 use log::{info, warn};
+use crate::models::credit::*;
+use crate::services::storage_service::*;
+use crate::services::crypto_service::*;
 
-use crate::models::credit::{RiskAssessmentReport};
-
-#[derive(Default)]
+#[derive(CandidType, Deserialize, Default, Clone)]
 pub struct ReportsStorage {
-    // HashMap<机构ID, HashMap<用户DID, Vec<报告>>>
-    reports: HashMap<Principal, HashMap<String, Vec<RiskAssessmentReport>>>,
+    reports: HashMap<Principal, Vec<RiskAssessmentReport>>,
 }
 
 thread_local! {
@@ -17,143 +18,140 @@ thread_local! {
 }
 
 impl ReportsStorage {
-    // 存储新的报告
-    pub fn store_report(&mut self, institution_id: Principal, user_did: &str, report: RiskAssessmentReport) {
-        let institution_reports = self.reports
-            .entry(institution_id)
-            .or_insert_with(HashMap::new);
-            
-        let user_reports = institution_reports
-            .entry(user_did.to_string())
-            .or_insert_with(Vec::new);
-
-        user_reports.push(report);
-        
-        // 保持最新的报告在前面
-        user_reports.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-
-        // 限制每个用户的报告数量，只保留最近的50条
-        const MAX_REPORTS_PER_USER: usize = 50;
-        if user_reports.len() > MAX_REPORTS_PER_USER {
-            user_reports.truncate(MAX_REPORTS_PER_USER);
+    pub fn save_state(&self) -> Result<(), String> {
+        match ic_cdk::storage::stable_save((&*self,)) {
+            Ok(_) => {
+                info!("Successfully saved ReportsStorage state");
+                Ok(())
+            },
+            Err(e) => {
+                warn!("Failed to save ReportsStorage state: {:?}", e);
+                Err(format!("Failed to save state: {:?}", e))
+            }
         }
+    }
 
+    pub fn store_report(&mut self, institution_id: Principal, report: RiskAssessmentReport) {
+        info!("Starting to store report for institution: {}", institution_id.to_text());
+    
+        // 先存本地
+        let report_clone = report.clone();
+        let reports = self.reports.entry(institution_id).or_insert_with(Vec::new);
+        reports.push(report_clone);
+    
+        info!("Added report to local storage, current count: {}", reports.len());
+    
+        // 序列化报告
+        match candid::encode_one(&report) {
+            Ok(report_bytes) => {
+                // 使用专门的报告存储方法
+                match with_storage_service(|service| {
+                    // 1. 存储报告数据
+                    let storage_id = service.store_report_data(report_bytes.clone())?;
+                    
+                    // 2. 存储到链上
+                    service.store_report_on_chain(
+                        report.report_id.clone(),
+                        storage_id.clone(),
+                        report_bytes.clone()
+                    )?;
+                    
+                    Ok::<_, String>(storage_id)
+                }) {
+                    Ok(storage_id) => {
+                        info!(
+                            "Successfully stored report. Key: REPORT-{}, Storage ID: {}", 
+                            report.report_id,
+                            storage_id
+                        );
+                    }
+                    Err(e) => warn!("Failed to store report: {:?}", e),
+                }
+            },
+            Err(e) => warn!("Failed to serialize report: {:?}", e),
+        }
+    
         info!(
-            "Stored new report for institution {} and user {}", 
-            institution_id.to_text(), user_did
+            "Completed storing report for institution {}, report ID: {}", 
+            institution_id.to_text(),
+            report.report_id
         );
     }
 
-    // 查询报告，支持按时间范围筛选
-    pub fn query_reports(
-        &self, 
-        institution_id: Principal,
-        days: Option<u64>
-    ) -> Vec<RiskAssessmentReport> {
-        let mut all_reports = Vec::new();
+    pub fn query_reports(&self, institution_id: Principal) -> Vec<RiskAssessmentReport> {
+        info!("Starting query reports for institution: {}", institution_id.to_text());
         
-        // 获取机构的所有报告
-        if let Some(institution_reports) = self.reports.get(&institution_id) {
-            // 获取当前时间
-            let current_time = time();
+        let mut verified_reports = Vec::new();
+        
+        // 使用新的方法获取所有链上数据
+        with_storage_service(|service| {
+            info!("Searching chain data records...");
             
-            // 遍历所有用户的报告
-            for user_reports in institution_reports.values() {
-                for report in user_reports {
-                    // 如果指定了天数，则只返回指定天数内的报告
-                    if let Some(days) = days {
-                        let time_threshold = current_time - (days * 24 * 60 * 60 * 1_000_000_000);
-                        if report.created_at >= time_threshold {
-                            all_reports.push(report.clone());
-                        }
-                    } else {
-                        all_reports.push(report.clone());
+            // 获取所有链上数据
+            let chain_data = service.get_all_chain_data();
+            
+            for (record_key, storage_id, _) in chain_data {
+                info!("Checking record: {}", record_key);
+                
+                // 从存储服务获取数据
+                if let Some(data) = service.get_data(&storage_id) {
+                    match candid::decode_one::<RiskAssessmentReport>(data) {
+                        Ok(report) => {
+                            // 检查是否是目标机构的报告
+                            // if report.institution_id == institution_id {
+                                info!("Found matching report: {}", report.report_id);
+                                verified_reports.push(report);
+                            // }
+                        },
+                        Err(e) => warn!("Failed to decode report data: {:?}", e),
                     }
+                } else {
+                    warn!("No data found for storage ID: {}", storage_id);
                 }
             }
-        }
-
-        // 按时间倒序排序
-        all_reports.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-        
+        });
+    
         info!(
-            "Query returned {} reports for institution {}", 
-            all_reports.len(), 
+            "Retrieved {} verified reports for institution {}", 
+            verified_reports.len(),
             institution_id.to_text()
         );
-
-        all_reports
+        
+        verified_reports
+    }
+    fn print_storage_status(&self) {
+        info!("=== Storage Status ===");
+        info!("Total institutions: {}", self.reports.len());
+        for (institution_id, reports) in &self.reports {
+            info!(
+                "Institution {}: {} reports", 
+                institution_id.to_text(), 
+                reports.len()
+            );
+        }
+        info!("=== End Storage Status ===");
     }
 
-    // 获取指定用户的最新报告
-    pub fn get_latest_report(
-        &self,
-        institution_id: Principal,
-        user_did: &str
-    ) -> Option<RiskAssessmentReport> {
+    pub fn get_latest_report(&self, institution_id: Principal) -> Option<RiskAssessmentReport> {
         self.reports
             .get(&institution_id)
-            .and_then(|institution_reports| institution_reports.get(user_did))
-            .and_then(|user_reports| user_reports.first())
+            .and_then(|reports| reports.last())
             .cloned()
-    }
-
-    // 清理旧报告
-    pub fn cleanup_old_reports(&mut self, days: u64) -> usize {
-        let mut total_removed = 0;
-        let threshold = time() - (days * 24 * 60 * 60 * 1_000_000_000);
-
-        // 使用 retain 方法保留符合条件的报告
-        for institution_reports in self.reports.values_mut() {
-            for user_reports in institution_reports.values_mut() {
-                let original_len = user_reports.len();
-                user_reports.retain(|report| report.created_at >= threshold);
-                total_removed += original_len - user_reports.len();
-            }
-        }
-
-        // 清理空的用户记录和机构记录
-        self.cleanup_empty_entries();
-
-        info!("Removed {} old reports", total_removed);
-        total_removed
-    }
-
-    // 清理空的记录条目
-    fn cleanup_empty_entries(&mut self) {
-        // 清理空的用户记录
-        for institution_reports in self.reports.values_mut() {
-            institution_reports.retain(|_, reports| !reports.is_empty());
-        }
-
-        // 清理空的机构记录
-        self.reports.retain(|_, institution_reports| !institution_reports.is_empty());
-    }
-
-    // 获取存储统计信息
-    pub fn get_storage_stats(&self) -> StorageStats {
-        let mut total_reports = 0;
-        let mut institution_count = self.reports.len();
-        let mut user_count = 0;
-
-        for institution_reports in self.reports.values() {
-            user_count += institution_reports.len();
-            for user_reports in institution_reports.values() {
-                total_reports += user_reports.len();
-            }
-        }
-
-        StorageStats {
-            total_reports,
-            institution_count,
-            user_count
-        }
     }
 }
 
-#[derive(CandidType, Deserialize, Debug)]
-pub struct StorageStats {
-    pub total_reports: usize,
-    pub institution_count: usize,
-    pub user_count: usize,
+pub fn init_reports_storage() {
+    REPORTS_STORAGE.with(|storage| {
+        let storage = storage.borrow();
+        storage.print_storage_status();
+    });
+}
+
+pub fn with_reports_storage<F, R>(f: F) -> R 
+where
+    F: FnOnce(&mut ReportsStorage) -> R 
+{
+    REPORTS_STORAGE.with(|storage| {
+        f(&mut storage.borrow_mut())
+    })
 }

@@ -147,8 +147,7 @@ const AdminLoginWithInternet = () => {
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
-                <Lock className="w-5 h-5" />
-                Sign in with Internet Identity
+                <Lock className="w-5 h-5" /> Sign in with Internet Identity
               </span>
             )}
           </Button>

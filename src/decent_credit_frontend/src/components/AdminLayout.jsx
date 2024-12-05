@@ -51,7 +51,7 @@ const AdminLayout = ({ children }) => {
 
   const handleLogout = () => {
     authClientService.logout();
-    navigate('/login');
+    navigate('/admin/login');
   };
 
   const renderContent = () => {

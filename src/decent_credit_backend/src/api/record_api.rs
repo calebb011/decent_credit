@@ -5,6 +5,7 @@ use log::{info, debug, warn, error};  // 替换原来的 log_info
 use crate::services::record_service::RECORD_SERVICE;
 use crate::models::record::*;
 use crate::services::credit_service::CREDIT_SERVICE;
+use crate::services::reports_storage::REPORTS_STORAGE;  // 移到顶部
 
 
 
@@ -82,15 +83,23 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
     })
 }
 
-
-
-
 #[query]
-pub fn query_records_by_user_did(user_did: String) -> Vec<CreditRecord> {
+pub fn query_record_by_id(record_id: String,institution_id: Principal) -> Result<CreditRecord, String> {
+    debug!("Query record by id: {}", record_id);
 
     RECORD_SERVICE.with(|service| {
+        let service = service.borrow();
+        match service.get_record_by_id(&record_id,institution_id) {
+            Some(record) => Ok(record),
+            None => Err("Record not found".to_string())
+        }
+    })
+}
+#[query]
+pub fn query_records_by_user_did(institution_id: Principal, user_did: String) -> Result<Vec<CreditRecord>, String> {
+    RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        service.get_record_userId(user_did)
+        service.get_record_userId(institution_id, user_did)
     })
 }
 
@@ -151,14 +160,14 @@ pub async fn create_credit_record(request: CreateCreditRecordRequest) -> Result<
 
 /// 扣减查询代币
 #[update]
-pub async fn deduct_query_token(institution_id: Principal, user_did: String) -> Result<bool, String> {
+pub async fn deduct_query_token(institution_id: Principal, target_institution_id: Principal,user_did: String) -> Result<bool, String> {
     let caller = ic_cdk::caller();
     info!("Deduct query token by {}", caller.to_text());
     debug!("Institution: {}, User DID: {}", institution_id.to_text(), user_did);
 
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        match service.deduct_query_token(institution_id, user_did) {
+        match service.deduct_query_token(institution_id,target_institution_id, user_did) {
             Ok(result) => {
                 info!("Successfully deducted query token for institution: {}", institution_id.to_text());
                 Ok(result)
@@ -204,13 +213,13 @@ pub   fn query_institution_records_list(institution_id: Principal, user_did: Str
 }
 
 /// 查询机构某个用户did的详细信用记录
-#[update]
+#[query]
 pub   fn query_institution_records_failed_list(institution_id: Principal) -> Result<InstitutionRecordResponse, String> {
     debug!("Query institution records by {}", institution_id);
 
     RECORD_SERVICE.with(|service| {
         let mut service = service.borrow_mut();  // 获取可变引用
-        match service.get_failed_records(institution_id) {
+        match service.get_failed_records_storage(institution_id) {
             Ok(response) => {
                 debug!("Successfully retrieved institution records");
                 Ok(response)

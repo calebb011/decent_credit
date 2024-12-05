@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Space, Modal } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Space, Modal, Form } from 'antd';
+import { EyeOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import RiskAssessmentReport from './RiskAssessmentReport';
 import { queryAssessmentReports } from '../services/institutionQueryRecordService';
@@ -16,30 +16,21 @@ const UserReportList = () => {
     try {
       const institutionId = localStorage.getItem('userPrincipal');
       if (!institutionId) {
-        throw new Error('请重新登录');
+        throw new Error('Please login again');
       }
 
       const response = await queryAssessmentReports(institutionId);
-      // 检查并格式化数据
-      if (response.success && response.data) {
-        // 将返回的数据转换为组件期望的格式
-        const formattedReports = Array.isArray(response.data.data) ? response.data.data : [
-          {
-            report_id: 'temp-' + Date.now(),
-            user_did: 'N/A',
-            assessment: {
-              creditScore: response.data.creditScore,
-              riskLevel: response.data.riskLevel,
-              assessmentDetails: response.data.assessmentDetails,
-              suggestions: response.data.suggestions
-            },
-            created_at: Date.now() * 1000000 // 转换为纳秒
-          }
-        ];
-        setReports(formattedReports);
+      console.log('API Response:', response); // Debug log
+
+      if (response.success && response.data && Array.isArray(response.data)) {
+        // 直接使用返回的数据数组
+        setReports(response.data);
+      } else if (response.success && response.data && response.data[0]) {
+        // 如果是单个对象包装在数组中
+        setReports([response.data[0]]);
       }
     } catch (error) {
-      console.error('获取报告列表失败:', error);
+      console.error('Failed to fetch reports:', error);
     } finally {
       setLoading(false);
     }
@@ -51,39 +42,31 @@ const UserReportList = () => {
 
   const columns = [
     {
-      title: '报告ID',
+      title: 'Report ID',
       dataIndex: 'report_id',
       key: 'report_id',
       width: '20%',
     },
     {
-      title: '用户DID',
+      title: 'User DID',
       dataIndex: 'user_did',
       key: 'user_did',
       width: '25%',
       ellipsis: true,
     },
     {
-      title: '信用评分',
-      dataIndex: ['assessment', 'creditScore'],
-      key: 'creditScore',
-      width: '15%',
-    },
-    {
-      title: '风险等级',
-      dataIndex: ['assessment', 'riskLevel'],
-      key: 'riskLevel',
-      width: '15%',
-    },
-    {
-      title: '生成时间',
+      title: 'Generated At',
       dataIndex: 'created_at',
       key: 'created_at',
       width: '15%',
-      render: (time) => dayjs(Number(time) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
-    },
+      render: (time) => {
+        // 将纳秒转换为毫秒 (除以 1,000,000)
+        const milliseconds = Number(time) / 1_000_000;
+        return dayjs(milliseconds).format('YYYY-MM-DD HH:mm:ss');
+      },
+        },
     {
-      title: '操作',
+      title: 'Action',
       key: 'action',
       width: '10%',
       render: (_, record) => (
@@ -95,32 +78,108 @@ const UserReportList = () => {
             setModalVisible(true);
           }}
         >
-          查看报告
+          View
         </Button>
       ),
     }
   ];
 
   return (
-    <div className="p-6">
-      <Card title="用户风险评估报告列表">
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-200 mb-2">Risk Assessment Reports</h2>
+        <p className="text-gray-400">View and manage user risk assessment reports</p>
+      </div>
+
+      <Card 
+        className="bg-black/20 border-gray-700"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              onClick={fetchReports}
+              loading={loading}
+              className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+            >
+              Query Reports
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                setReports([]);
+                fetchReports();
+              }}
+              className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+            >
+              Refresh
+            </Button>
+          </Space>
+        }
+      >
         <Table
           loading={loading}
           columns={columns}
           dataSource={reports}
           rowKey="report_id"
+          pagination={{
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} reports`,
+            pageSize: 10,
+            className: "px-4 py-3"
+          }}
+          className="custom-table"
         />
       </Card>
 
+
       <Modal
-        title="风险评估报告详情"
+        title={
+          <Space className="text-gray-200">
+            <EyeOutlined />
+            Risk Assessment Report Details
+          </Space>
+        }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         width={800}
         footer={null}
+        className="dark-modal"
       >
         {viewReport && <RiskAssessmentReport data={viewReport} showCard={false} />}
       </Modal>
+
+      <style jsx global>{`
+        .custom-table .ant-table {
+          background: transparent !important;
+        }
+        
+        .custom-table .ant-table-thead > tr > th {
+          background: rgba(30, 41, 59, 0.5) !important;
+          color: #e5e7eb !important;
+          border-bottom: 1px solid #374151 !important;
+        }
+        
+        .custom-table .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #374151 !important;
+          transition: background 0.3s;
+        }
+        
+        .custom-table .ant-table-tbody > tr:hover > td {
+          background: rgba(30, 41, 59, 0.5) !important;
+        }
+        
+        .dark-modal .ant-modal-content {
+          background: #1f2937 !important;
+          border: 1px solid #374151 !important;
+        }
+        
+        .dark-modal .ant-modal-header {
+          background: #1f2937 !important;
+          border-bottom: 1px solid #374151 !important;
+        }
+      `}</style>
     </div>
   );
 };

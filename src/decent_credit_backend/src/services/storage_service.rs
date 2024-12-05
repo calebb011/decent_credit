@@ -25,7 +25,30 @@ impl StorageService {
             reports: Vec::new(),
         }
     }
+    // 添加一个新的方法来获取所有链上数据
+pub fn get_all_chain_data(&self) -> Vec<(String, String, Vec<u8>)> {
+    self.chain_data
+        .iter()
+        .map(|(record_id, (storage_id, proof))| {
+            (record_id.clone(), storage_id.clone(), proof.clone())
+        })
+        .collect()
+}
+    // 专门用于存储报告的方法
+    pub fn store_report_data(&mut self, data: Vec<u8>) -> Result<String, String> {
+        let id = format!("report-storage-{}", time());
+        self.stored_data.insert(id.clone(), data);
+        debug!("Stored report data with ID: {}", id);
+        Ok(id)
+    }
 
+    // 专门用于链上存储报告的方法
+    pub fn store_report_on_chain(&mut self, report_id: String, storage_id: String, data: Vec<u8>) -> Result<(), String> {
+        let key = format!("REPORT-{}", report_id);
+        self.chain_data.insert(key.clone(), (storage_id.clone(), data));
+        debug!("Stored report chain data for report: {}, storage: {}", report_id, storage_id);
+        Ok(())
+    }
     pub fn store_data(&mut self, data: Vec<u8>) -> Result<String, String> {
         let id = format!("storage-{}", time());
         self.stored_data.insert(id.clone(), data);
@@ -106,6 +129,7 @@ pub fn print_all_records(&self) {
     }
     info!("\n=== End Records ===\n");
 }
+
 pub fn store_report(&mut self, institution_id: Principal, report: RiskAssessmentReport) -> Result<(), String> {
     info!("Storing report:");
     info!("  Institution: {}", institution_id.to_text());
@@ -234,23 +258,3 @@ pub fn print_storage_status() {
     });
 }
 
-// 新增 API 端点用于检查存储状态
-#[ic_cdk::query]
-pub fn get_storage_status() -> String {
-    with_storage_service(|service| {
-        format!(
-            "Storage status: {} records in chain data, {} records in stored data",
-            service.chain_data.len(),
-            service.stored_data.len()
-        )
-    })
-}
-
-
-#[ic_cdk::query]
-pub fn debug_print_all_records() -> String {
-    with_storage_service(|service| {
-        service.print_all_records();
-        "Records printed to log".to_string()
-    })
-}

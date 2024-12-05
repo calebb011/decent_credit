@@ -15,7 +15,6 @@ let _lastRefreshTime = 0;
  // 定义 IDL 工厂函数
  const idlFactory = ({ IDL }) => {
   // === 基础类型定义 ===
-  // === 基础类型定义 ===
   const LoginRequest = IDL.Record({
     'name': IDL.Text,
     'password': IDL.Text,
@@ -90,7 +89,24 @@ let _lastRefreshTime = 0;
     'status': RecordStatus,
     'reward_amount': IDL.Opt(IDL.Nat64)
   });
+  // === 新增服务设置相关类型定义 ===
+  const UpdateServiceSettingsRequest = IDL.Record({
+    'data_service_enabled': IDL.Bool,
+    'query_price': IDL.Nat64,
+    'reward_share_ratio': IDL.Nat8
+  });
 
+  const ServiceSettings = IDL.Record({
+    'data_service_enabled': IDL.Bool,
+    'query_price': IDL.Nat64,
+    'reward_share_ratio': IDL.Nat8
+  });
+
+  const ServiceSettingsResponse = IDL.Record({
+    'success': IDL.Bool,
+    'data': IDL.Opt(ServiceSettings),
+    'message': IDL.Opt(IDL.Text)
+  });
   // === 机构记录 ===
   const Institution = IDL.Record({
     'id': IDL.Principal,
@@ -110,7 +126,12 @@ let _lastRefreshTime = 0;
     'token_trading': IDL.Record({
       'bought': IDL.Nat64,
       'sold': IDL.Nat64
-    })
+    }),
+    // 新增字段
+    'data_service_enabled': IDL.Bool,
+    'query_price': IDL.Nat64,
+    'reward_share_ratio': IDL.Nat8
+    
   });
 
   // === 查询相关结构 ===
@@ -269,6 +290,150 @@ let _lastRefreshTime = 0;
     'data': IDL.Vec(UploadRecord),
     'total': IDL.Nat64
   });
+
+  // 首先添加仪表板相关的类型定义
+const DataDistribution = IDL.Record({
+  'loan_records': IDL.Nat64,
+  'repayment_records': IDL.Nat64,
+  'notification_records': IDL.Nat64
+});
+
+const BasicInfo = IDL.Record({
+  'name': IDL.Text,
+  'id': IDL.Text,
+  'status': IDL.Variant({ 'Active': IDL.Null, 'Inactive': IDL.Null }),
+  'join_time': IDL.Nat64,
+  'credit_level': IDL.Text,
+  'credit_score': IDL.Nat64
+});
+
+const SubmissionStats = IDL.Record({
+  'today_submissions': IDL.Nat64,
+  'monthly_submissions': IDL.Nat64,
+  'total_submissions': IDL.Nat64,
+  'submission_distribution': DataDistribution
+});
+
+const ApiQuota = IDL.Record({
+  'used': IDL.Nat64,
+  'total': IDL.Nat64
+});
+
+const InstitutionUsageStats = IDL.Record({
+  'query_others': IDL.Nat64,
+  'queried_by_others': IDL.Nat64,
+  'today_query_others': IDL.Nat64,
+  'today_queried_by_others': IDL.Nat64,
+  'monthly_queries': IDL.Nat64,
+  'total_queries': IDL.Nat64,
+  'api_quota': ApiQuota
+});
+
+const TokenInfo = IDL.Record({
+  'balance': IDL.Nat64,
+  'total_spent': IDL.Nat64,
+  'today_spent': IDL.Nat64,
+  'total_reward': IDL.Nat64,
+  'today_reward': IDL.Nat64,
+  'monthly_earned': IDL.Nat64,
+  'monthly_spent': IDL.Nat64
+});
+
+const ScoreHistory = IDL.Record({
+  'date': IDL.Text,
+  'score': IDL.Nat64
+});
+
+const CreditInfo = IDL.Record({
+  'credit_score': IDL.Nat64,
+  'credit_level': IDL.Text,
+  'score_history': IDL.Vec(ScoreHistory),
+  'data_quality_score': IDL.Nat64
+});
+
+const SystemStatus = IDL.Record({
+  'api_health': IDL.Bool,
+  'has_announcement': IDL.Bool,
+  'last_update_time': IDL.Nat64,
+  'system_version': IDL.Text
+});
+
+  const InstitutionDashboardData = IDL.Record({
+    'basic_info': BasicInfo,
+    'submission_stats': SubmissionStats,
+    'usage_stats': InstitutionUsageStats,
+    'token_info': TokenInfo,
+    'credit_info': CreditInfo,
+    'system_status': SystemStatus
+  });
+  const DataStats = IDL.Record({
+    'total_records': IDL.Nat64,
+    'today_records': IDL.Nat64,
+    'monthly_records': IDL.Nat64,
+    'growth_rate': IDL.Float64,
+    'data_distribution': DataDistribution
+  });
+  const InstitutionStats = IDL.Record({
+  'total_count': IDL.Nat64,
+  'active_count': IDL.Nat64,
+  'today_new_count': IDL.Nat64,
+  'monthly_new_count': IDL.Nat64,
+  'institution_growth_rate': IDL.Float64
+});
+
+const ApiStats = IDL.Record({
+  'total_calls': IDL.Nat64,
+  'today_calls': IDL.Nat64,
+  'monthly_calls': IDL.Nat64,
+  'success_rate': IDL.Float64,
+  'query_stats': IDL.Record({
+    'total_queries': IDL.Nat64,
+    'today_queries': IDL.Nat64,
+    'outbound_queries': IDL.Nat64,
+    'inbound_queries': IDL.Nat64
+  })
+});
+
+const TokenStats = IDL.Record({
+  'total_rewards': IDL.Nat64,
+  'total_consumption': IDL.Nat64,
+  'today_rewards': IDL.Nat64,
+  'today_consumption': IDL.Nat64,
+  'monthly_rewards': IDL.Nat64,
+  'monthly_consumption': IDL.Nat64,
+  'total_circulation': IDL.Nat64,
+  'average_daily_consumption': IDL.Float64
+});
+
+const LevelDistribution = IDL.Record({
+  'aaa_count': IDL.Nat64,
+  'aa_count': IDL.Nat64,
+  'a_count': IDL.Nat64,
+  'bbb_count': IDL.Nat64,
+  'bb_count': IDL.Nat64,
+  'other_count': IDL.Nat64
+});
+
+const ScoreTrend = IDL.Record({
+  'date': IDL.Text,
+  'score': IDL.Float64
+});
+
+const CreditStats = IDL.Record({
+  'average_score': IDL.Float64,
+  'level_distribution': LevelDistribution,
+  'score_trends': IDL.Vec(ScoreTrend)
+});
+
+// 最终的 AdminDashboardData 类型
+const AdminDashboardData = IDL.Record({
+  'institution_stats': InstitutionStats,
+  'data_stats': DataStats,
+  'api_stats': ApiStats,
+  'token_stats': TokenStats,
+  'credit_stats': CreditStats,
+  'system_status': SystemStatus
+});
   return IDL.Service({
     
   // 在 IDL.Service 中添加这些方法
@@ -311,7 +476,6 @@ let _lastRefreshTime = 0;
     'query_institution_records_list': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': InstitutionRecordResponse, 'Err': IDL.Text })], ['update']),
     'deduct_query_token': IDL.Func([IDL.Principal], [IDL.Variant({ 'Ok': IDL.Bool, 'Err': IDL.Text })], ['update']),
     'get_risk_assessment': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': RiskAssessment, 'Err': IDL.Text })], ['query']),
-    'query_records_by_user_did': IDL.Func([IDL.Text], [IDL.Vec(CreditRecord)], ['query']),
     'query_assessment_reports': IDL.Func([IDL.Principal, IDL.Opt(IDL.Nat64)], [AssessmentListResponse], ['query']),
     'query_institution_records_failed_list': IDL.Func(
       [IDL.Principal],
@@ -319,7 +483,7 @@ let _lastRefreshTime = 0;
         'Ok': InstitutionRecordResponse,
         'Err': IDL.Text
       })],
-      ['update']
+      ['query']
     ),
   
     'query_institution_records_list': IDL.Func(
@@ -336,12 +500,15 @@ let _lastRefreshTime = 0;
       [IDL.Vec(CreditRecord)],
       ['query']
     ),
-  
+    
     'query_records_by_user_did': IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(CreditRecord)],
-      ['query']
-    ),
+    [IDL.Principal, IDL.Text],  // [机构ID, 用户DID]
+    [IDL.Variant({             // 返回 Result
+      'Ok': IDL.Vec(CreditRecord),
+      'Err': IDL.Text
+    })],
+    ['query']
+  ),
   
     'get_record_statistics': IDL.Func(
       [IDL.Opt(IDL.Principal)],
@@ -359,6 +526,42 @@ let _lastRefreshTime = 0;
         'Err': IDL.Text
       })],
       ['update']
+    ),
+     // 新增服务设置相关方法
+     'get_institution_settings': IDL.Func(
+      [],
+      [ServiceSettingsResponse],
+      ['query']
+    ),
+
+  'get_admin_dashboard_data': IDL.Func(
+    [], // 无参数
+    [AdminDashboardData], // 返回管理员仪表板数据
+    ['query'] // 查询方法
+  ),
+
+  'get_institution_dashboard_data': IDL.Func(
+    [IDL.Principal], // 参数：机构 ID
+    [IDL.Variant({
+      'Ok': InstitutionDashboardData,
+      'Err': IDL.Text
+    })], // 返回机构仪表板数据或错误
+    ['query'] // 查询方法
+  ),
+    'update_service_settings': IDL.Func(
+      [UpdateServiceSettingsRequest],
+      [IDL.Variant({ 'Ok': IDL.Null, 'Err': IDL.Text })],
+      ['update']
+    ),  'query_record_by_id': IDL.Func(
+      [
+        IDL.Text,  // record_id
+        IDL.Principal  // institution_id 可选参数
+      ],
+      [IDL.Variant({
+        'Ok': CreditRecord,
+        'Err': IDL.Text
+      })],
+      ['query']  // 标记为查询方法
     ),
   });
 };

@@ -26,14 +26,17 @@ class AuthClientService {
           idleOptions: {
             idleTimeout: 1000 * 60 * 120, // 2 hours
             disableDefaultIdleCallback: true,
+            disableIdle: true  // 添加这行，完全禁用空闲检测
           },
           storage,
+          silentAuth: true,
           keyType: "Ed25519",
           devMode: process.env.NODE_ENV !== "production",
           features: ['no-recovery-methods', 'no-device-registration', 'dev-mode']
         });
         
         console.log("[AuthClientService.init] Auth client created successfully");
+        console.log('是否认证',this.authClient.isAuthenticated())
 
         // 如果已经认证，恢复identity和agent
         if (await this.authClient.isAuthenticated()) {

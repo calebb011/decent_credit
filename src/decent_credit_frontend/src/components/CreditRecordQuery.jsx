@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { queryRecordsByUserDid } from '../services/institutionQueryRecordService';
-import { queryRecordList, getRiskAssessment } from '../services/institutionQueryRecordService';
+import { queryRecordById, getRiskAssessment } from '../services/institutionQueryRecordService';
 
 import RiskAssessmentReport from './RiskAssessmentReport';
 
@@ -72,48 +72,58 @@ const CreditRecordQuery = () => {
   const handleViewDetails = async (record) => {
     setDetailLoading(true);
     try {
+      // 获取登录机构 ID
       const loginInstitutionId = localStorage.getItem('userPrincipal');
       if (!loginInstitutionId) {
-        throw new Error('请重新登录');
+        throw new Error('Please login again');
       }
-      
-      const response = await queryRecordList(loginInstitutionId, currentUserDid);
+  
+      if (!record?.id) {
+        throw new Error('Record ID is required');
+      }
+  
+      // 查询记录详情
+      const response = await queryRecordById(record.id,loginInstitutionId );
       console.log('Details response:', response);
   
       // 检查响应数据
-      if (response && response.records && response.records.length > 0) {
+      if (response.success && response.data) {
+        // 格式化详情数据
         const formattedDetails = {
-          institution_name: record.institution_full_name,
-          records: response.records.map(item => ({
-            id: item.id,
-            // 不需要额外添加 'Record' 后缀，因为 getRecordTypeConfig 已经处理了基础类型
-            record_type: item.record_type === 'loan' ? 'LoanRecord' :
-                        item.record_type === 'repayment' ? 'RepaymentRecord' :
-                        item.record_type === 'notification' ? 'NotificationRecord' : 
-                        item.record_type,
-            timestamp: item.timestamp,
-            status: item.status === 'pending' ? 'Pending' :
-                   item.status === 'confirmed' ? 'Confirmed' :
-                   item.status === 'failed' ? 'Failed' : 
-                   item.status,
-            content: item.content  // 直接使用 content
-          }))
+          institution_name: response.data.institution_full_name,
+          institution_id: loginInstitutionId, // 添加机构ID
+          records: [{
+            id: response.data.id,
+            record_type: response.data.record_type === 'loan' ? 'LoanRecord' :
+                        response.data.record_type === 'repayment' ? 'RepaymentRecord' :
+                        response.data.record_type === 'notification' ? 'NotificationRecord' :
+                        response.data.record_type,
+            timestamp: response.data.timestamp,
+            status: response.data.status === 'pending' ? 'Pending' :
+                   response.data.status === 'confirmed' ? 'Confirmed' :
+                   response.data.status === 'failed' ? 'Failed' :
+                   response.data.status,
+            content: response.data.content,
+            event_date: response.data.event_date,
+            user_did: response.data.user_did,
+            canister_id: response.data.canister_id,
+            reward_amount: response.data.reward_amount
+          }]
         };
-        
+  
         setCurrentDetails(formattedDetails);
         setDetailVisible(true);
-        message.success('查询成功');
+        message.success('Query successful');
       } else {
-        throw new Error('未获取到记录详情');
+        throw new Error(response.message || 'No record details found');
       }
     } catch (error) {
-      console.error('查询详情失败:', error);
-      message.error('查询详情失败: ' + (error.message || '未知错误'));
+      console.error('Failed to query details:', error);
+      message.error('Failed to query details: ' + (error.message || 'Unknown error'));
     } finally {
       setDetailLoading(false);
     }
   };
-  
  
   const handleRiskAssessment = async () => {
     setAssessmentLoading(true);

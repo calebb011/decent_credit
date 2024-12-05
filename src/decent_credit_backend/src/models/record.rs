@@ -130,8 +130,7 @@ pub struct RecordQueryParams {
     pub institution_id: Option<Principal>,
     pub user_did: Option<String>,
     pub record_type: Option<RecordType>,
-    pub start_date: Option<String>,
-    pub end_date: Option<String>,
+    pub start_date: String,
     pub status: Option<RecordStatus>
 }
 

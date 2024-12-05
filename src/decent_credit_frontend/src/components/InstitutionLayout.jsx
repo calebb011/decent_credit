@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, Building2, FileText } from 'lucide-react';
+import { 
+  LogOut, 
+  LayoutDashboard, 
+  Building2, 
+  FileSearch, 
+  Settings,
+  History,
+  FileBarChart,
+  ChevronDown
+} from 'lucide-react';
 import InstitutionDashboard from './InstitutionDashboard';
 import CreditRecordQuery from './CreditRecordQuery';
 import InstitutionRecordSubmission from './InstitutionRecordSubmission';
 import FailedRecordsView from './FailedRecordsView';
 import UserReportList from './UserReportList';
+import InstitutionSettings from './InstitutionSettings';
 import { authClientService } from '../services/authClient';
 
 const DcLogo = () => (
@@ -40,6 +50,7 @@ const InstitutionLayout = ({ children }) => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState('overview');
   const [userId, setUserId] = useState('');
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   useEffect(() => {
     const userPrincipal = localStorage.getItem('userPrincipal');
@@ -57,6 +68,8 @@ const InstitutionLayout = ({ children }) => {
     switch (activePage) {
       case 'overview':
         return <InstitutionDashboard />;
+      case 'settings':
+        return <InstitutionSettings />;
       case 'submit':
         return <InstitutionRecordSubmission />;
       case 'credits':
@@ -71,16 +84,44 @@ const InstitutionLayout = ({ children }) => {
   };
 
   const menuItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'submit', label: 'Submit', icon: Building2 },
-    { id: 'credits', label: 'Query', icon: FileText },
-    { id: 'history', label: 'History', icon: FileText },
-    { id: 'report', label: 'Report', icon: FileText }
+    { 
+      id: 'overview', 
+      label: 'Overview', 
+      icon: LayoutDashboard 
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: Settings
+    },
+    { 
+      id: 'submit', 
+      label: 'Submit', 
+      icon: Building2 
+    },
+    { 
+      id: 'credits', 
+      label: 'Query', 
+      icon: FileSearch 
+    }
+  ];
+
+  const analyticsItems = [
+    { 
+      id: 'history', 
+      label: 'History', 
+      icon: History 
+    },
+    { 
+      id: 'report', 
+      label: 'Reports', 
+      icon: FileBarChart 
+    }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-      <nav className="bg-black/30 backdrop-blur-sm border-b border-gray-700">
+      <nav className="bg-black/30 backdrop-blur-sm border-b border-gray-700 relative z-50">
         <div className="px-4 mx-auto">
           <div className="flex justify-between items-center h-12">
             <div className="flex items-center space-x-4">
@@ -113,6 +154,49 @@ const InstitutionLayout = ({ children }) => {
                       </button>
                     );
                   })}
+
+                  {/* Analytics Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+                      className="relative px-3 py-1.5 text-sm font-medium transition-all duration-300 ease-out group"
+                    >
+                      <span className={`relative z-10 flex items-center space-x-1 ${
+                        analyticsItems.some(item => activePage === item.id)
+                          ? 'text-blue-400'
+                          : 'text-gray-300 hover:text-white'
+                      }`}>
+                        <FileBarChart className="w-4 h-4 mr-1" />
+                        Analytics
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isAnalyticsOpen ? 'rotate-180' : ''}`} />
+                      </span>
+                    </button>
+                    
+                    {isAnalyticsOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg py-1 z-40">
+                        {analyticsItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setActivePage(item.id);
+                                setIsAnalyticsOpen(false);
+                              }}
+                              className={`w-full px-4 py-2 text-sm flex items-center space-x-2 ${
+                                activePage === item.id
+                                  ? 'text-blue-400 bg-gray-700'
+                                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                              }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{item.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,7 +217,7 @@ const InstitutionLayout = ({ children }) => {
         </div>
       </nav>
 
-      <main className="px-4 py-4 mx-auto">
+      <main className="px-4 py-4 mx-auto relative z-0">
         <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 min-h-[calc(100vh-7rem)]">
           {renderContent()}
         </div>

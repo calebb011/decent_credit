@@ -27,19 +27,48 @@ pub fn get_risk_assessment(institution_id: Principal, user_did: String) -> Resul
         }
     })
 }
-
 #[query]
 pub async fn query_assessment_reports(institution_id: Principal, days: Option<u64>) -> AssessmentListResponse {
     let caller = ic_cdk::caller();
-    debug!("query_assessment_reports {}", institution_id);
-
-    CREDIT_SERVICE.with(|service| {
+    info!("Starting query_assessment_reports for institution: {}", institution_id);
+    
+    let response = CREDIT_SERVICE.with(|service| {
         let service = service.borrow();
-        service.query_assessment_reports(institution_id, days)
-    })
+        let result = service.query_assessment_reports(institution_id, days);
+        
+        info!(
+            "Query result - Status: {}, Reports count: {}", 
+            result.status,
+            result.data.len()
+        );
+        
+        if result.data.is_empty() {
+            info!("No reports found for institution");
+        } else {
+            info!("Found {} reports for institution", result.data.len());
+            // 可以添加一些报告的基本信息
+            for (index, report) in result.data.iter().enumerate() {
+                info!(
+                    "Report {}: ID: {}, User: {}, Created: {}", 
+                    index + 1,
+                    report.report_id,
+                    report.user_did,
+                    report.created_at
+                );
+            }
+        }
+        
+        result
+    });
+    
+    info!(
+        "Completed query_assessment_reports for institution: {}, returned {} reports",
+        institution_id,
+        response.data.len()
+    );
+    
+    response
 }
-
-
 
 
 candid::export_service!();

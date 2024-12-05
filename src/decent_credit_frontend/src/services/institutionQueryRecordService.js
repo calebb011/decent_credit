@@ -1,23 +1,32 @@
 import { Principal } from '@dfinity/principal';
 import { getActor } from './IDL';
 
-export const queryRecordsByUserDid = async (userDid) => {
-  if (!userDid?.trim()) {
-    return {
-      success: false,
-      message: '用户DID不能为空'
-    };
-  }
-
+// 向 RecordService.js 中添加新方法
+export const queryRecordById = async (recordId,loginInstitutionId) => {
   try {
+    if (!recordId?.trim()) {
+      return {
+        success: false,
+        message: 'Record ID cannot be empty'
+      };
+    }
+
     const actor = await getActor();
-    const records = await actor.query_records_by_user_did(userDid);
-    console.log(records)
-    const formattedRecords = records.map(record => ({
+    const principal_id = Principal.fromText(loginInstitutionId);
+
+    const result = await actor.query_record_by_id(recordId,principal_id);
+
+    if ('Err' in result) {
+      throw new Error(result.Err);
+    }
+
+    // 格式化记录
+    const record = result.Ok;
+    const formattedRecord = {
       id: record.id,
       institution_id: record.institution_id.toText(),
-      institution_name:record.institution_name,
-      institution_full_name:record.institution_full_name,
+      institution_name: record.institution_name,
+      institution_full_name: record.institution_full_name,
       user_did: record.user_did,
       event_date: record.event_date,
       record_type: formatRecordType(record.record_type),
@@ -26,18 +35,70 @@ export const queryRecordsByUserDid = async (userDid) => {
       status: formatStatus(record.status),
       reward_amount: record.reward_amount ? Number(record.reward_amount) : null,
       canister_id: record.canister_id
-    }));
+    };
 
     return {
       success: true,
-      data: formattedRecords
+      data: formattedRecord
     };
+
   } catch (error) {
-    console.error('查询记录失败:', error);
+    console.error('Query record by ID failed:', error);
     return {
       success: false,
-      message: error.message || '查询记录失败'
+      message: error.message || 'Failed to query record'
     };
+  }
+};
+
+export const queryRecordsByUserDid = async (userDid) => {
+  if (!userDid?.trim()) {
+      return {
+          success: false,
+          message: '用户DID不能为空'
+      };
+  }
+
+  try {
+      const actor = await getActor();
+      const principal = Principal.fromText(localStorage.getItem('userPrincipal'));
+      console.log("Principal object:", principal.toText()); 
+
+      const response = await actor.query_records_by_user_did(principal, userDid);
+
+      // 检查错误响应
+      if ('Err' in response) {
+          return {
+              success: false,
+              message: response  // 直接返回后端的错误信息
+          };
+      }
+
+      const records = response.Ok;
+      const formattedRecords = records.map(record => ({
+          id: record.id,
+          institution_id: record.institution_id.toText(),
+          institution_name: record.institution_name,
+          institution_full_name: record.institution_full_name,
+          user_did: record.user_did,
+          event_date: record.event_date,
+          record_type: formatRecordType(record.record_type),
+          content: formatRecordContent(record.content),
+          timestamp: Number(record.timestamp),
+          status: formatStatus(record.status),
+          reward_amount: record.reward_amount ? Number(record.reward_amount) : null,
+          canister_id: record.canister_id
+      }));
+
+      return {
+          success: true,
+          data: formattedRecords
+      };
+  } catch (error) {
+      return {
+          success: false,
+          message: (error.message || '查询记录失败') + (error?.detail ? `\n详细信息: ${error.detail}` : '')
+      };
   }
 };
 
@@ -108,7 +169,7 @@ export const queryAssessmentReports = async (institutionId, days = 30) => {
   try {
     const actor = await getActor();
     const principal = Principal.fromText(institutionId);
-    
+    console.log('query_assessment_reports')
     const response = await actor.query_assessment_reports(principal, [days]);
     console.log(response)
     return {
@@ -181,5 +242,7 @@ function formatRecordContent(content) {
 export default {
   queryRecordsByUserDid,
   queryRecordList,
-  getRiskAssessment
+  getRiskAssessment,
+  queryRecordById  // 添加新方法
+
 };

@@ -6,9 +6,7 @@ use serde::Serialize;
 use crate::services::admin_institution_service::ADMIN_SERVICE;
 use crate::models::record::{DCCTransactionRequest, BalanceResponse};
 use crate::models::dashboard::{AdminDashboardData};
-use crate::models::institution::{
-    Institution, LoginRequest, LoginResponse, RegisterRequest
-};
+use crate::models::institution::*;
 
 /// 注册新机构
 #[update]
@@ -32,6 +30,38 @@ pub async fn register_institution(request: RegisterRequest) -> Result<Principal,
     })
 }
 
+
+// 然后添加更新接口
+#[update]
+pub async fn update_service_settings(request: UpdateServiceSettingsRequest) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    info!("Service settings update initiated by {}", caller.to_text());
+    debug!("Update details - Service enabled: {}, Query price: {}, Reward ratio: {}", 
+        request.data_service_enabled,
+        request.query_price,
+        request.reward_share_ratio
+    );
+
+    // 验证参数
+    if request.reward_share_ratio > 100 {
+        error!("Invalid reward share ratio: {}", request.reward_share_ratio);
+        return Err("奖励分成比例必须在0-100之间".to_string());
+    }
+
+    ADMIN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        match service.update_service_settings(caller, request) {
+            Ok(_) => {
+                info!("Successfully updated service settings");
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to update service settings: {}", e);
+                Err(e)
+            }
+        }
+    })
+}
 /// 修改机构状态
 #[update]
 pub async fn update_institution_status(id: Principal, is_active: bool) -> Result<(), String> {
@@ -117,7 +147,7 @@ pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Resu
 
     ADMIN_SERVICE.with(|service| {
         let mut service = service.borrow_mut();
-        match service.process_dcc_recharge(id, request) {
+        match service.process_dcc_reward(id, request) {
             Ok(_) => {
                 info!("Successfully processed DCC recharge");
                 Ok(())

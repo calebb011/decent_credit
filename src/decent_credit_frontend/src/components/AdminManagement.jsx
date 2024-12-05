@@ -80,7 +80,6 @@ const InstitutionList = () => {
     setInstitutions(data);
   }
   const handleDCCOperation = async (e) => {
-    e.preventDefault();
     
     try {
       const operationData = {

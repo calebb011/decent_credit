@@ -6,10 +6,22 @@ export async function queryFailedRecordsList(institutionId) {
  
 
   try {
-    const institutionPrincipal = Principal.fromText(institutionId);
+     // 首先确保我们有有效的 institutionId
+     if (!institutionId) {
+      throw new Error('Institution ID is required');
+    }
+
+    // 使用 Principal.fromText() 创建 Principal 对象
+    let principalId;
+    try {
+      principalId = Principal.fromText(institutionId);
+    } catch (error) {
+      console.error('Error creating Principal:', error);
+      throw new Error('Invalid institution ID format');
+    }
     const actor = await getActor();
-    const result = await actor.query_institution_records_failed_list(institutionPrincipal);
-    
+    const result = await actor.query_institution_records_failed_list(principalId);
+    console.log(result)
     if ('Err' in result) {
       return {
         success: false,

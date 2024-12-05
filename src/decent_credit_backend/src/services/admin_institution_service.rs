@@ -89,7 +89,7 @@ impl AdminService {
             join_time: time(),
             last_active: time(),
             api_calls: 0,
-            dcc_consumed: 0,
+            dcc_consumed: 100,
             data_uploads: 0,
             credit_score: CreditScore {
                 score: 80,
@@ -99,6 +99,11 @@ impl AdminService {
                 bought: 0,
                 sold: 0,
             },
+            data_service_enabled:true,
+            query_price:0,
+            reward_share_ratio:0,
+            inbound_queries:0,
+            outbound_queries:0
         };
 
         self.institutions.insert(institution_id, institution);
@@ -124,7 +129,31 @@ impl AdminService {
             Err("机构不存在".to_string())
         }
     }
+    pub fn update_service_settings(
+        &mut self,
+        institution_id: Principal,
+        request: UpdateServiceSettingsRequest
+    ) -> Result<(), String> {
+        // 获取机构信息
+        let institution = self.institutions.get_mut(&institution_id)
+            .ok_or_else(|| "机构不存在".to_string())?;
+        
+        // 更新设置
+        institution.data_service_enabled = request.data_service_enabled;
+        institution.query_price = request.query_price;
+        institution.reward_share_ratio = request.reward_share_ratio;
 
+        // 记录更新
+        info!(
+            "Updated service settings for institution {}: enabled={}, price={}, ratio={}", 
+            institution.name,
+            request.data_service_enabled,
+            request.query_price,
+            request.reward_share_ratio
+        );
+
+        Ok(())
+    }
     pub fn get_institution(&self, id: Principal) -> Option<Institution> {
         self.institutions.get(&id).cloned()
     }
@@ -154,12 +183,25 @@ impl AdminService {
             Err("机构不存在".to_string())
         }
     }
-    pub fn institution_record_api_call(&mut self, id: Principal, count: u64) {
+    pub fn institution_record_api_call(&mut self, id: Principal, record: CreditRecord, count: u64) {
         info!("institution_record_api_call: {}", id.to_text());
-
+        
+        // 更新查询方的统计
         if let Some(institution) = self.institutions.get_mut(&id) {
             institution.api_calls += count;
+            // 如果查询的不是自己的记录，增加对外查询计数
+            if record.institution_id != id {
+                institution.outbound_queries += count;
+            }
             institution.last_active = time();
+        }
+    
+        // 如果查询的不是自己的记录，更新被查询方的统计
+        if record.institution_id != id {
+            if let Some(target_institution) = self.institutions.get_mut(&record.institution_id) {
+                target_institution.inbound_queries += count;
+                target_institution.last_active = time();
+            }
         }
     }
 
@@ -191,7 +233,7 @@ impl AdminService {
         })
     }
 
-    pub fn process_dcc_recharge(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+    pub fn process_dcc_reward(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
         let institution = self.institutions
             .get_mut(&id)
             .ok_or_else(|| "机构不存在".to_string())?;
@@ -244,101 +286,7 @@ impl AdminService {
 
 
 
-    pub fn get_statistics(&self) -> AdminStatistics {
-        let total_institutions = self.institutions.len();
-        let active_institutions = self.institutions
-            .values()
-            .filter(|i| matches!(i.status, InstitutionStatus::Active))
-            .count();
-        
-        let total_dcc_consumed = self.institutions
-            .values()
-            .map(|i| i.dcc_consumed)
-            .sum();
 
-        AdminStatistics {
-            total_institutions: total_institutions as u64,
-            active_institutions: active_institutions as u64,
-            total_dcc_consumed,
-        }
-    }
-
-    pub fn get_admin_dashboard(&self) -> AdminDashboardData {
-        let total_institutions = self.institutions.len() as u64;
-        let active_institutions = self.institutions
-            .values()
-            .filter(|i| matches!(i.status, InstitutionStatus::Active))
-            .count() as u64;
-            
-        // 获取今日的起始时间戳
-        let today_start = {
-            let now = time();
-            now - (now % (24 * 60 * 60 * 1_000_000_000))
-        };
-
-        // 计算今日数据
-        let today_institutions = self.institutions
-            .values()
-            .filter(|i| i.join_time >= today_start)
-            .count() as u64;
-
-        let today_records = self.institutions
-            .values()
-            .filter(|i| i.last_active >= today_start)
-            .map(|i| i.data_uploads)
-            .sum::<u64>();
-
-        let today_calls = self.institutions
-            .values()
-            .filter(|i| i.last_active >= today_start)
-            .map(|i| i.api_calls)
-            .sum::<u64>();
-
-        let total_rewards: u64 = self.institutions
-            .values()
-            .map(|i| i.token_trading.bought)
-            .sum();
-
-        let total_consumption: u64 = self.institutions
-            .values()
-            .map(|i| i.token_trading.sold)
-            .sum();
-
-            AdminDashboardData {
-            institution_stats: InstitutionStats {
-                total_count: total_institutions,
-                active_count: active_institutions,
-                today_new_count: today_institutions,
-            },
-            data_stats: DataStats {
-                total_records: self.institutions.values().map(|i| i.data_uploads).sum(),
-                today_records,
-                growth_rate: self.calculate_growth_rate(
-                    self.institutions.values().map(|i| i.data_uploads).sum(),
-                    today_records
-                ),
-            },
-            api_stats: ApiStats {
-                total_calls: self.institutions.values().map(|i| i.api_calls).sum(),
-                today_calls,
-                success_rate: 99.9, // 固定值或根据实际错误率计算
-            },
-            token_stats: TokenStats {
-                total_rewards,
-                total_consumption,
-                today_rewards: self.dcc_transactions
-                    .iter()
-                    .filter(|tx| tx.created_at  >= today_start)
-                    .map(|tx| tx.dcc_amount)
-                    .sum(),
-                today_consumption: self.institutions
-                    .values()
-                    .filter(|i| i.last_active >= today_start)
-                    .map(|i| i.dcc_consumed)
-                    .sum(),
-            },
-        }
-    }
 
     // === 认证和会话相关方法 ===
 

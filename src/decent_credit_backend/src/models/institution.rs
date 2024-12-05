@@ -15,7 +15,14 @@ pub struct Institution {
     pub data_uploads: u64,
     pub credit_score: CreditScore,
     pub token_trading: TokenTrading,
+    // 新增字段
+    pub data_service_enabled: bool,      // 数据服务开关
+    pub query_price: u64,                // 查询价格(基础单价，单位：分)
+    pub reward_share_ratio: u8,          // 奖励分成比例(0-100)
+      pub inbound_queries: u64,     // 被其他机构查询次数
+      pub outbound_queries: u64,    // 查询其他机构次数
 }
+
 
 #[derive(CandidType, Deserialize, Clone)]
 pub struct CreditScore {
@@ -57,4 +64,11 @@ pub struct RegisterRequest {
     pub full_name: String,
     pub password: Option<String>, // 可选密码，如果不提供则使用默认密码
     pub principal: String
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct UpdateServiceSettingsRequest {
+    pub data_service_enabled: bool,
+    pub query_price: u64,
+    pub reward_share_ratio: u8,
 }

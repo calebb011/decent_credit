@@ -4,9 +4,9 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use log::{info, debug, warn, error};
 use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
-use crate::services::reports_storage::REPORTS_STORAGE;  // 移到顶部
+use crate::services::reports_storage::*;  // 移到顶部
 use crate::services::record_service::RECORD_SERVICE;  // 移到顶部
-use crate::services::storage_service::{with_storage_service};  // 移到顶部
+use crate::services::storage_service::*;  // 移到顶部
 use crate::utils::error::Error;
 
 use crate::models::credit::*;
@@ -66,7 +66,7 @@ impl CreditService {
         // 使用独立的 REPORTS_STORAGE 存储报告
         REPORTS_STORAGE.with(|storage| {
             let mut storage = storage.borrow_mut();
-            storage.store_report(institution_id, user_did, report);
+            storage.store_report(institution_id, report);
         });
 
         info!("Successfully created and stored risk assessment for user {}", user_did);
@@ -79,11 +79,10 @@ impl CreditService {
         institution_id: Principal,
         days: Option<u64>
     ) -> AssessmentListResponse {
-        let reports = REPORTS_STORAGE.with(|storage| {
-            let storage = storage.borrow();
-            storage.query_reports(institution_id, days)
-        });
-
+       // 使用 with_reports_storage 辅助函数来确保正确的借用
+    let reports = with_reports_storage(|storage| {
+        storage.query_reports(institution_id)
+    });
         AssessmentListResponse {
             status: "SUCCESS".to_string(),
             message: None,

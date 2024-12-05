@@ -3,6 +3,7 @@ import { Card, Form, Input, Select, Button, DatePicker, message, Alert, Tabs, Up
 import { InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { CodeBlock } from './code-block.js';
+import { submitRecord  } from '../services/institutionRecordSubmissionService';
 
 const { Option } = Select;
 
@@ -69,7 +70,6 @@ const InstitutionRecordSubmission = () => {
     }
   };
 
-  // 保持您原有的其他函数和代码...
   const batchJsonExample = [
     {
       userDid: "did:example:123",
@@ -92,8 +92,11 @@ const InstitutionRecordSubmission = () => {
     try {
       setLoading(true);
       console.log('Form submitted:', values);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success('Success');
+      const result = await submitRecord(values)
+      if (result.success) {
+        message.success('Submit success');
+
+      }
       form.resetFields();
     } catch (error) {
       console.error('Submit failed:', error);
@@ -203,27 +206,133 @@ const tabItems = [
     label: 'Batch Submit',
     children: (
       <Card className="bg-black/20 border-gray-700">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-gray-200">JSON Format Example</h3>
-          <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
-            <pre className="text-sm font-mono text-gray-200 whitespace-pre">
-              {JSON.stringify(batchJsonExample, null, 2)}
-            </pre>
+        <div className="space-y-6">
+          {/* API 信息部分 */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-200 mb-2">API Information</h3>
+            <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
+              <div>
+                <span className="text-purple-400">Endpoint: </span>
+                <code className="text-gray-300">/api/v1/credit-records/batch</code>
+              </div>
+              <div>
+                <span className="text-purple-400">Method: </span>
+                <code className="text-gray-300">POST</code>
+              </div>
+              <div>
+                <span className="text-purple-400">Content-Type: </span>
+                <code className="text-gray-300">application/json</code>
+              </div>
+              <div>
+                <span className="text-purple-400">Authorization: </span>
+                <code className="text-gray-300">Bearer {'<your-access-token>'}</code>
+              </div>
+              <div className="mt-4">
+                <span className="text-purple-400">Response Format:</span>
+                <pre className="text-gray-300 mt-2">
+                  {JSON.stringify({
+                    submitted: 2,           // 成功提交数量
+                    failed: 0,              // 失败数量
+                    record_ids: ["id1", "id2"], // 记录ID列表
+                    timestamp: 1638360000000,    // 时间戳
+                    status: "Pending"      // 记录状态
+                  }, null, 2)}
+                </pre>
+              </div>
+            </div>
           </div>
-        </div>
-        <Alert
-          message="Format Requirements"
-          description={
-            <ul className="list-disc list-inside text-gray-300">
-              <li>Date format: YYYY-MM-DD</li>
-              <li>Amount must be greater than 0</li>
-              <li>Interest rate is percentage (e.g. 4.35)</li>
-              <li>Loan term and overdue days must be integers</li>
+
+          {/* 基本说明部分 */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-200 mb-2">Batch Upload Instructions</h3>
+            <ul className="list-disc list-inside text-gray-300 space-y-2">
+              <li>Support three types of records: Loan, Repayment, and Notification records</li>
+              <li>Maximum 1000 records per batch submission</li>
+              <li>All amounts should be in base currency units (e.g., cents, not dollars)</li>
+              <li>Each record must contain required fields based on its type</li>
             </ul>
-          }
-          type="info"
-          showIcon
-        />
+          </div>
+
+          {/* 必填字段说明 */}
+          <div>
+            <h4 className="text-base font-medium text-gray-200 mb-2">Required Fields by Record Type:</h4>
+            <div className="space-y-4">
+              <div>
+                <p className="text-blue-400 mb-1">Loan Record:</p>
+                <ul className="list-disc list-inside text-gray-300 ml-4">
+                  <li>userDid - User's DID identifier</li>
+                  <li>amount - Loan amount in base units</li>
+                  <li>eventDate - Format: YYYY-MM-DD</li>
+                  <li>termMonths - Loan term in months</li>
+                  <li>interestRate - Annual rate (e.g., 4.35 for 4.35%)</li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-green-400 mb-1">Repayment Record:</p>
+                <ul className="list-disc list-inside text-gray-300 ml-4">
+                  <li>userDid - User's DID identifier</li>
+                  <li>amount - Repayment amount in base units</li>
+                  <li>eventDate - Format: YYYY-MM-DD</li>
+                  <li>loanId - Original loan identifier</li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-yellow-400 mb-1">Notification Record:</p>
+                <ul className="list-disc list-inside text-gray-300 ml-4">
+                  <li>userDid - User's DID identifier</li>
+                  <li>amount - Notification amount</li>
+                  <li>eventDate - Format: YYYY-MM-DD</li>
+                  <li>days - Number of days</li>
+                  <li>periodAmount - Amount per period</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* 请求示例 */}
+          <div>
+            <h4 className="text-base font-medium text-gray-200 mb-2">Request Example:</h4>
+            <div className="bg-gray-800/50 rounded-lg p-4 font-mono text-sm whitespace-pre">
+{`{
+  "records": [
+    {
+      "userDid": "did:example:123",
+      "recordType": "loan",
+      "amount": 5000000,        // 50000.00 in base units
+      "eventDate": "2024-03-01",
+      "termMonths": 12,
+      "interestRate": 4.35
+    },
+    {
+      "userDid": "did:example:456",
+      "recordType": "repayment",
+      "amount": 250000,         // 2500.00 in base units
+      "eventDate": "2024-03-02",
+      "loanId": "LOAN123456"
+    }
+  ]
+}`}
+            </div>
+          </div>
+
+          
+          {/* 验证提示 */}
+          <Alert
+            message="Data Validation Requirements"
+            description={
+              <ul className="list-disc list-inside text-gray-300">
+                <li>All dates must be in YYYY-MM-DD format and not in the future</li>
+                <li>All amounts must be positive numbers in base currency units</li>
+                <li>Interest rates must be between 0 and 100</li>
+                <li>Loan terms must be positive integers</li>
+                <li>User DID must be properly formatted</li>
+                <li>Each batch must not exceed 1000 records</li>
+              </ul>
+            }
+            type="info"
+            showIcon
+          />
+        </div>
       </Card>
     )
   },

@@ -63,11 +63,8 @@ export const getAdminDashboardData = async () => {
             bbbCount: data.credit_stats.level_distribution.bbb_count,
             bbCount: data.credit_stats.level_distribution.bb_count,
             otherCount: data.credit_stats.level_distribution.other_count
-          },
-          scoreTrends: data.credit_stats.score_trends.map(trend => ({
-            date: trend.date,
-            score: trend.score
-          }))
+          }
+          
         },
         systemStatus: data.system_status
       }
@@ -141,10 +138,7 @@ export const getInstitutionDashboardData = async (institutionId) => {
         creditInfo: {
           creditScore: data.credit_info.credit_score,
           creditLevel: data.credit_info.credit_level,
-          scoreHistory: data.credit_info.score_history.map(history => ({
-            date: history.date,
-            score: history.score
-          })),
+
           dataQualityScore: data.credit_info.data_quality_score
         },
         systemStatus: {

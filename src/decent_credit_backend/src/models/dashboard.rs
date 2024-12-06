@@ -166,11 +166,6 @@ pub struct CreditInfo {
     pub data_quality_score: u64,
 }
 
-#[derive(CandidType, Serialize)]
-pub struct ScoreHistory {
-    pub date: String,
-    pub score: u64,
-}
 
 #[derive(CandidType, Serialize)]
 pub struct SystemStatus {

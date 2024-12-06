@@ -6,3 +6,4 @@ pub mod dashboard_service;
 pub mod storage_service;
 pub mod credit_service;
 pub mod reports_storage;
+pub mod token_service;

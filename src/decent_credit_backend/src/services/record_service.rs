@@ -9,6 +9,8 @@ use crate::services::storage_service::{self, with_storage_service};  // 修改�
 use crate::services::zk_proof_service::ZKProofService;
 use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
 use crate::utils::error::Error;
+use crate::services::dashboard_service::DASHBOARD_SERVICE;
+use crate::services::token_service::*;
 
 use crate::models::record::*;
 
@@ -21,6 +23,15 @@ thread_local! {
 }
 
 
+// 代币操作的数据结构
+#[derive(Clone)]
+pub struct TokenOperation {
+    from_id: Principal,
+    to_id: Principal,
+    user_did: String,
+    query_price: u64,
+    record: CreditRecord,
+}
 pub struct RecordService {
     storage_canister_id: Principal,
     records: HashMap<String, CreditRecord>,
@@ -264,105 +275,216 @@ impl RecordService {
             })
         }
     }
-    pub fn get_record_by_id(&self, record_id: &str, institution_id: Principal) -> Option<CreditRecord> {
-        // 1. 从本地缓存中获取记录
-        if let Some(record) = self.records.get(record_id) {
-            // 2. 从链上验证记录有效性
-            if let Some((storage_id, proof)) = with_storage_service(|service| {
-                service.get_chain_data(record_id)
-                    .map(|(sid, p)| (sid.clone(), p.clone()))
+  // 保持同步查询，异步代币操作    
+pub fn get_record_by_id(&self, record_id: &str, institution_id: Principal) -> Option<CreditRecord> {
+    if let Some(record) = self.records.get(record_id) {
+        if let Some((storage_id, proof)) = with_storage_service(|service| {
+            service.get_chain_data(record_id)
+                .map(|(sid, p)| (sid.clone(), p.clone()))
+        }) {
+            if let Some(encrypted_data) = with_storage_service(|service| {
+                service.get_data(&storage_id).cloned()
             }) {
-                // 3. 从 Canister 获取加密数据
-                if let Some(encrypted_data) = with_storage_service(|service| {
-                    service.get_data(&storage_id).cloned()
+                if with_crypto_service(|service| {
+                    service.decrypt(&encrypted_data).is_ok()
                 }) {
-                    // 4. 验证并解密
-                    if with_crypto_service(|service| {
-                        service.decrypt(&encrypted_data).is_ok()
-                    }) {
-                        
-                        // 4. 记录API调用
-                        ADMIN_SERVICE.with(|service| {
-                            let mut service = service.borrow_mut();
-                            service.institution_record_api_call(institution_id,record.clone(), 1);
+                    // 记录API调用
+                    ADMIN_SERVICE.with(|service| {
+                        let mut service = service.borrow_mut();
+                        service.institution_record_api_call(institution_id, record.clone(), 1);
+                    });
+
+                    // 如果不是查询自己的记录，异步处理代币操作
+                    if record.institution_id != institution_id {
+                        // 获取查询价格
+                        let target_institution = ADMIN_SERVICE.with(|service| {
+                            let service = service.borrow();
+                            service.get_institution(record.institution_id)
                         });
-                        // 验证通过，返回记录
-                        return Some(record.clone());
-                    } else {
-                        ic_cdk::println!("Failed to decrypt data for record: {}", record_id);
+
+                        // 如果机构存在，处理代币操作
+                        if let Some(target_institution) = target_institution {
+                            let token_op = TokenOperation {
+                                from_id: institution_id,
+                                to_id: record.institution_id,
+                                user_did: record.user_did.clone(),
+                                query_price: target_institution.query_price,
+                                record: record.clone(),
+                            };
+
+                            // 在后台异步处理代币操作
+                            ic_cdk::spawn(async move {
+                                if let Err(e) = RecordService::process_token_operation(token_op).await {
+                                    error!("代币操作处理失败: {}", e);
+                                }
+                            });
+                        } else {
+                            warn!("未找到机构信息，跳过代币处理: {}", record.institution_id);
+                        }
                     }
+                    
+                    return Some(record.clone());
                 } else {
-                    ic_cdk::println!("No encrypted data found for storage_id: {}", storage_id);
+                    error!("无法解密记录数据: {}", record_id);
                 }
             } else {
-                ic_cdk::println!("No chain data found for record: {}", record_id);
+                error!("未找到加密数据，存储ID: {}", storage_id);
+            }
+        } else {
+            error!("未找到链上数据，记录ID: {}", record_id);
+        }
+    }
+    None
+}
+
+pub async fn process_token_operation(op: TokenOperation) -> Result<(), String> {
+    let TokenOperation {
+        from_id,
+        to_id,
+        user_did,
+        query_price,
+        record: _, // 明确标记为未使用
+    } = op;
+
+    // 1. 准备同步参数
+    let (fee_transfer_args, reward_transfer_args) = TOKEN_SERVICE.with(|service| {
+        let mut service = service.borrow_mut();
+        
+        let fee_args = service.prepare_query_fee(
+            from_id, 
+            to_id, 
+            user_did.clone(), 
+            query_price
+        ).map_err(|e| e.to_string())?;
+
+        let reward_args = service.prepare_query_reward(
+            to_id,
+            user_did
+        ).map_err(|e| e.to_string())?;
+
+        Ok::<_, String>((fee_args, reward_args))
+    })?;
+
+    let price = ADMIN_SERVICE.with(|service| {
+        let service = service.borrow();
+        service.get_institution(target_institution_id)
+            .ok_or_else(|| "目标机构不存在".to_string())
+            .map(|inst| inst.query_price)
+    })?;
+    // 2. 克隆需要在 async 块中使用的所有数据
+    let token_canister_id = TOKEN_SERVICE.with(|service| {
+        service.borrow().token_canister_id
+    });
+    
+    // 3. 执行异步操作，在 async move 块中只使用已克隆的数据
+    async move {
+        // 执行查询费用的异步转账
+        let result: Result<(TransferResult,), _> = ic_cdk::call(
+            token_canister_id,
+            "transfer",
+            (fee_transfer_args,)
+        ).await;
+
+        match result {
+            Ok(_) => (),
+            Err((_, msg)) => return Err(format!("Fee transfer failed: {}", msg)),
+        }
+
+        // 如果有奖励，执行查询奖励的异步转账
+        if let Some(reward_args) = reward_transfer_args {
+            let result: Result<(TransferResult,), _> = ic_cdk::call(
+                token_canister_id,
+                "transfer",
+                (reward_args,)
+            ).await;
+
+            match result {
+                Ok(_) => (),
+                Err((_, msg)) => return Err(format!("Reward transfer failed: {}", msg)),
             }
         }
+
+        Ok(())
+    }.await
+}
+
+        pub fn get_record_userId(
+            &mut self, 
+            institution_id: Principal,
+            user_did: String
+        ) -> Result<Vec<CreditRecord>, String> {
+            let local_records: Vec<CreditRecord> = self.records.values()
+                .filter(|r| r.user_did == user_did)
+                .cloned()
+                .collect();
+            
+            let mut result = Vec::new();
+            let mut token_operations = Vec::new();
         
-        None
-    }
-    pub fn get_record_userId(&mut self, institution_id: Principal, user_did: String) -> Result<Vec<CreditRecord>, String> {
-        // 1. 先收集所有符合条件的记录
-        let local_records: Vec<CreditRecord> = self.records.values()
-            .filter(|r| r.user_did == user_did)
-            .cloned()
-            .collect();
-        
-        let mut result = Vec::new();
-    
-        // 2. 处理每条记录
-        for record in local_records {
-            // 3. 验证记录有效性
-            if let Some((storage_id, _)) = with_storage_service(|service| {
-                service.get_chain_data(&record.id)
-                    .map(|(sid, p)| (sid.clone(), p.clone()))
-            }) {
-                if let Some(encrypted_data) = with_storage_service(|service| {
-                    service.get_data(&storage_id).cloned()
+            for record in local_records {
+                if let Some((storage_id, _)) = with_storage_service(|service| {
+                    service.get_chain_data(&record.id)
                 }) {
-                    if with_crypto_service(|service| {
-                        service.decrypt(&encrypted_data).is_ok()
+                    if let Some(encrypted_data) = with_storage_service(|service| {
+                        service.get_data(&storage_id).cloned()
                     }) {
-                        // 如果不是查询自己的记录
-                        if record.institution_id != institution_id {
-                            // 检查被查询机构是否开启服务
-                            let target_institution = ADMIN_SERVICE.with(|service| {
-                                let service = service.borrow();
-                                service.get_institution(record.institution_id)
-                                    .ok_or_else(|| "机构不存在".to_string())
-                            })?;
-    
-                            // 检查是否开启数据服务
-                            if !target_institution.data_service_enabled {
-                                return Err(format!(
-                                    "机构 {} 未开启数据服务",
-                                    target_institution.name
-                                ));
+                        if with_crypto_service(|service| {
+                            service.decrypt(&encrypted_data).is_ok()
+                        }) {
+                            if record.institution_id != institution_id {
+                                // 检查被查询机构是否开启服务
+                                let target_institution = ADMIN_SERVICE.with(|service| {
+                                    let service = service.borrow();
+                                    service.get_institution(record.institution_id)
+                                        .ok_or_else(|| "机构不存在".to_string())
+                                })?;
+        
+                                if !target_institution.data_service_enabled {
+                                    return Err(format!(
+                                        "机构 {} 未开启数据服务",
+                                        target_institution.name
+                                    ));
+                                }
+        
+                                // 立即更新查询统计
+                                ADMIN_SERVICE.with(|service| {
+                                    let mut service = service.borrow_mut();
+                                    service.increment_outbound_queries(institution_id);
+                                    service.increment_inbound_queries(record.institution_id);
+                                });
+        
+                                // 收集代币操作信息
+                                token_operations.push(TokenOperation {
+                                    from_id: institution_id,
+                                    to_id: record.institution_id,
+                                    user_did: user_did.clone(),
+                                    query_price: target_institution.query_price,
+                                    record: record.clone(),
+                                });
                             }
-    
-                            // 先扣减查询代币
-                            self.deduct_query_token(
-                                institution_id,
-                                record.institution_id, 
-                                user_did.to_string()
-                            )?;
-                            
-                            // 再发放奖励
-                            self.reward_query_token(
-                                record.institution_id,
-                                record.clone(),
-                                user_did.to_string()
-                            )?;
+                            result.push(record);
                         }
-                        result.push(record);
                     }
                 }
             }
+    
+            // 异步处理代币操作
+            if !token_operations.is_empty() {
+                ic_cdk::spawn(async move {
+                    for op in token_operations {
+                        if let Err(e) = Self::process_token_operation(op).await {
+                            error!("代币操作处理失败: {:?}", e);
+                            // TODO: 可以添加重试逻辑或错误补偿机制
+                        }
+                    }
+                });
+            }
+        
+            Ok(result)
         }
     
-        Ok(result)
-    }
-  
+   
+    
     pub fn get_failed_records_storage(&mut self, institution_id: Principal) -> Result<InstitutionRecordResponse, String> {
         // 1. 验证机构信息
         let institution = ADMIN_SERVICE.with(|service| {
@@ -563,7 +685,7 @@ impl RecordService {
         institution_id: Principal,
         user_did: &str,
     ) -> Result<InstitutionRecordResponse, String> {
-        // 1. 验证机构信息
+        // 验证机构信息
         let institution = ADMIN_SERVICE.with(|service| {
             let service = service.borrow();
             service.get_institution(institution_id)
@@ -571,25 +693,24 @@ impl RecordService {
         })?;
         
         info!("Fetching records for institution: {}", institution.full_name);
-    
-        // 3. 获取用户记录
+
+        // 获取用户记录，这个方法已经包含了异步的代币处理
         let records = self.get_record_userId(institution_id, user_did.to_string())?;
         
-        // 4. 记录日志信息
         if records.is_empty() {
             info!("No records found for user: {}", user_did);
         } else {
             info!("Found {} records for user", records.len());
         }
     
-        // 5. 返回响应
         Ok(InstitutionRecordResponse {
             institution_id,
             institution_name: institution.full_name,
             user_did: user_did.to_string(),
-            records // 现在records是Result的内部值
+            records
         })
     }
+
 
 
 
@@ -660,100 +781,29 @@ impl RecordService {
         Ok(record)
     }
     pub fn reward_query_token(
-        &mut self,
-        target_institution_id: Principal,  // 被查询方(应该获得奖励的机构)
-        record: CreditRecord,  // 需要传入相关记录
-        user_did: String
-    ) -> Result<bool, String> {
-        // 1. 验证被查询机构信息并获取奖励设置
-        let target_institution = ADMIN_SERVICE.with(|service| {
-            let service = service.borrow();
-            service.get_institution(target_institution_id)
-                .ok_or_else(|| "机构不存在".to_string())
-        })?;
-    
-        // 2. 计算奖励金额
-        let base_amount = target_institution.query_price;
-        let reward_ratio = target_institution.reward_share_ratio as f64 / 100.0;
-        let reward_amount = (base_amount as f64 * reward_ratio) as u64;
-    
-        // 3. 执行奖励发放
-        ADMIN_SERVICE.with(|service| {
-            let mut service = service.borrow_mut();
-            
-            // 3.1. 记录API调用和查询统计
-            service.institution_record_api_call(target_institution_id, record.clone(), 1);
-            
-            // 3.2. 执行代币奖励
-            let request = DCCTransactionRequest {
-                dcc_amount: reward_amount,
-                usdt_amount: 0.0,
-                tx_hash: format!("RWD{}_{}_{}",
-                    time() / 1_000_000_000,
-                    user_did.chars().take(8).collect::<String>(),
-                    reward_amount
-                ),
-                remarks: format!(
-                    "用户{}查询数据，奖励{}代币 ({}% of {})", 
-                    user_did,
-                    reward_amount,
-                    target_institution.reward_share_ratio,
-                    base_amount
-                ),
-                created_at: time(),
-            };
-            
-            service.process_dcc_reward(target_institution_id, request)
-        })?;
-    
-        Ok(true)
-    }
-    pub fn deduct_query_token(
-        &mut self,
-        institution_id: Principal,
-        target_institution_id: Principal,
-        user_did: String
-    ) -> Result<bool, String> {
-        let target_institution = ADMIN_SERVICE.with(|service| {
-            let service = service.borrow();
-            service.get_institution(target_institution_id)
-                .ok_or_else(|| "机构不存在".to_string())
-        })?;
+    &mut self,
+    target_institution_id: Principal,
+    record: CreditRecord,
+    user_did: String
+) -> Result<bool, String> {
+    let token_op = TokenOperation {
+        from_id: target_institution_id,
+        to_id: record.institution_id,
+        user_did: user_did.clone(),
+        query_price: 0,
+        record: record.clone(),
+    };
 
-        // 获取查询价格
-        let query_price = target_institution.query_price;
-
-        // 2. 从 ADMIN_SERVICE 获取机构当前代币余额
-        let balance = ADMIN_SERVICE.with(|service| {
-        let service = service.borrow();
-        service.get_institution_balance(institution_id)
-            .map(|balance| balance.dcc)
-            .map_err(|e| e.to_string())
-        })?;
-
-        // 检查余额是否足够
-        if balance < query_price {
-        return Err("DCC余额不足以支付查询费用".to_string());
+    // 异步处理代币操作
+    ic_cdk::spawn(async move {
+        if let Err(e) = Self::process_token_operation(token_op).await {
+            error!("代币操作处理失败: {}", e);
         }
-                // 2. 扣减代币
-        ADMIN_SERVICE.with(|service| {
-            let mut service = service.borrow_mut();
-            let request = DCCTransactionRequest {
-                dcc_amount: query_price,
-                usdt_amount: 0.0,  // 不涉及USDT
-                tx_hash: format!("QRY{}_{}", 
-                    time() / 1_000_000_000,
-                    user_did.chars().take(8).collect::<String>()
-                ),
-                remarks: format!("查询用户{}的信用记录", user_did),
-                created_at: time(),
-            };
-            
-            service.process_dcc_deduction(institution_id, request)
-        })?;
+    });
 
-        Ok(true)
-    }
+    Ok(true)
+}
+
     pub fn get_deduction_records(&self, institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {
         match institution_id {
             Some(id) => self.deduction_records

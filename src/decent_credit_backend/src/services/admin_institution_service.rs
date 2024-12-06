@@ -232,7 +232,17 @@ impl AdminService {
             usdt_value,
         })
     }
-
+    pub fn increment_outbound_queries(&mut self, institution_id: Principal) {
+        if let Some(institution) = self.institutions.get_mut(&institution_id) {
+            institution.outbound_queries += 1;
+        }
+    }
+    
+    pub fn increment_inbound_queries(&mut self, institution_id: Principal) {
+        if let Some(institution) = self.institutions.get_mut(&institution_id) {
+            institution.inbound_queries += 1;
+        }
+    }
     pub fn process_dcc_reward(&mut self, id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
         let institution = self.institutions
             .get_mut(&id)
@@ -250,10 +260,6 @@ impl AdminService {
             .get_mut(&id)
             .ok_or_else(|| "机构不存在".to_string())?;
             
-        let balance = institution.token_trading.bought.saturating_sub(institution.token_trading.sold);
-        if balance < request.dcc_amount {
-            return Err("DCC余额不足".to_string());
-        }
 
         institution.token_trading.sold += request.dcc_amount;
         institution.dcc_consumed += request.dcc_amount;

@@ -2,10 +2,12 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::*;
 use crate::models::*;
 use log::{info, debug, warn, error};  // 替换原来的 log_info
-use crate::services::record_service::RECORD_SERVICE;
+use crate::services::record_service::*;
 use crate::models::record::*;
 use crate::services::credit_service::CREDIT_SERVICE;
 use crate::services::reports_storage::REPORTS_STORAGE;  // 移到顶部
+use crate::services::token_service::TOKEN_SERVICE;  // 移到顶部
+use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
 
 
 
@@ -158,28 +160,31 @@ pub async fn create_credit_record(request: CreateCreditRecordRequest) -> Result<
     })
 }
 
-/// 扣减查询代币
-#[update]
-pub async fn deduct_query_token(institution_id: Principal, target_institution_id: Principal,user_did: String) -> Result<bool, String> {
-    let caller = ic_cdk::caller();
-    info!("Deduct query token by {}", caller.to_text());
-    debug!("Institution: {}, User DID: {}", institution_id.to_text(), user_did);
+// #[update]
+// pub async fn deduct_query_token(
+//     institution_id: Principal, 
+//     target_institution_id: Principal,
+//     user_did: String
+// ) -> Result<bool, String> {
+//     let price = ADMIN_SERVICE.with(|service| {
+//         let service = service.borrow();
+//         service.get_institution(target_institution_id)
+//             .ok_or_else(|| "目标机构不存在".to_string())
+//             .map(|inst| inst.query_price)
+//     })?;
 
-    RECORD_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        match service.deduct_query_token(institution_id,target_institution_id, user_did) {
-            Ok(result) => {
-                info!("Successfully deducted query token for institution: {}", institution_id.to_text());
-                Ok(result)
-            },
-            Err(e) => {
-                error!("Failed to deduct query token: {}", e);
-                Err(e)
-            }
-        }
-    })
-}
-
+//      // 修改这里: 将 service 克隆出来避免生命周期问题
+//      let service = TOKEN_SERVICE.with(|s| s.borrow().clone());
+    
+//      service.process_query_fee(
+//          institution_id,
+//          target_institution_id,
+//          user_did,
+//          price
+//      ).await
+//     .map(|_| true)
+//     .map_err(|e| e.to_string())
+// }
 /// 获取信用扣分记录列表
 #[query]
 pub fn get_credit_records(institution_id: Option<Principal>) -> Vec<CreditDeductionRecord> {

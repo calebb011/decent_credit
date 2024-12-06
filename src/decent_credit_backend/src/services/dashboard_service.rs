@@ -134,7 +134,31 @@ impl DashboardService {
             },
         }
     }
-
+     // 添加获取机构每日统计的方法
+     fn get_institution_today_stats(&self, institution_id: Principal) -> (u64, u64) {
+        let today_start = time() - (time() % (24 * 60 * 60 * 1_000_000_000));
+        RECORD_SERVICE.with(|service| {
+            let service = service.borrow();
+            let records = service.query_records(RecordQueryParams {
+                institution_id: Some(institution_id),
+                status: None,
+                record_type: None,
+                user_did: None,
+                start_date: today_start.to_string()
+            });
+            
+            let mut outbound = 0;
+            let mut inbound = 0;
+            for record in records {
+                if record.institution_id == institution_id {
+                    outbound += 1;
+                } else {
+                    inbound += 1;
+                }
+            }
+            (outbound, inbound)
+        })
+    }
     /// 获取机构仪表板数据
     pub fn get_institution_dashboard(&self, institution_id: Principal) -> Result<InstitutionDashboardData, String> {
         let institution = ADMIN_SERVICE.with(|service| {
@@ -142,6 +166,7 @@ impl DashboardService {
             service.get_institution(institution_id)
                 .ok_or_else(|| "机构不存在".to_string())
         })?;
+        let (today_outbound, today_inbound) = self.get_institution_today_stats(institution_id);
 
         Ok(InstitutionDashboardData {
             basic_info: BasicInfo {
@@ -161,9 +186,9 @@ impl DashboardService {
             usage_stats: InstitutionUsageStats {
                 query_others: institution.outbound_queries,
                 queried_by_others: institution.inbound_queries,
-                today_query_others: self.daily_stats.outbound_queries,
-                today_queried_by_others: self.daily_stats.inbound_queries,
-                monthly_queries: self.monthly_stats.api_calls,
+                today_query_others: today_outbound,           // 使用机构今日统计 
+                today_queried_by_others: today_inbound,       // 使用机构今日统计
+                monthly_queries: self.get_monthly_queries(institution_id), // 使用机构月度统计
                 total_queries: institution.api_calls,
                 api_quota: ApiQuota {
                     used: institution.api_calls,
@@ -200,6 +225,24 @@ impl DashboardService {
         }
     }
 
+// 获取机构每月查询统计
+fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
+    // 可以从 RECORD_SERVICE 获取过去 30 天的查询记录统计
+    let month_start = time() - (30 * 24 * 60 * 60 * 1_000_000_000);
+    
+    // 统计这个机构作为查询方的查询次数
+    RECORD_SERVICE.with(|service| {
+        let service = service.borrow();
+        let params = RecordQueryParams {
+            institution_id: Some(institution_id),
+            status: None,
+            record_type: None,
+            user_did: None,
+            start_date: month_start.to_string()
+        };
+        service.query_records(params).len() as u64
+    })
+}
     fn get_today_stat(&self, id: Principal) -> u64 {
         let today_start = time() - (time() % (24 * 60 * 60 * 1_000_000_000));
         RECORD_SERVICE.with(|service| {
@@ -424,5 +467,12 @@ impl DashboardService {
                 .filter(|i| i.join_time >= month_start)
                 .count() as u64
         })
+    }
+
+    pub fn update_token_stats(&mut self, rewards: u64, consumption: u64) {
+        self.daily_stats.token_rewards += rewards;
+        self.daily_stats.token_consumption += consumption;
+        self.monthly_stats.token_rewards += rewards;
+        self.monthly_stats.token_consumption += consumption;
     }
 }

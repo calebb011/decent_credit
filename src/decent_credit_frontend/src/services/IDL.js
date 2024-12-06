@@ -339,15 +339,11 @@ const TokenInfo = IDL.Record({
   'monthly_spent': IDL.Nat64
 });
 
-const ScoreHistory = IDL.Record({
-  'date': IDL.Text,
-  'score': IDL.Nat64
-});
+
 
 const CreditInfo = IDL.Record({
   'credit_score': IDL.Nat64,
   'credit_level': IDL.Text,
-  'score_history': IDL.Vec(ScoreHistory),
   'data_quality_score': IDL.Nat64
 });
 
@@ -422,7 +418,6 @@ const ScoreTrend = IDL.Record({
 const CreditStats = IDL.Record({
   'average_score': IDL.Float64,
   'level_distribution': LevelDistribution,
-  'score_trends': IDL.Vec(ScoreTrend)
 });
 
 // 最终的 AdminDashboardData 类型

@@ -1,0 +1,58 @@
+{
+  "canisters": {
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "init_arg": "(opt record { mode = variant { LocalDevelopment }; development_mode = opt record { disable_security_popups = true; disable_recovery_phrase = true; disable_device_registration = true; enable_local_authentication = true; allow_anonymous = true }})"
+    },
+    "token_backend": { 
+    "candid": "src/token/src/token_backend/token_backend.did",
+    "package": "token_backend",
+    "type": "rust",
+    "source": ["src/token/src/token_backend"]
+  },
+    "decent_credit_backend": {
+      "candid": "src/decent_credit_backend/decent_credit_backend.did",
+      "package": "decent_credit_backend",
+      "type": "rust",
+      "source": ["src/decent_credit_backend/src"],
+      "build": "cargo build --target wasm32-unknown-unknown --release",
+      "workspace": "src/decent_credit_backend",
+      "dependencies": ["token_backend"]
+    },
+    "decent_credit_frontend": {
+      "dependencies": ["decent_credit_backend"],
+      "frontend": {
+        "entrypoint": "src/decent_credit_frontend/dist/index.js"
+      },
+      "source": [
+        "src/decent_credit_frontend/dist",
+        "src/declarations"
+      ],
+      "type": "assets",
+      "build": [
+        "cd src/decent_credit_frontend && npm install",
+        "cd src/decent_credit_frontend && npm run build"
+      ]
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "providers": ["https://ic0.app"],
+      "type": "persistent"
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

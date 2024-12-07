@@ -1,0 +1,208 @@
+// 基础结构定义
+type CreditScore = record {
+    score: nat64;
+    last_update: nat64;
+};
+
+type TokenTrading = record {
+    bought: nat64;
+    sold: nat64;
+};
+
+type InstitutionStatus = variant {
+    Active;
+    Inactive;
+};
+
+// 机构相关定义
+type Institution = record {
+    id: principal;
+    name: text;
+    full_name: text;
+    password_hash: text;
+    status: InstitutionStatus;
+    join_time: nat64;
+    last_active: nat64;
+    api_calls: nat64;
+    dcc_consumed: nat64;
+    data_uploads: nat64;
+    credit_score: CreditScore;
+    token_trading: TokenTrading;
+};
+
+// 登录和注册相关
+type LoginRequest = record {
+    name: text;
+    password: text;
+};
+
+type LoginResponse = record {
+    success: bool;
+    institution_id: opt principal;
+    message: text;
+};
+
+type RegisterRequest = record {
+    name: text;
+    full_name: text;
+    password: opt text;
+};
+
+// DCC交易相关
+type DCCTransactionRequest = record {
+    dcc_amount: nat64;
+    usdt_amount: float64;
+    tx_hash: text;
+    remarks: text;
+    created_at: nat64;
+};
+
+type BalanceResponse = record {
+    dcc: nat64;
+    usdt_value: float64;
+};
+
+// 记录相关定义
+type RecordType = variant {
+    LoanRecord;
+    RepaymentRecord;
+    NotificationRecord;
+};
+
+type RecordStatus = variant {
+    Pending;
+    Confirmed;
+    Rejected;
+};
+
+type LoanContent = record {
+    amount: nat64;
+    loan_id: text;
+    term_months: nat64;
+    interest_rate: float64;
+};
+
+type RepaymentContent = record {
+    amount: nat64;
+    loan_id: text;
+    repayment_date: text;
+};
+
+type NotificationContent = record {
+    amount: nat64;
+    days: nat64;
+    period_amount: nat64;
+};
+
+type RecordContent = variant {
+    Loan: LoanContent;
+    Repayment: RepaymentContent;
+    Notification: NotificationContent;
+};
+
+type CreditRecord = record {
+    id: text;
+    institution_id: principal;
+    institution_name: text;
+    institution_full_name: text;
+    record_type: RecordType;
+    user_did: text;
+    event_date: text;
+    content: RecordContent;
+    encrypted_content: vec nat8;
+    proof: vec nat8;
+    canister_id: text;
+    timestamp: nat64;
+    status: RecordStatus;
+    reward_amount: opt nat64;
+};
+
+// 记录提交相关
+type RecordSubmissionRequest = record {
+    institution_id: principal;
+    record_type: RecordType;
+    user_did: text;
+    event_date: text;
+    content: RecordContent;
+};
+
+type RecordSubmissionResponse = record {
+    record_id: text;
+    status: RecordStatus;
+    timestamp: nat64;
+    reward_amount: opt nat64;
+};
+
+// 批量提交相关
+type BatchSubmissionRequest = record {
+    records: vec RecordSubmissionRequest;
+};
+
+type BatchSubmissionResponse = record {
+    submitted: nat64;
+    failed: nat64;
+    record_ids: vec text;
+    timestamp: nat64;
+    status: RecordStatus;
+};
+
+// 信用扣分相关
+type CreditDeductionRecord = record {
+    id: text;
+    record_id: text;
+    institution_id: principal;
+    institution_name: text;
+    deduction_points: nat32;
+    reason: text;
+    data_quality_issue: text;
+    created_at: nat64;
+    operator_id: principal;
+    operator_name: text;
+};
+
+type CreateCreditRecordRequest = record {
+    institution_id: principal;
+    deduction_points: nat32;
+    reason: text;
+    data_quality_issue: text;
+};
+
+// 管理员数据面板相关
+type AdminStatistics = record {
+    total_institutions: nat64;
+    active_institutions: nat64;
+    total_dcc_consumed: nat64;
+};
+
+// 服务定义
+service : {
+    // 机构管理
+    register_institution: (RegisterRequest) -> (variant { Ok: principal; Err: text });
+    get_institution: (principal) -> (opt Institution) query;
+    get_all_institutions: () -> (vec Institution) query;
+    update_institution_status: (principal, bool) -> (variant { Ok; Err: text });
+    update_credit_score: (principal, nat64) -> (variant { Ok; Err: text });
+    
+    // DCC管理
+    recharge_dcc: (principal, DCCTransactionRequest) -> (variant { Ok; Err: text });
+    deduct_dcc: (principal, DCCTransactionRequest) -> (variant { Ok; Err: text });
+    get_balance: (principal) -> (variant { Ok: BalanceResponse; Err: text }) query;
+    update_usdt_rate: (float64) -> (variant { Ok; Err: text });
+    
+    // Token交易
+    record_token_trading: (principal, bool, nat64) -> ();
+    
+    // 认证相关
+    institution_login: (LoginRequest) -> (LoginResponse);
+    change_password: (text, text) -> (variant { Ok; Err: text });
+    reset_password: (principal) -> (variant { Ok: text; Err: text });
+    
+    // 记录管理
+    submit_record: (RecordSubmissionRequest) -> (variant { Ok: RecordSubmissionResponse; Err: text });
+    submit_records_batch: (BatchSubmissionRequest) -> (variant { Ok: BatchSubmissionResponse; Err: text });
+    query_records_by_user_did: (text) -> (vec CreditRecord) query;
+    
+    // 信用记录管理
+    create_credit_record: (CreateCreditRecordRequest) -> (variant { Ok: CreditDeductionRecord; Err: text });
+    get_credit_records: (opt principal) -> (vec CreditDeductionRecord) query;
+};

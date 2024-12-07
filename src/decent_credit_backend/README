@@ -1,0 +1,18 @@
+src/
+├── lib.rs            // 主入口、公共类型定义
+├── models/           // 数据模型
+│   ├── user.rs      // 用户相关结构
+│   ├── credit.rs    // 信用数据结构
+│   └── token.rs     // 代币相关结构
+├── canister/        // ICP Canister实现
+│   ├── storage.rs   // 数据存储
+│   └── auth.rs      // 授权管理
+├── services/        // 业务逻辑
+│   ├── admin.rs     // 管理功能
+│   ├── provider.rs  // 数据提供方
+│   └── consumer.rs  // 数据使用方 
+├── utils/           // 工具函数
+│   ├── crypto.rs    // 加密相关
+│   └── validation.rs // 数据验证
+└── api/            // 外部接口
+    └── routes.rs   // API路由

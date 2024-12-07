@@ -304,7 +304,6 @@ export async function submitRecordsBatch(records) {
           user_id: Array.from(new TextEncoder().encode(record.user_did)),
           record_type: getRecordTypeNumber(record.record_type),
           timestamp: BigInt(record.content.timestamp),
-          term_months: record.content.term ? [BigInt(record.content.term)] : [],
           interest_rate: record.content.interestRate ? [record.content.interestRate] : [],
           loan_id: record.content.originalLoanId ? [record.content.originalLoanId] : [],
           days: record.content.overdueDays ? [BigInt(record.content.overdueDays)] : [],

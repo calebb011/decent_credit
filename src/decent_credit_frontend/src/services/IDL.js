@@ -50,7 +50,6 @@ let _lastRefreshTime = 0;
   const LoanContent = IDL.Record({
     'amount': IDL.Nat64,
     'loan_id': IDL.Text,
-    'term_months': IDL.Nat64,
     'interest_rate': IDL.Float64
   });
 
@@ -198,7 +197,6 @@ let _lastRefreshTime = 0;
     'user_id': IDL.Vec(IDL.Nat8),
     'record_type': IDL.Nat8,
     'timestamp': IDL.Nat64,
-    'term_months': IDL.Opt(IDL.Nat64),
     'interest_rate': IDL.Opt(IDL.Float64),
     'loan_id': IDL.Opt(IDL.Text),
     'days': IDL.Opt(IDL.Nat64),
@@ -309,7 +307,6 @@ const BasicInfo = IDL.Record({
 
 const SubmissionStats = IDL.Record({
   'today_submissions': IDL.Nat64,
-  'monthly_submissions': IDL.Nat64,
   'total_submissions': IDL.Nat64,
   'submission_distribution': DataDistribution
 });
@@ -324,7 +321,6 @@ const InstitutionUsageStats = IDL.Record({
   'queried_by_others': IDL.Nat64,
   'today_query_others': IDL.Nat64,
   'today_queried_by_others': IDL.Nat64,
-  'monthly_queries': IDL.Nat64,
   'total_queries': IDL.Nat64,
   'api_quota': ApiQuota
 });
@@ -335,8 +331,6 @@ const TokenInfo = IDL.Record({
   'today_spent': IDL.Nat64,
   'total_reward': IDL.Nat64,
   'today_reward': IDL.Nat64,
-  'monthly_earned': IDL.Nat64,
-  'monthly_spent': IDL.Nat64
 });
 
 
@@ -365,22 +359,17 @@ const SystemStatus = IDL.Record({
   const DataStats = IDL.Record({
     'total_records': IDL.Nat64,
     'today_records': IDL.Nat64,
-    'monthly_records': IDL.Nat64,
-    'growth_rate': IDL.Float64,
     'data_distribution': DataDistribution
   });
   const InstitutionStats = IDL.Record({
   'total_count': IDL.Nat64,
   'active_count': IDL.Nat64,
   'today_new_count': IDL.Nat64,
-  'monthly_new_count': IDL.Nat64,
-  'institution_growth_rate': IDL.Float64
 });
 
 const ApiStats = IDL.Record({
   'total_calls': IDL.Nat64,
   'today_calls': IDL.Nat64,
-  'monthly_calls': IDL.Nat64,
   'success_rate': IDL.Float64,
   'query_stats': IDL.Record({
     'total_queries': IDL.Nat64,
@@ -395,8 +384,6 @@ const TokenStats = IDL.Record({
   'total_consumption': IDL.Nat64,
   'today_rewards': IDL.Nat64,
   'today_consumption': IDL.Nat64,
-  'monthly_rewards': IDL.Nat64,
-  'monthly_consumption': IDL.Nat64,
   'total_circulation': IDL.Nat64,
   'average_daily_consumption': IDL.Float64
 });

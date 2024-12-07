@@ -18,13 +18,11 @@ export const getAdminDashboardData = async () => {
           totalCount: data.institution_stats.total_count,
           activeCount: data.institution_stats.active_count,
           todayNewCount: data.institution_stats.today_new_count,
-          monthlyNewCount: data.institution_stats.monthly_new_count,
           institutionGrowthRate: data.institution_stats.institution_growth_rate
         },
         dataStats: {
           totalRecords: data.data_stats.total_records,
           todayRecords: data.data_stats.today_records,
-          monthlyRecords: data.data_stats.monthly_records,
           growthRate: data.data_stats.growth_rate,
           dataDistribution: {
             loanRecords: data.data_stats.data_distribution.loan_records,
@@ -35,7 +33,6 @@ export const getAdminDashboardData = async () => {
         apiStats: {
           totalCalls: data.api_stats.total_calls,
           todayCalls: data.api_stats.today_calls,
-          monthlyCalls: data.api_stats.monthly_calls,
           successRate: data.api_stats.success_rate,
           queryStats: {
             totalQueries: data.api_stats.query_stats.total_queries,
@@ -49,8 +46,6 @@ export const getAdminDashboardData = async () => {
           totalConsumption: data.token_stats.total_consumption,
           todayRewards: data.token_stats.today_rewards,
           todayConsumption: data.token_stats.today_consumption,
-          monthlyRewards: data.token_stats.monthly_rewards,
-          monthlyConsumption: data.token_stats.monthly_consumption,
           totalCirculation: data.token_stats.total_circulation,
           averageDailyConsumption: data.token_stats.average_daily_consumption
         },
@@ -106,7 +101,6 @@ export const getInstitutionDashboardData = async (institutionId) => {
         },
         submissionStats: {
           todaySubmissions: data.submission_stats.today_submissions,
-          monthlySubmissions: data.submission_stats.monthly_submissions,
           totalSubmissions: data.submission_stats.total_submissions,
           submissionDistribution: {
             loanRecords: data.submission_stats.submission_distribution.loan_records,
@@ -119,7 +113,6 @@ export const getInstitutionDashboardData = async (institutionId) => {
           queriedByOthers: data.usage_stats.queried_by_others,
           todayQueryOthers: data.usage_stats.today_query_others,
           todayQueriedByOthers: data.usage_stats.today_queried_by_others,
-          monthlyQueries: data.usage_stats.monthly_queries,
           totalQueries: data.usage_stats.total_queries,
           apiQuota: {
             used: data.usage_stats.api_quota.used,
@@ -132,8 +125,6 @@ export const getInstitutionDashboardData = async (institutionId) => {
           todaySpent: data.token_info.today_spent,
           totalReward: data.token_info.total_reward,
           todayReward: data.token_info.today_reward,
-          monthlyEarned: data.token_info.monthly_earned,
-          monthlySpent: data.token_info.monthly_spent
         },
         creditInfo: {
           creditScore: data.credit_info.credit_score,

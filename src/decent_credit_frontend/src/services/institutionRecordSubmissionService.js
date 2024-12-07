@@ -69,7 +69,6 @@ function formatRecordRequest(formValues) {
         Loan: {  // 变为 Loan 而不是直接的数据结构
           amount: BigInt(Math.floor(Number(formValues.amount) * 100)),
           loan_id: `LOAN${formValues.eventDate.format('YYYYMMDD')}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`,
-          term_months: BigInt(formValues.term),
           interest_rate: Number(formValues.interestRate)
         }
       };
@@ -148,7 +147,6 @@ function formatBatchRecord(record) {
       timestamp: BigInt(new Date(record.eventDate).valueOf() * 1000000),
       record_type: getRecordTypeNumber(record.recordType),
       user_id: new Uint8Array(Buffer.from(record.userDid || '', 'utf-8')),
-      term_months: record.term ? [BigInt(Math.floor(Number(record.term)))] : [],
       interest_rate: record.interestRate ? [Number(record.interestRate)] : [],
       loan_id: record.originalLoanId ? [record.originalLoanId] : [],
       days: record.overdueDays ? [BigInt(Math.floor(Number(record.overdueDays)))] : [],

@@ -33,7 +33,6 @@ type RecordType = variant {
 type LoanContent = record {
     amount: nat64;
     loan_id: text;
-    term_months: nat64;
     interest_rate: float64;
 };
 

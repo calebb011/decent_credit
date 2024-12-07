@@ -214,8 +214,6 @@ function formatRecordContent(content) {
       type: 'loan',
       amount: Number(loan.amount),
       loan_id: loan.loan_id,
-      term_months: Number(loan.term_months),
-      interest_rate: Number(loan.interest_rate)
     };
   }
   if ('Repayment' in content) {

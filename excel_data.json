@@ -1,0 +1,3046 @@
+{
+  "RP": [
+    {
+      "Unnamed: 0": "UL4",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.12457702582368656,
+      "Unnamed: 3": 0.12740872662511132,
+      "Unnamed: 4": 0.13741763134461263
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.12352626892252895,
+      "Unnamed: 3": 0.1323419412288513,
+      "Unnamed: 4": 0.13266251113089939
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.13162956366874443,
+      "Unnamed: 3": 0.13100623330365094,
+      "Unnamed: 4": 0.1410685663401603
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.16051647373107747,
+      "Unnamed: 3": 0.09654496883348175,
+      "Unnamed: 4": 0.1427426536064114
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.15431878895814782,
+      "Unnamed: 3": 0.09451469278717721,
+      "Unnamed: 4": 0.14044523597506678
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.16090828138913627,
+      "Unnamed: 3": 0.10023152270703471,
+      "Unnamed: 4": 0.14733748886910064
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.1340872662511131,
+      "Unnamed: 3": 0.12863757791629565,
+      "Unnamed: 4": 0.1252181656277827
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.13784505788067677,
+      "Unnamed: 3": 0.12936776491540516,
+      "Unnamed: 4": 0.12781834372217277
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.13905609973285843,
+      "Unnamed: 3": 0.1320926090828139,
+      "Unnamed: 4": 0.12967052537845059
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.14140694568121107,
+      "Unnamed: 3": 0.1295458593054319,
+      "Unnamed: 4": 0.13365983971504897
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.14023152270703473,
+      "Unnamed: 3": 0.12746215494211932,
+      "Unnamed: 4": 0.13170080142475513
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.14165627782724843,
+      "Unnamed: 3": 0.13065004452359752,
+      "Unnamed: 4": 0.12983081032947463
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.1475512021371327,
+      "Unnamed: 3": 0.1268566340160285,
+      "Unnamed: 4": 0.1411754229741763
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.14612644701691896,
+      "Unnamed: 3": 0.1273552983081033,
+      "Unnamed: 4": 0.1390026714158504
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.14251113089937667,
+      "Unnamed: 3": 0.12737310774710595,
+      "Unnamed: 4": 0.14110418521816562
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "TL1",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.10290293855743543,
+      "Unnamed: 3": 0.10290293855743543,
+      "Unnamed: 4": 0.11773820124666073
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.10003561887800534,
+      "Unnamed: 3": 0.10003561887800534,
+      "Unnamed: 4": 0.11362422083704363
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.10064113980409617,
+      "Unnamed: 3": 0.10064113980409617,
+      "Unnamed: 4": 0.11617097061442565
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.08192341941228852,
+      "Unnamed: 3": 0.08192341941228852,
+      "Unnamed: 4": 0.1171504897595726
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.0767052537845058,
+      "Unnamed: 3": 0.0767052537845058,
+      "Unnamed: 4": 0.11349955476402494
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.08097951914514694,
+      "Unnamed: 3": 0.08097951914514694,
+      "Unnamed: 4": 0.11585040071237757
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.1034906500445236,
+      "Unnamed: 3": 0.1034906500445236,
+      "Unnamed: 4": 0.10562778272484417
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.09889581478183437,
+      "Unnamed: 3": 0.09889581478183437,
+      "Unnamed: 4": 0.10345503116651825
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.10222617987533392,
+      "Unnamed: 3": 0.10222617987533392,
+      "Unnamed: 4": 0.11102404274265361
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.10466607301869991,
+      "Unnamed: 3": 0.10466607301869991,
+      "Unnamed: 4": 0.1047373107747106
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.09586821015138022,
+      "Unnamed: 3": 0.09586821015138022,
+      "Unnamed: 4": 0.10053428317008015
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.0990026714158504,
+      "Unnamed: 3": 0.0990026714158504,
+      "Unnamed: 4": 0.10350845948352629
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.09540516473731078,
+      "Unnamed: 3": 0.09540516473731078,
+      "Unnamed: 4": 0.10288512911843277
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.09513802315227071,
+      "Unnamed: 3": 0.09513802315227071,
+      "Unnamed: 4": 0.10140694568121106
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.09805877114870881,
+      "Unnamed: 3": 0.09805877114870881,
+      "Unnamed: 4": 0.10617987533392698
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RG14",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.14438112199465716,
+      "Unnamed: 3": 0.0991807658058771,
+      "Unnamed: 4": 0.07506678539626002
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.1423686553873553,
+      "Unnamed: 3": 0.09440783615316117,
+      "Unnamed: 4": 0.0730186999109528
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.14539626001780945,
+      "Unnamed: 3": 0.09821905609973286,
+      "Unnamed: 4": 0.07910952804986643
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.09659839715048976,
+      "Unnamed: 3": 0.08512911843276937,
+      "Unnamed: 4": 0.07512021371326803
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.09766696349065004,
+      "Unnamed: 3": 0.08156723063223509,
+      "Unnamed: 4": 0.07120213713268032
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.10113980409617097,
+      "Unnamed: 3": 0.08719501335707924,
+      "Unnamed: 4": 0.07232413178984863
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.12142475512021371,
+      "Unnamed: 3": 0.10065894924309886,
+      "Unnamed: 4": 0.08518254674977738
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.12121104185218165,
+      "Unnamed: 3": 0.09679430097951915,
+      "Unnamed: 4": 0.08183437221727516
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.1276046304541407,
+      "Unnamed: 3": 0.10023152270703471,
+      "Unnamed: 4": 0.08302760463045415
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.11627782724844168,
+      "Unnamed: 3": 0.09994657168299198,
+      "Unnamed: 4": 0.08142475512021372
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.1126625111308994,
+      "Unnamed: 3": 0.09622439893143366,
+      "Unnamed: 4": 0.08051647373107747
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.1181834372217275,
+      "Unnamed: 3": 0.09556544968833482,
+      "Unnamed: 4": 0.08518254674977738
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.12480854853072128,
+      "Unnamed: 3": 0.09542297417631346,
+      "Unnamed: 4": 0.08610863757791629
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.12158504007123776,
+      "Unnamed: 3": 0.09271593944790739,
+      "Unnamed: 4": 0.08475512021371326
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.12564559216384685,
+      "Unnamed: 3": 0.09191451469278718,
+      "Unnamed: 4": 0.08390026714158505
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RG11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.14103294746215495,
+      "Unnamed: 3": 0.07382012466607302,
+      "Unnamed: 4": 0.0651113089937667
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.14400712377560107,
+      "Unnamed: 3": 0.07269813000890472,
+      "Unnamed: 4": 0.06201246660730187
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.14170970614425646,
+      "Unnamed: 3": 0.07560106856634016,
+      "Unnamed: 4": 0.06324131789848621
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.13205699020480854,
+      "Unnamed: 3": 0.07330365093499555,
+      "Unnamed: 4": 0.06829919857524488
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.13081032947462157,
+      "Unnamed: 3": 0.07298308103294747,
+      "Unnamed: 4": 0.06742653606411399
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.12951024042742654,
+      "Unnamed: 3": 0.07406945681211041,
+      "Unnamed: 4": 0.06655387355298309
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.11615316117542297,
+      "Unnamed: 3": 0.07465716829919858,
+      "Unnamed: 4": 0.09894924309884238
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.11626001780943902,
+      "Unnamed: 3": 0.07549421193232414,
+      "Unnamed: 4": 0.09756010685663402
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.11747105966162065,
+      "Unnamed: 3": 0.07759572573463935,
+      "Unnamed: 4": 0.0973820124666073
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.12110418521816564,
+      "Unnamed: 3": 0.08290293855743545,
+      "Unnamed: 4": 0.09162956366874443
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.12103294746215494,
+      "Unnamed: 3": 0.08178094390026715,
+      "Unnamed: 4": 0.08897595725734639
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.12167408726625112,
+      "Unnamed: 3": 0.08322350845948354,
+      "Unnamed: 4": 0.09050756901157614
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.11593944790739093,
+      "Unnamed: 3": 0.08142475512021372,
+      "Unnamed: 4": 0.08778272484416741
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.11813000890471952,
+      "Unnamed: 3": 0.07859305431878896,
+      "Unnamed: 4": 0.08687444345503118
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.11424755120213712,
+      "Unnamed: 3": 0.08190560997328583,
+      "Unnamed: 4": 0.08614425645592165
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RI11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.15255565449688335,
+      "Unnamed: 3": 0.10010685663401604,
+      "Unnamed: 4": 0.08924309884238646
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.1505966162065895,
+      "Unnamed: 3": 0.10096170970614425,
+      "Unnamed: 4": 0.0873018699910953
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.15504897595725736,
+      "Unnamed: 3": 0.1024220837043633,
+      "Unnamed: 4": 0.09002671415850401
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.11440783615316118,
+      "Unnamed: 3": 0.10840605520926092,
+      "Unnamed: 4": 0.08708815672306322
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.11154051647373107,
+      "Unnamed: 3": 0.10537845057880676,
+      "Unnamed: 4": 0.08493321460373998
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.11292965271593944,
+      "Unnamed: 3": 0.10755120213713268,
+      "Unnamed: 4": 0.08411398040961711
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.13043633125556547,
+      "Unnamed: 3": 0.11474621549421193,
+      "Unnamed: 4": 0.10384683882457703
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.12651825467497774,
+      "Unnamed: 3": 0.11138023152270703,
+      "Unnamed: 4": 0.10005342831700802
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.12804986642920746,
+      "Unnamed: 3": 0.11105966162065896,
+      "Unnamed: 4": 0.10293855743544078
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.13193232413178987,
+      "Unnamed: 3": 0.10003561887800534,
+      "Unnamed: 4": 0.10186999109528048
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.12975957257346393,
+      "Unnamed: 3": 0.09723953695458594,
+      "Unnamed: 4": 0.09969723953695458
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.12979519145146928,
+      "Unnamed: 3": 0.09836153161175423,
+      "Unnamed: 4": 0.0979519145146928
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.12895814781834372,
+      "Unnamed: 3": 0.1505431878895815,
+      "Unnamed: 4": 0.10509349955476402
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.12813891362422086,
+      "Unnamed: 3": 0.14886910062333036,
+      "Unnamed: 4": 0.1032413178984862
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.12755120213713267,
+      "Unnamed: 3": 0.14714158504007124,
+      "Unnamed: 4": 0.10641139804096172
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RS5",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Ascorbic Acid (µg/µL)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 0.11289403383793412,
+      "Unnamed: 2": 0.13105966162065896,
+      "Unnamed: 3": 0.08236865538735531,
+      "Unnamed: 4": 0.08758682101513802
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11533392698130009,
+      "Unnamed: 2": 0.1276758682101514,
+      "Unnamed: 3": 0.07969723953695458,
+      "Unnamed: 4": 0.08610863757791629
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1105966162065895,
+      "Unnamed: 2": 0.1305966162065895,
+      "Unnamed: 3": 0.08071237756010685,
+      "Unnamed: 4": 0.086233303650935
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 0.11695458593054318,
+      "Unnamed: 2": 0.13025823686553875,
+      "Unnamed: 3": 0.07747105966162066,
+      "Unnamed: 4": 0.08539626001780944
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11501335707925202,
+      "Unnamed: 2": 0.12901157613535175,
+      "Unnamed: 3": 0.08044523597506678,
+      "Unnamed: 4": 0.08600178094390026
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.11722172751558327,
+      "Unnamed: 2": 0.13227070347284062,
+      "Unnamed: 3": 0.07590382902938558,
+      "Unnamed: 4": 0.08680320569902049
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 0.1454853072128228,
+      "Unnamed: 2": 0.12979519145146928,
+      "Unnamed: 3": 0.08119323241317898,
+      "Unnamed: 4": 0.08053428317008014
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14518254674977737,
+      "Unnamed: 2": 0.12708815672306323,
+      "Unnamed: 3": 0.07846838824577027,
+      "Unnamed: 4": 0.08048085485307213
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1448619768477293,
+      "Unnamed: 2": 0.12634016028495104,
+      "Unnamed: 3": 0.08390026714158505,
+      "Unnamed: 4": 0.08163846838824577
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 0.14512911843276938,
+      "Unnamed: 2": 0.13487088156723062,
+      "Unnamed: 3": 0.08117542297417632,
+      "Unnamed: 4": 0.0796260017809439
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14404274265360642,
+      "Unnamed: 2": 0.13032947462154942,
+      "Unnamed: 3": 0.08146037399821905,
+      "Unnamed: 4": 0.07665182546749777
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1489759572573464,
+      "Unnamed: 2": 0.13250222617987534,
+      "Unnamed: 3": 0.08361531611754229,
+      "Unnamed: 4": 0.07617097061442565
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 0.1394479073909172,
+      "Unnamed: 2": 0.12874443455031165,
+      "Unnamed: 3": 0.07593944790739092,
+      "Unnamed: 4": 0.07718610863757792
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.1420480854853072,
+      "Unnamed: 2": 0.1265538735529831,
+      "Unnamed: 3": 0.07533392698130009,
+      "Unnamed: 4": 0.07980409617097062
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 0.14226179875333927,
+      "Unnamed: 2": 0.12958147818343724,
+      "Unnamed: 3": 0.0743365983971505,
+      "Unnamed: 4": 0.07586821015138023
+    }
+  ],
+  "HRS": [
+    {
+      "Unnamed: 0": "UL4",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 70.27526015441423,
+      "Unnamed: 3": 56.09601735907057,
+      "Unnamed: 4": 81.18529903711406
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 68.44998321584426,
+      "Unnamed: 3": 57.31657700827269,
+      "Unnamed: 4": 77.83554088874824
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 70.64031554212822,
+      "Unnamed: 3": 57.62849780751323,
+      "Unnamed: 4": 82.297364495276
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 85.19217858341726,
+      "Unnamed: 3": 55.62135527326974,
+      "Unnamed: 4": 85.89123457348221
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 82.48573346760658,
+      "Unnamed: 3": 56.47574702771123,
+      "Unnamed: 4": 83.8569684914787
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 84.32359852299429,
+      "Unnamed: 3": 57.126712173952356,
+      "Unnamed: 4": 85.98616699064239
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 78.45882093177303,
+      "Unnamed: 3": 74.03863272209365,
+      "Unnamed: 4": 57.08118212568989
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 76.14042835062929,
+      "Unnamed: 3": 75.57414990208298,
+      "Unnamed: 4": 54.22378493857932
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 78.18061382203578,
+      "Unnamed: 3": 77.16307637528932,
+      "Unnamed: 4": 56.02634858465373
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 80.79046147052328,
+      "Unnamed: 3": 77.10966708207228,
+      "Unnamed: 4": 58.69681324550473
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 80.49900640317951,
+      "Unnamed: 3": 77.8440448638063,
+      "Unnamed: 4": 57.775502937511135
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 80.22079929344225,
+      "Unnamed: 3": 76.28182303720847,
+      "Unnamed: 4": 60.37920598184085
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 79.30669021859131,
+      "Unnamed: 3": 77.06961011215951,
+      "Unnamed: 4": 84.0662275235891
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 78.61779642305144,
+      "Unnamed: 3": 73.97187110557239,
+      "Unnamed: 4": 82.1434929677764
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 79.14771472731287,
+      "Unnamed: 3": 74.73295353391492,
+      "Unnamed: 4": 85.13441338792951
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "TL1",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 54.005394234474046,
+      "Unnamed: 3": 55.33476898981989,
+      "Unnamed: 4": 48.48088384939672
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 54.64639742197623,
+      "Unnamed: 3": 54.67404072043853,
+      "Unnamed: 4": 48.91699374909144
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 55.02469438509229,
+      "Unnamed: 3": 57.97768206734535,
+      "Unnamed: 4": 47.695886029946216
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 66.66783424988616,
+      "Unnamed: 3": 55.540328895849655,
+      "Unnamed: 4": 46.532926297426954
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 65.91124032365407,
+      "Unnamed: 3": 56.18637431480031,
+      "Unnamed: 4": 45.55894752144207
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 66.99358996812497,
+      "Unnamed: 3": 54.703406421299924,
+      "Unnamed: 4": 47.20162814362553
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 76.64016252758414,
+      "Unnamed: 3": 68.66679718089273,
+      "Unnamed: 4": 58.656781508940256
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 74.2863147570843,
+      "Unnamed: 3": 66.11198120595145,
+      "Unnamed: 4": 56.01104811745893
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 75.87306035237661,
+      "Unnamed: 3": 70.6930305403289,
+      "Unnamed: 4": 55.08068033144353
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 78.62622158394338,
+      "Unnamed: 3": 68.91640563821457,
+      "Unnamed: 4": 65.5037069341474
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 75.6628953728677,
+      "Unnamed: 3": 67.18382928739234,
+      "Unnamed: 4": 70.21369385085042
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 77.28116571508633,
+      "Unnamed: 3": 64.35003915426782,
+      "Unnamed: 4": 73.7316470417212
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 74.60156222634767,
+      "Unnamed: 3": 67.96202036021927,
+      "Unnamed: 4": 58.72946649222271
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 75.25307366282532,
+      "Unnamed: 3": 64.02701644479248,
+      "Unnamed: 4": 58.162523622619574
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 76.92388524992117,
+      "Unnamed: 3": 66.20007830853564,
+      "Unnamed: 4": 59.71798226486408
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RG14",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 74.05767148902667,
+      "Unnamed: 3": 60.641464173070936,
+      "Unnamed: 4": 55.25003894687646
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 73.45241610077748,
+      "Unnamed: 3": 59.77522100306517,
+      "Unnamed: 4": 54.759308303474064
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 74.7662631630745,
+      "Unnamed: 3": 59.748567367065,
+      "Unnamed: 4": 56.161395856052344
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 52.69658498179312,
+      "Unnamed: 3": 59.21549464706144,
+      "Unnamed: 4": 40.36454276367035
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 52.20942820588525,
+      "Unnamed: 3": 60.934654169072886,
+      "Unnamed: 4": 39.0792958404736
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 53.75947249286488,
+      "Unnamed: 3": 62.040780063080284,
+      "Unnamed: 4": 42.46767409253778
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 77.36443263458321,
+      "Unnamed: 3": 73.15534627515436,
+      "Unnamed: 4": 60.92849353481851
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 79.53449463635468,
+      "Unnamed: 3": 70.27675358713518,
+      "Unnamed: 4": 64.17666303162487
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 78.76685365613622,
+      "Unnamed: 3": 70.9697481231398,
+      "Unnamed: 4": 60.835021031313296
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 71.42997736443263,
+      "Unnamed: 3": 65.4790991071032,
+      "Unnamed: 4": 57.63358778625953
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 68.97943115835055,
+      "Unnamed: 3": 67.06499044911376,
+      "Unnamed: 4": 59.45630160461132
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 70.63281173112883,
+      "Unnamed: 3": 66.22540091510818,
+      "Unnamed: 4": 62.47078984265462
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 77.71872847160712,
+      "Unnamed: 3": 74.7812180711652,
+      "Unnamed: 4": 64.38697616451161
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 79.72640488140932,
+      "Unnamed: 3": 75.90067078317267,
+      "Unnamed: 4": 67.63514566131796
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 78.1763605944297,
+      "Unnamed: 3": 77.37994758118253,
+      "Unnamed: 4": 63.12509736719115
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RG11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 76.29672711891293,
+      "Unnamed: 3": 58.102892190556766,
+      "Unnamed: 4": 44.469632164242945
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 76.01120922117063,
+      "Unnamed: 3": 58.959445883783644,
+      "Unnamed: 4": 43.789563729683486
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 77.1532808121398,
+      "Unnamed: 3": 59.102204832654806,
+      "Unnamed: 4": 45.03421727972627
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 82.3084650769312,
+      "Unnamed: 3": 61.18014064400149,
+      "Unnamed: 4": 33.229255774165956
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 83.4505366679004,
+      "Unnamed: 3": 60.06979326389257,
+      "Unnamed: 4": 32.25406330196749
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 81.53122191085498,
+      "Unnamed: 3": 60.14910379104321,
+      "Unnamed: 4": 33.56287425149701
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 83.32363982445938,
+      "Unnamed: 3": 68.27202737382378,
+      "Unnamed: 4": 57.35243798118049
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 85.89330090414002,
+      "Unnamed: 3": 67.24550898203593,
+      "Unnamed: 4": 57.005988023952106
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 84.5608840480093,
+      "Unnamed: 3": 68.90076988879383,
+      "Unnamed: 4": 57.455089820359284
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 83.95812404166448,
+      "Unnamed: 3": 79.55089820359281,
+      "Unnamed: 4": 68.95209580838323
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 82.16570612806005,
+      "Unnamed: 3": 80.07698887938409,
+      "Unnamed: 4": 70.5175363558597
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 84.76709141860097,
+      "Unnamed: 3": 80.68006843455944,
+      "Unnamed: 4": 72.01881950384943
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 83.26019140273885,
+      "Unnamed: 3": 74.72626176218989,
+      "Unnamed: 4": 57.63473053892215
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 85.90916300957014,
+      "Unnamed: 3": 73.37895637296835,
+      "Unnamed: 4": 60.39349871685202
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 84.37053878284777,
+      "Unnamed: 3": 72.51924721984602,
+      "Unnamed: 4": 59.123182207014544
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RI11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 75.84178592932244,
+      "Unnamed: 3": 64.55930711870688,
+      "Unnamed: 4": 60.42604780048494
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 75.89736464267521,
+      "Unnamed: 3": 65.7125654207772,
+      "Unnamed: 4": 58.633529615517844
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 77.05062294474551,
+      "Unnamed: 3": 63.280996711592806,
+      "Unnamed: 4": 60.03636993418774
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 60.16858876383681,
+      "Unnamed: 3": 65.2401463572785,
+      "Unnamed: 4": 43.25424315898857
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 58.15386040479831,
+      "Unnamed: 3": 63.78120513176789,
+      "Unnamed: 4": 44.618115691028756
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 60.515955722291714,
+      "Unnamed: 3": 65.68477606410079,
+      "Unnamed: 4": 43.13733979909941
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 72.57653651984624,
+      "Unnamed: 3": 68.75216487703499,
+      "Unnamed: 4": 75.0
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 73.39632254179985,
+      "Unnamed: 3": 71.37599584343609,
+      "Unnamed: 4": 74.87010737790094
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 72.32643230975872,
+      "Unnamed: 3": 69.90820921371666,
+      "Unnamed: 4": 75.67544163491513
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 70.3950720207494,
+      "Unnamed: 3": 75.2078281953585,
+      "Unnamed: 4": 83.74177346726707
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 68.42202769672551,
+      "Unnamed: 3": 73.68808451679945,
+      "Unnamed: 4": 81.92327675788016
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 68.72771062016582,
+      "Unnamed: 3": 74.70124696917215,
+      "Unnamed: 4": 82.67665396605472
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 81.64976147468855,
+      "Unnamed: 3": 87.0280568063734,
+      "Unnamed: 4": 96.32836854866643
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 82.52512620999495,
+      "Unnamed: 3": 84.75493591963976,
+      "Unnamed: 4": 94.73068929684794
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 83.95627807882917,
+      "Unnamed: 3": 88.09317630758574,
+      "Unnamed: 4": 92.56148250779356
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "RS5",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "HRS Activity (%)",
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "PMM + Lipid",
+      "Unnamed: 3": "FM + Lipid",
+      "Unnamed: 4": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null,
+      "Unnamed: 3": null,
+      "Unnamed: 4": null
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 57.145854313528034,
+      "Unnamed: 2": 71.71251511487304,
+      "Unnamed: 3": 71.66717049576783,
+      "Unnamed: 4": 52.17317917123807
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 58.78230949983217,
+      "Unnamed: 2": 71.32708585247883,
+      "Unnamed: 3": 71.84854897218864,
+      "Unnamed: 4": 51.375643514220606
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.44947969117153,
+      "Unnamed: 2": 71.54247279322854,
+      "Unnamed: 3": 71.62182587666264,
+      "Unnamed: 4": 52.869440459110464
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 57.611614635783816,
+      "Unnamed: 2": 70.63558041112455,
+      "Unnamed: 3": 73.09552599758162,
+      "Unnamed: 4": 42.38754325259515
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 60.75864384021483,
+      "Unnamed: 2": 69.63799879081016,
+      "Unnamed: 3": 72.78944981862152,
+      "Unnamed: 4": 41.172250822854245
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.09701242027525,
+      "Unnamed: 2": 70.02342805320436,
+      "Unnamed: 3": 73.36759371221282,
+      "Unnamed: 4": 44.5016457084986
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 59.871936409803496,
+      "Unnamed: 2": 68.59507255139057,
+      "Unnamed: 3": 90.83466959237066,
+      "Unnamed: 4": 78.719723183391
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 57.91123868403621,
+      "Unnamed: 2": 69.41127569528417,
+      "Unnamed: 3": 88.07494303316736,
+      "Unnamed: 4": 75.56755844375053
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 59.39500993596821,
+      "Unnamed: 2": 68.35701330108826,
+      "Unnamed: 3": 92.32846653726054,
+      "Unnamed: 4": 77.12465186935606
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 63.886067564583804,
+      "Unnamed: 2": 81.79035671100362,
+      "Unnamed: 3": 87.70782344501646,
+      "Unnamed: 4": 61.04734576757532
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 64.0715389710753,
+      "Unnamed: 2": 85.1912031438936,
+      "Unnamed: 3": 86.78369482656764,
+      "Unnamed: 4": 59.31302219596589
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 62.958710532126304,
+      "Unnamed: 2": 83.9668984280532,
+      "Unnamed: 3": 86.75837623428137,
+      "Unnamed: 4": 63.034855262047415
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 64.91940825789358,
+      "Unnamed: 2": 88.78476420798066,
+      "Unnamed: 3": 93.5310996708583,
+      "Unnamed: 4": 68.25048527301882
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 63.17067785383088,
+      "Unnamed: 2": 86.68757557436518,
+      "Unnamed: 3": 90.89796607308635,
+      "Unnamed: 4": 66.23765718626044
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 61.554427025833526,
+      "Unnamed: 2": 83.59280532043532,
+      "Unnamed: 3": 89.69533293948857,
+      "Unnamed: 4": 67.09848932399358
+    }
+  ],
+  "LA": [
+    {
+      "Unnamed: 0": "UL4",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 26.13241395908544,
+      "Unnamed: 2": 25.463046931407945
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.679845968712396,
+      "Unnamed: 2": 25.479306859205778
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.7286257521059,
+      "Unnamed: 2": 25.278767749699156
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 24.400731648616127,
+      "Unnamed: 2": 24.501001203369434
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.02131889290012,
+      "Unnamed: 2": 24.888529482551142
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.015898916967515,
+      "Unnamed: 2": 24.807229843561977
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 26.5815944645006,
+      "Unnamed: 2": 24.847202166064985
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.65203971119134,
+      "Unnamed: 2": 24.962376654632976
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.21844163658243,
+      "Unnamed: 2": 25.175788206979544
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 26.524007220216607,
+      "Unnamed: 2": 25.399362214199762
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.19134175691938,
+      "Unnamed: 2": 25.995559566787
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.120204572803853,
+      "Unnamed: 2": 26.39189530685921
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 27.438628158844768,
+      "Unnamed: 2": 27.841738868832735
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.105962695547532,
+      "Unnamed: 2": 28.13645006016847
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.502298435619736,
+      "Unnamed: 2": 28.637797833935018
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "TL1",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 24.33569193742479,
+      "Unnamed: 2": 23.830956678700364
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 24.372954271961497,
+      "Unnamed: 2": 22.97731046931408
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 24.423766546329723,
+      "Unnamed: 2": 23.09925992779783
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 26.933892900120338,
+      "Unnamed: 2": 23.038285198555958
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.593760529482555,
+      "Unnamed: 2": 24.13921780986763
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.389819494584838,
+      "Unnamed: 2": 23.58028279181709
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 28.089025270758125,
+      "Unnamed: 2": 26.57820697954272
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.3945908543923,
+      "Unnamed: 2": 25.802472924187725
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 26.77468110709988,
+      "Unnamed: 2": 25.355324909747296
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 26.964380264741276,
+      "Unnamed: 2": 22.875685920577617
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.638489771359808,
+      "Unnamed: 2": 23.272021660649823
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.20827918170879,
+      "Unnamed: 2": 23.75304452466908
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 27.03890493381468,
+      "Unnamed: 2": 24.85397713598075
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.67575210589651,
+      "Unnamed: 2": 25.545024067388688
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.126287605294827,
+      "Unnamed: 2": 26.185258724428405
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RG14",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 23.29573405535499,
+      "Unnamed: 2": 27.74011432009627
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 22.841811070998798,
+      "Unnamed: 2": 27.01519253910951
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 22.455637785800242,
+      "Unnamed: 2": 27.452178098676296
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 21.87299037304453,
+      "Unnamed: 2": 23.258471720818292
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 21.642641395908544,
+      "Unnamed: 2": 23.404133574007222
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 21.375030084235863,
+      "Unnamed: 2": 23.461720818291216
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 25.69746089049338,
+      "Unnamed: 2": 26.34447051744886
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.958297232250302,
+      "Unnamed: 2": 25.954909747292422
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 26.2801083032491,
+      "Unnamed: 2": 25.64326113116727
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 27.5267027677497,
+      "Unnamed: 2": 25.060613718411552
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.292966305655835,
+      "Unnamed: 2": 24.572815884476537
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.059229843561972,
+      "Unnamed: 2": 25.219825511432013
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 25.883772563176898,
+      "Unnamed: 2": 24.108730445246692
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.599223826714805,
+      "Unnamed: 2": 23.817406738868833
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 26.249620938628162,
+      "Unnamed: 2": 23.688682310469314
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RG11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 27.719789410348984,
+      "Unnamed: 2": 24.789614921780988
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.228604091456077,
+      "Unnamed: 2": 25.0707761732852
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.120204572803853,
+      "Unnamed: 2": 24.691377858002408
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 27.540252707581228,
+      "Unnamed: 2": 23.54640794223827
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.32684115523466,
+      "Unnamed: 2": 24.112117930204573
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.034825511432008,
+      "Unnamed: 2": 23.84450661853189
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 27.540252707581228,
+      "Unnamed: 2": 25.98539711191336
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.072087845968714,
+      "Unnamed: 2": 26.246233453670282
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.04567990373045,
+      "Unnamed: 2": 25.897322503008425
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 27.44201564380265,
+      "Unnamed: 2": 26.551107099879665
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.94336341756919,
+      "Unnamed: 2": 26.855980746089045
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.076167268351387,
+      "Unnamed: 2": 27.391203369434418
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 27.841738868832735,
+      "Unnamed: 2": 26.110734055355
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.259091456077016,
+      "Unnamed: 2": 26.47996991576414
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.217749699157643,
+      "Unnamed: 2": 26.13783393501805
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RI11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 28.475198555956684,
+      "Unnamed: 2": 26.503682310469316
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.763134777376656,
+      "Unnamed: 2": 26.927117930204577
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.681835138387484,
+      "Unnamed: 2": 26.815330926594466
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 25.907484957882073,
+      "Unnamed: 2": 24.183255114320097
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 26.310595667870036,
+      "Unnamed: 2": 24.72864019253911
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 26.713706377858003,
+      "Unnamed: 2": 25.307900120336946
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 29.447406738868832,
+      "Unnamed: 2": 26.59514440433213
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.806480144404336,
+      "Unnamed: 2": 27.21505415162455
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.233995186522264,
+      "Unnamed: 2": 27.70285198555957
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 29.247545126353792,
+      "Unnamed: 2": 26.764518652226236
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.03074608904934,
+      "Unnamed: 2": 27.04567990373045
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.626943441636588,
+      "Unnamed: 2": 27.313291215403133
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 28.671672683513844,
+      "Unnamed: 2": 26.25978339350181
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.33223225030084,
+      "Unnamed: 2": 26.59853188929001
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.051070998796636,
+      "Unnamed: 2": 26.92034296028881
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RS5",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Concentration of Lactic Acid (g/L)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "PMM + Lipid",
+      "Unnamed: 2": "PMF + Lipid"
+    },
+    {
+      "Unnamed: 0": "Control",
+      "Unnamed: 1": 27.008417569193742,
+      "Unnamed: 2": 26.42238267148015
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.255703971119136,
+      "Unnamed: 2": 27.370878459687127
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.19134175691938,
+      "Unnamed: 2": 27.03890493381468
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 24.61007821901324,
+      "Unnamed: 2": 25.026738868832734
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 24.75912755716005,
+      "Unnamed: 2": 25.172400722021663
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 25.36548736462094,
+      "Unnamed: 2": 25.392587244283998
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 27.350553549939832,
+      "Unnamed: 2": 29.145920577617332
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.699464500601685,
+      "Unnamed: 2": 29.62016847172082
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 27.977238267148017,
+      "Unnamed: 2": 30.148616125150426
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 27.96707581227437,
+      "Unnamed: 2": 28.339699157641398
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.217749699157643,
+      "Unnamed: 2": 29.14253309265945
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 28.52262334536703,
+      "Unnamed: 2": 28.769909747292424
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 28.55649819494585,
+      "Unnamed: 2": 28.109350180505412
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.078170878459694,
+      "Unnamed: 2": 28.51923586040915
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 29.379657039711194,
+      "Unnamed: 2": 28.962996389891696
+    }
+  ],
+  "CFU": [
+    {
+      "Unnamed: 0": "UL4",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.250420002308894,
+      "Unnamed: 2": 9.113943352306837
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.27415784926368,
+      "Unnamed: 2": 9.086359830674748
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.354108439147401,
+      "Unnamed: 2": 9.260071387985075
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.292256071356476,
+      "Unnamed: 2": 9.133538908370218
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.127104798364808,
+      "Unnamed: 2": 9.334453751150932
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.305351369446624,
+      "Unnamed: 2": 9.139879086401237
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.3654879848909,
+      "Unnamed: 2": 9.2405492482826
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.3096301674259,
+      "Unnamed: 2": 9.187520720836464
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.305351369446624,
+      "Unnamed: 2": 9.264817823009537
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.292256071356476,
+      "Unnamed: 2": 9.287801729930226
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.305351369446624,
+      "Unnamed: 2": 9.198657086954423
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.350248018334163,
+      "Unnamed: 2": 9.260071387985075
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.468347330412158,
+      "Unnamed: 2": 9.23552844690755
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.278753600952829,
+      "Unnamed: 2": 9.181843587944773
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.260071387985075,
+      "Unnamed: 2": 9.086359830674748
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "TL1",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.792391689498254,
+      "Unnamed: 2": 9.608526033577194
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.77232170672292,
+      "Unnamed: 2": 9.602059991327963
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.870403905279026,
+      "Unnamed: 2": 9.720985744153738
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.330413773349191,
+      "Unnamed: 2": 9.955206537541942
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.250420002308894,
+      "Unnamed: 2": 9.836324115706752
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.3096301674259,
+      "Unnamed: 2": 9.845098040014257
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.954242509439325,
+      "Unnamed: 2": 9.737192642704738
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.431363764158988,
+      "Unnamed: 2": 9.799340549453582
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.40823996531185,
+      "Unnamed: 2": 9.714329759745233
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.440909082065218,
+      "Unnamed: 2": 9.786751422145562
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.717670503002262,
+      "Unnamed: 2": 9.755874855672491
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.372912002970107,
+      "Unnamed: 2": 9.767897616018091
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.534026106056135,
+      "Unnamed: 2": 9.788168371141168
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.471291711058939,
+      "Unnamed: 2": 9.766412847112399
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.563481085394411,
+      "Unnamed: 2": 9.719331286983726
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RG14",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.372912002970107,
+      "Unnamed: 2": 9.27415784926368
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.397940008672037,
+      "Unnamed: 2": 9.269512944217917
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.459392487759231,
+      "Unnamed: 2": 9.250420002308894
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.318063334962762,
+      "Unnamed: 2": 9.204119982655925
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.27415784926368,
+      "Unnamed: 2": 9.255272505103306
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.278753600952829,
+      "Unnamed: 2": 9.264817823009537
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.354108439147401,
+      "Unnamed: 2": 9.313867220369154
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.361727836017593,
+      "Unnamed: 2": 9.32633586092875
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.383815365980432,
+      "Unnamed: 2": 9.28330122870355
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.42813479402879,
+      "Unnamed: 2": 9.209515014542632
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.477121254719663,
+      "Unnamed: 2": 9.342422680822207
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.414973347970818,
+      "Unnamed: 2": 9.444044795918076
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.444044795918076,
+      "Unnamed: 2": 9.225309281725863
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.4345689040342,
+      "Unnamed: 2": 9.292256071356476
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.380211241711606,
+      "Unnamed: 2": 9.313867220369154
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RG11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.595496221825574,
+      "Unnamed: 2": 9.769377326076139
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.593286067020458,
+      "Unnamed: 2": 9.776701183988411
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.58206336291171,
+      "Unnamed: 2": 9.811575005870594
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.48572142648158,
+      "Unnamed: 2": 9.852479993636857
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.539076098792776,
+      "Unnamed: 2": 9.815577748324268
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.39093510710338,
+      "Unnamed: 2": 9.8208579894397
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.595496221825574,
+      "Unnamed: 2": 9.48572142648158
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.884228769632603,
+      "Unnamed: 2": 9.510545010206613
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.66651798055488,
+      "Unnamed: 2": 9.684845361644413
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.764922984649889,
+      "Unnamed: 2": 9.776701183988411
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.712649701627212,
+      "Unnamed: 2": 9.773786444981194
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.70070371714502,
+      "Unnamed: 2": 9.862131379313038
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.6232492903979,
+      "Unnamed: 2": 10.158965260383411
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.586587304671754,
+      "Unnamed: 2": 10.0948203803548
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.510545010206613,
+      "Unnamed: 2": 10.176091259055681
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RI11",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.42813479402879,
+      "Unnamed: 2": 9.593286067020458
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.38738982633873,
+      "Unnamed: 2": 9.544068044350276
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.459392487759231,
+      "Unnamed: 2": 9.482873583608754
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.32221929473392,
+      "Unnamed: 2": 9.198657086954423
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.394451680826217,
+      "Unnamed: 2": 9.187520720836464
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.459392487759231,
+      "Unnamed: 2": 9.354108439147401
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.629409599102718,
+      "Unnamed: 2": 9.418301291319745
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.627365856592732,
+      "Unnamed: 2": 9.301029995663981
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.6170003411209,
+      "Unnamed: 2": 9.401400540781545
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.518513939877888,
+      "Unnamed: 2": 9.334453751150932
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.521138083704036,
+      "Unnamed: 2": 9.32633586092875
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.586587304671754,
+      "Unnamed: 2": 9.3096301674259
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.440909082065218,
+      "Unnamed: 2": 9.431363764158988
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.462397997898956,
+      "Unnamed: 2": 9.334453751150932
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.531478917042255,
+      "Unnamed: 2": 9.330413773349191
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "RS5",
+      "Unnamed: 1": null,
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": "Lipid",
+      "Unnamed: 1": "Viable Cell Count (log10 CFU/mL)",
+      "Unnamed: 2": null
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": "MRS + Lipid",
+      "Unnamed: 2": "FM + Lipid"
+    },
+    {
+      "Unnamed: 0": "MRS",
+      "Unnamed: 1": 9.334453751150932,
+      "Unnamed: 2": 9.453318340047037
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.260071387985075,
+      "Unnamed: 2": 9.376576957056512
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.376576957056512,
+      "Unnamed: 2": 9.27415784926368
+    },
+    {
+      "Unnamed: 0": "Glycerol",
+      "Unnamed: 1": 9.346352974450639,
+      "Unnamed: 2": 9.431363764158988
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.318063334962762,
+      "Unnamed: 2": 9.394451680826217
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.342422680822207,
+      "Unnamed: 2": 9.40823996531185
+    },
+    {
+      "Unnamed: 0": "Palm Oil",
+      "Unnamed: 1": 9.40823996531185,
+      "Unnamed: 2": 9.42813479402879
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.40823996531185,
+      "Unnamed: 2": 9.278753600952829
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.361727836017593,
+      "Unnamed: 2": 9.260071387985075
+    },
+    {
+      "Unnamed: 0": "Olive Oil",
+      "Unnamed: 1": 9.459392487759231,
+      "Unnamed: 2": 9.424881636631067
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.318063334962762,
+      "Unnamed: 2": 9.376576957056512
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.482873583608754,
+      "Unnamed: 2": 9.39093510710338
+    },
+    {
+      "Unnamed: 0": "Coconut Oil",
+      "Unnamed: 1": 9.372912002970107,
+      "Unnamed: 2": 9.301029995663981
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.38738982633873,
+      "Unnamed: 2": 9.32633586092875
+    },
+    {
+      "Unnamed: 0": null,
+      "Unnamed: 1": 9.260071387985075,
+      "Unnamed: 2": 9.40823996531185
+    }
+  ]
+}

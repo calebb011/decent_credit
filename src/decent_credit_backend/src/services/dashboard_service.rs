@@ -9,29 +9,7 @@ use crate::models::{
 };
 use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
 use crate::services::record_service::RECORD_SERVICE;
-// 每日统计数据
-#[derive(Default)]
-struct DailyStats {
-    new_institutions: u64,
-    api_calls: u64,
-    data_uploads: u64,
-    token_rewards: u64,
-    token_consumption: u64,
-    outbound_queries: u64,
-    inbound_queries: u64,
-    last_update: u64,
-}
 
-// 月度统计数据
-#[derive(Default)]
-struct MonthlyStats {
-    new_institutions: u64,
-    api_calls: u64,
-    data_uploads: u64,
-    token_rewards: u64,
-    token_consumption: u64,
-    last_update: u64,
-}
 
 thread_local! {
     pub static DASHBOARD_SERVICE: RefCell<DashboardService> = RefCell::new(DashboardService::new());
@@ -39,7 +17,6 @@ thread_local! {
 
 pub struct DashboardService {
     daily_stats: DailyStats,
-    monthly_stats: MonthlyStats,
     api_quota_limit: u64,
 }
 
@@ -47,7 +24,6 @@ impl DashboardService {
     pub fn new() -> Self {
         Self {
             daily_stats: DailyStats::default(),
-            monthly_stats: MonthlyStats::default(),
             api_quota_limit: 20000,
         }
     }
@@ -87,26 +63,15 @@ impl DashboardService {
                 total_count: institutions.len() as u64,
                 active_count: active_institutions,
                 today_new_count: self.daily_stats.new_institutions,
-                monthly_new_count: self.monthly_stats.new_institutions,
-                institution_growth_rate: self.calculate_growth_rate(
-                    self.monthly_stats.new_institutions,
-                    institutions.len() as u64
-                ),
             },
             data_stats: DataStats {
                 total_records: total_uploads,
                 today_records: self.daily_stats.data_uploads,
-                monthly_records: self.monthly_stats.data_uploads,
-                growth_rate: self.calculate_growth_rate(
-                    self.daily_stats.data_uploads,
-                    total_uploads
-                ),
                 data_distribution: self.calculate_data_distribution(),
             },
             api_stats: ApiStats {
                 total_calls: total_api_calls,
                 today_calls: self.daily_stats.api_calls,
-                monthly_calls: self.monthly_stats.api_calls,
                 success_rate: 99.8,
                 query_stats: QueryStats {
                     total_queries: total_api_calls,
@@ -120,8 +85,6 @@ impl DashboardService {
                 total_consumption,
                 today_rewards: self.daily_stats.token_rewards,
                 today_consumption: self.daily_stats.token_consumption,
-                monthly_rewards: self.monthly_stats.token_rewards,
-                monthly_consumption: self.monthly_stats.token_consumption,
                 total_circulation: total_rewards.saturating_sub(total_consumption),
                 average_daily_consumption: (total_consumption as f64) / 30.0,
             },
@@ -179,7 +142,6 @@ impl DashboardService {
             },
             submission_stats: SubmissionStats {
                 today_submissions: self.get_today_stat(institution_id),
-                monthly_submissions: self.get_monthly_stat(institution_id),
                 total_submissions: institution.data_uploads,
                 submission_distribution: self.get_institution_data_distribution(&institution),
             },
@@ -188,7 +150,6 @@ impl DashboardService {
                 queried_by_others: institution.inbound_queries,
                 today_query_others: today_outbound,           // 使用机构今日统计 
                 today_queried_by_others: today_inbound,       // 使用机构今日统计
-                monthly_queries: self.get_monthly_queries(institution_id), // 使用机构月度统计
                 total_queries: institution.api_calls,
                 api_quota: ApiQuota {
                     used: institution.api_calls,
@@ -201,8 +162,6 @@ impl DashboardService {
                 today_spent: self.daily_stats.token_consumption,
                 total_reward: institution.token_trading.bought,
                 today_reward: self.daily_stats.token_rewards,
-                monthly_earned: self.monthly_stats.token_rewards,
-                monthly_spent: self.monthly_stats.token_consumption,
             },
             credit_info: CreditInfo {
                 credit_score: self.calculate_institution_credit_score(&institution),
@@ -217,32 +176,7 @@ impl DashboardService {
             },
         })
     }
-    fn calculate_growth_rate(&self, current: u64, total: u64) -> f64 {
-        if total == 0 {
-            0.0
-        } else {
-            ((current as f64) / (total as f64) * 100.0).round() / 10.0
-        }
-    }
 
-// 获取机构每月查询统计
-fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
-    // 可以从 RECORD_SERVICE 获取过去 30 天的查询记录统计
-    let month_start = time() - (30 * 24 * 60 * 60 * 1_000_000_000);
-    
-    // 统计这个机构作为查询方的查询次数
-    RECORD_SERVICE.with(|service| {
-        let service = service.borrow();
-        let params = RecordQueryParams {
-            institution_id: Some(institution_id),
-            status: None,
-            record_type: None,
-            user_did: None,
-            start_date: month_start.to_string()
-        };
-        service.query_records(params).len() as u64
-    })
-}
     fn get_today_stat(&self, id: Principal) -> u64 {
         let today_start = time() - (time() % (24 * 60 * 60 * 1_000_000_000));
         RECORD_SERVICE.with(|service| {
@@ -258,20 +192,7 @@ fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
         })
     }
 
-    fn get_monthly_stat(&self, id: Principal) -> u64 {
-        let month_start = time() - (30 * 24 * 60 * 60 * 1_000_000_000);
-        RECORD_SERVICE.with(|service| {
-            let service = service.borrow();
-            let params = RecordQueryParams {
-                institution_id: Some(id),
-                status: None,
-                record_type: None,
-                user_did: None,
-                start_date: month_start.to_string()
-            };
-            service.query_records(params).len() as u64
-        })
-    }
+
 
     fn calculate_data_distribution(&self) -> DataDistribution {
         let records = RECORD_SERVICE.with(|service| {
@@ -414,7 +335,6 @@ fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
     fn check_and_update_stats(&mut self) {
         let now = time();
         self.update_daily_stats(now);
-        self.update_monthly_stats(now); 
     }
 
     fn update_daily_stats(&mut self, now: u64) {
@@ -434,21 +354,6 @@ fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
         }
     }
 
-    fn update_monthly_stats(&mut self, now: u64) {
-        let month_start = now - (now % (30 * 24 * 60 * 60 * 1_000_000_000));
-        
-        if self.monthly_stats.last_update < month_start {
-            self.monthly_stats = MonthlyStats {
-                new_institutions: self.count_monthly_institutions(),
-                api_calls: 0,
-                data_uploads: 0,
-                token_rewards: 0,
-                token_consumption: 0,
-                last_update: now,
-            };
-        }
-    }
-
     fn count_today_institutions(&self) -> u64 {
         let today_start = time() - (time() % (24 * 60 * 60 * 1_000_000_000));
         ADMIN_SERVICE.with(|service| {
@@ -459,20 +364,9 @@ fn get_monthly_queries(&self, institution_id: Principal) -> u64 {
         })
     }
 
-    fn count_monthly_institutions(&self) -> u64 {
-        let month_start = time() - (time() % (30 * 24 * 60 * 60 * 1_000_000_000));
-        ADMIN_SERVICE.with(|service| {
-            service.borrow().get_all_institutions()
-                .into_iter()
-                .filter(|i| i.join_time >= month_start)
-                .count() as u64
-        })
-    }
-
+ 
     pub fn update_token_stats(&mut self, rewards: u64, consumption: u64) {
         self.daily_stats.token_rewards += rewards;
         self.daily_stats.token_consumption += consumption;
-        self.monthly_stats.token_rewards += rewards;
-        self.monthly_stats.token_consumption += consumption;
     }
 }

@@ -34,15 +34,13 @@ impl CreditService {
     }
 
 
-
-    // 修改后的 assess_user_risk 方法
     pub fn assess_user_risk(&self, institution_id: Principal, user_did: &str) -> Result<RiskAssessment, String> {
         let user_records: Vec<&CreditRecord> = self.credit_records
             .iter()
             .filter(|r| r.user_did == user_did)
             .collect();
 
-        info!("Found {} credit records for user {}", user_records.len(), user_did);
+        info!("Found {} credit records for user1111 {}", user_records.len(), user_did);
         
         let credit_score = self.calculate_credit_score(&user_records);
         let (risk_level, details, suggestions) = self.analyze_risk_level(credit_score, &user_records);
@@ -103,32 +101,32 @@ impl CreditService {
 
     fn analyze_risk_level(&self, credit_score: u32, records: &[&CreditRecord]) -> (String, Vec<String>, Vec<String>) {
         let risk_level = match credit_score {
-            0..=60 => "高风险",
-            61..=80 => "中等风险",
-            _ => "低风险",
+            0..=60 => "High Risk",
+            61..=80 => "Medium Risk",
+            _ => "Low Risk",
         };
-
+    
         let details = vec![
-            format!("信用评分: {}", credit_score),
-            format!("历史记录数量: {}", records.len()),
-            "信用记录评估完成".to_string(),
+            format!("Credit Score: {}", credit_score),
+            format!("Historical Records Count: {}", records.len()),
+            "Credit Record Assessment Completed".to_string(),
         ];
-
+    
         let suggestions = match risk_level {
-            "高风险" => vec![
-                "建议增加更多正面的信用记录".to_string(),
-                "避免出现逾期还款".to_string(),
+            "High Risk" => vec![
+                "Recommended to build more positive credit records".to_string(),
+                "Avoid overdue payments".to_string(),
             ],
-            "中等风险" => vec![
-                "继续保持良好的信用记录".to_string(),
-                "可以考虑增加信用额度".to_string(),
+            "Medium Risk" => vec![
+                "Continue maintaining good credit records".to_string(),
+                "Consider increasing credit limit".to_string(),
             ],
             _ => vec![
-                "信用状况良好，继续保持".to_string(),
-                "可以享受更多信用服务".to_string(),
+                "Good credit status, maintain current practices".to_string(),
+                "Eligible for additional credit services".to_string(),
             ],
         };
-
+    
         (risk_level.to_string(), details, suggestions)
     }
 }

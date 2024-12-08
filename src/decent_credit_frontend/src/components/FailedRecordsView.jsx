@@ -265,8 +265,8 @@ const FailedRecordsView = () => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-gray-200 mb-2">Failed Records Query</h2>
-        <p className="text-gray-400">View detailed failed data upload records</p>
+        <h2 className="text-xl font-semibold text-gray-200 mb-2">Records Query</h2>
+        <p className="text-gray-400">View detailed data upload records</p>
       </div>
 
       <Card className="bg-black/20 border-gray-700">

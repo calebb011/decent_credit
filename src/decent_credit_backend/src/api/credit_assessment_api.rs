@@ -8,7 +8,7 @@ use crate::services::credit_service::CREDIT_SERVICE;
 
 
 
-#[query]
+#[update]
 pub fn get_risk_assessment(institution_id: Principal, user_did: String) -> Result<RiskAssessment, String> {
     let caller = ic_cdk::caller();
     debug!("Get risk assessment by {} for user {}", caller.to_text(), user_did);

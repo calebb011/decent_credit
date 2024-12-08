@@ -464,7 +464,7 @@ const AdminDashboardData = IDL.Record({
     'get_credit_records': IDL.Func([], [IDL.Vec(CreditDeductionRecord)], ['query']),
     'query_institution_records_list': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': InstitutionRecordResponse, 'Err': IDL.Text })], ['update']),
     'deduct_query_token': IDL.Func([IDL.Principal], [IDL.Variant({ 'Ok': IDL.Bool, 'Err': IDL.Text })], ['update']),
-    'get_risk_assessment': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': RiskAssessment, 'Err': IDL.Text })], ['query']),
+    'get_risk_assessment': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': RiskAssessment, 'Err': IDL.Text })], ['update']),
     'query_assessment_reports': IDL.Func([IDL.Principal, IDL.Opt(IDL.Nat64)], [AssessmentListResponse], ['query']),
     'query_institution_records_failed_list': IDL.Func(
       [IDL.Principal],

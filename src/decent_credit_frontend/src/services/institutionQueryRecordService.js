@@ -62,9 +62,9 @@ export const queryRecordsByUserDid = async (userDid) => {
   try {
       const actor = await getActor();
       const principal = Principal.fromText(localStorage.getItem('userPrincipal'));
-      console.log("Principal object:", principal.toText()); 
 
       const response = await actor.query_records_by_user_did(principal, userDid);
+      console.log("Principal response:", response); 
 
       // 检查错误响应
       if ('Err' in response) {

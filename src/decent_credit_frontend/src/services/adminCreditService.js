@@ -163,7 +163,7 @@ export async function getRiskAssessment(userDid) {
   try {
     const institutionPrincipal = Principal.fromText(institutionId);
 
-    const result = await actorResult.actor.get_risk_assessment(institutionPrincipal,userDid);
+    const result = await actor.get_risk_assessment(institutionPrincipal,userDid);
     
     if ('Err' in result) {
       return {

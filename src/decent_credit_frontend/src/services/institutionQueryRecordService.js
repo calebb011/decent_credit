@@ -87,7 +87,8 @@ export const queryRecordsByUserDid = async (userDid) => {
           timestamp: Number(record.timestamp),
           status: formatStatus(record.status),
           reward_amount: record.reward_amount ? Number(record.reward_amount) : null,
-          canister_id: record.canister_id
+          canister_id: record.canister_id,
+          query_price: record.query_price
       }));
 
       return {
@@ -128,7 +129,8 @@ export const queryRecordList = async (institutionId, userDid) => {
         event_date: record.event_date,
         content: formatRecordContent(record.content),
         timestamp: Number(record.timestamp),
-        status: formatStatus(record.status)
+        status: formatStatus(record.status),
+        query_price: record.query_price
       }))
     } : null;
 
@@ -196,7 +198,7 @@ export const queryAssessmentReports = async (institutionId, days = 30) => {
 function formatRecordType(type) {
   if ('LoanRecord' in type) return 'loan';
   if ('RepaymentRecord' in type) return 'repayment';
-  if ('NotificationRecord' in type) return 'notification';
+  if ('OverdueRecord' in type) return 'overdue';
   return 'unknown';
 }
 
@@ -227,13 +229,13 @@ function formatRecordContent(content) {
       repayment_date: repayment.repayment_date
     };
   }
-  if ('Notification' in content) {
-    const notification = content.Notification;
+  if ('Overdue' in content) {
+    const overdue = content.Overdue;
     return {
-      type: 'notification',
-      amount: Number(notification.amount),
-      days: Number(notification.days),
-      period_amount: Number(notification.period_amount)
+      type: 'overdue',
+      amount: Number(overdue.amount),
+      overdueDays: Number(overdue.overdueDays),
+      period_amount: Number(overdue.period_amount)
     };
   }
   return null;

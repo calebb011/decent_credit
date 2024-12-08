@@ -66,7 +66,7 @@ type BalanceResponse = record {
 type RecordType = variant {
     LoanRecord;
     RepaymentRecord;
-    NotificationRecord;
+    OverdueRecord;
 };
 
 type RecordStatus = variant {
@@ -88,16 +88,16 @@ type RepaymentContent = record {
     repayment_date: text;
 };
 
-type NotificationContent = record {
+type OverdueContent = record {
     amount: nat64;
-    days: nat64;
+    overdueDays: nat64;
     period_amount: nat64;
 };
 
 type RecordContent = variant {
     Loan: LoanContent;
     Repayment: RepaymentContent;
-    Notification: NotificationContent;
+    Overdue: OverdueContent;
 };
 
 type CreditRecord = record {

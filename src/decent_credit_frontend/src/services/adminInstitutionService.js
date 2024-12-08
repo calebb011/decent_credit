@@ -34,7 +34,12 @@ function formatInstitution(raw) {
       token_trading: {
         bought: Number(raw.token_trading?.bought || 0),
         sold: Number(raw.token_trading?.sold || 0)
-      }
+      },
+    // 直接读取原始值，不需要嵌套读取
+    balance: Number(raw.balance || 0),
+    rewards: Number(raw.rewards || 0), 
+    consumption: Number(raw.consumption || 0)
+
     };
   } catch (error) {
     console.error('Error formatting institution:', error);
@@ -108,6 +113,7 @@ export async function loginInstitution(formData) {
 export async function getAllInstitutions() {
   const actor = await getActor();
   const institutions = await actor.get_all_institutions();
+  console.log(institutions)
   return institutions.map(inst => formatInstitution(inst));
 }
 
@@ -307,7 +313,7 @@ export async function submitRecordsBatch(records) {
           term_months: record.content.term ? [BigInt(record.content.term)] : [],
           interest_rate: record.content.interestRate ? [record.content.interestRate] : [],
           loan_id: record.content.originalLoanId ? [record.content.originalLoanId] : [],
-          days: record.content.overdueDays ? [BigInt(record.content.overdueDays)] : [],
+          overdueDays: record.content.overdueDays ? [BigInt(record.content.overdueDays)] : [],
           period_amount: record.content.amount ? [BigInt(record.content.amount)] : []
         }
       }))

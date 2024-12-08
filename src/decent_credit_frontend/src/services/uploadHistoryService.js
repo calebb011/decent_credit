@@ -2,12 +2,10 @@ import { Principal } from '@dfinity/principal';
 import { getActor } from './IDL';
 
 // Query failed records for an institution
-export async function queryFailedRecordsList(institutionId) {
- 
-
+export async function queryFailedRecordsList(institutionId, status = '') {
   try {
-     // 首先确保我们有有效的 institutionId
-     if (!institutionId) {
+    // 首先确保我们有有效的 institutionId
+    if (!institutionId) {
       throw new Error('Institution ID is required');
     }
 
@@ -19,9 +17,11 @@ export async function queryFailedRecordsList(institutionId) {
       console.error('Error creating Principal:', error);
       throw new Error('Invalid institution ID format');
     }
+
     const actor = await getActor();
     const result = await actor.query_institution_records_failed_list(principalId);
-    console.log(result)
+    console.log('Raw result:', result);
+
     if ('Err' in result) {
       return {
         success: false,
@@ -29,11 +29,21 @@ export async function queryFailedRecordsList(institutionId) {
       };
     }
 
+    // 格式化并根据状态筛选记录
+    const formattedResponse = formatInstitutionRecordResponse(result.Ok);
+    if (status && formattedResponse?.records) {
+      formattedResponse.records = formattedResponse.records.filter(record => 
+        // 处理空状态（显示所有）或匹配指定状态
+        !status || record.status.toLowerCase() === status.toLowerCase()
+      );
+    }
+
     return {
       success: true,
-      data: formatInstitutionRecordResponse(result.Ok)
+      data: formattedResponse
     };
   } catch (error) {
+    console.error('Query failed records error:', error);
     return {
       success: false,
       message: error.message || '查询失败记录失败'
@@ -84,18 +94,18 @@ function formatCreditRecord(raw) {
           loanId: content.Repayment.loan_id,
           repaymentDate: content.Repayment.repayment_date
         };
-      } else if ('Notification' in content) {
+      } else if ('Overdue' in content) {
         return {
-          type: 'Notification',
-          amount: content.Notification.amount,
-          days: content.Notification.days,
-          periodAmount: content.Notification.period_amount
+          type: 'Overdue',
+          amount: content.Overdue.amount,
+          overdueDays: content.Overdue.overdueDays,
+          periodAmount: content.Overdue.period_amount
         };
       }
       return null;
     };
 
-    return {
+    const record = {
       id: raw.id || '',
       institutionId: raw.institution_id?.toText() || '',
       institutionName: raw.institution_name || '',
@@ -106,9 +116,14 @@ function formatCreditRecord(raw) {
       content: getContentDetails(raw.content) || {},
       canisterId: raw.canister_id || '',
       timestamp: raw.timestamp ? new Date(nsToMs(raw.timestamp)).toISOString() : '',
-      status: Object.keys(raw.status || {})[0] || '',
+      status: Object.keys(raw.status || {})[0]?.toLowerCase() || '',
       rewardAmount: raw.reward_amount?.[0] || null
     };
+
+    // 添加调试日志
+    console.log('Formatted record:', record);
+    
+    return record;
   } catch (error) {
     console.error('Error formatting credit record:', error);
     return null;

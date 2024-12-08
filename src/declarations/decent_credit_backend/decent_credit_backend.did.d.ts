@@ -23,13 +23,13 @@ export interface LoanContent {
   'term_months' : bigint,
   'amount' : bigint,
 }
-export interface NotificationContent {
-  'days' : bigint,
+export interface OverdueContent {
+  'overdueDays' : bigint,
   'period_amount' : bigint,
   'amount' : bigint,
 }
 export type RecordContent = { 'Repayment' : RepaymentContent } |
-  { 'Notification' : NotificationContent } |
+  { 'Overdue' : OverdueContent } |
   { 'Loan' : LoanContent };
 export type RecordStatus = { 'Confirmed' : null } |
   { 'Rejected' : null } |
@@ -48,7 +48,7 @@ export interface RecordSubmissionResponse {
 }
 export type RecordType = { 'LoanRecord' : null } |
   { 'RepaymentRecord' : null } |
-  { 'NotificationRecord' : null };
+  { 'OverdueRecord' : null };
 export interface RepaymentContent {
   'loan_id' : string,
   'repayment_date' : string,

@@ -71,7 +71,6 @@ const FailedRecordsView = () => {
     try {
       setCurrentRecord(record);
       
-      // Format the details data structure similar to CreditQuery
       const formattedDetails = {
         institution_name: record.institutionName,
         institution_id: record.institutionId,
@@ -98,7 +97,7 @@ const FailedRecordsView = () => {
   const renderStatus = (status) => {
     switch(status) {
       case 'pending':
-        return <Tag color="processing">处理中</Tag>;
+        return <Tag color="processing">Pending</Tag>;
       case 'rejected':
         return (
           <Tooltip title="Failed Record">
@@ -106,7 +105,7 @@ const FailedRecordsView = () => {
               icon={<CloseCircleOutlined />} 
               className="bg-red-500/20 text-red-400 border-red-500/30"
             >
-              失败
+              Failed
             </Tag>
           </Tooltip>
         );
@@ -115,12 +114,11 @@ const FailedRecordsView = () => {
     }
   };
 
-  // 格式化金额
   const formatAmount = (amount) => {
     if (!amount) return '-';
-    return new Intl.NumberFormat('zh-CN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'CNY'
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -132,8 +130,8 @@ const FailedRecordsView = () => {
         return `Loan - ${content.amount} (Term: ${content.termMonths} months, Rate: ${content.interestRate}%)`;
       case 'Repayment':
         return `Repayment - ${content.amount} (Date: ${content.repaymentDate})`;
-      case 'Notification':
-        return `Notification - ${content.amount} (Days: ${content.days})`;
+      case 'Overdue':
+        return `Overdue - ${content.amount} (Days: ${content.overdueDays})`;
       default:
         return '-';
     }
@@ -141,7 +139,7 @@ const FailedRecordsView = () => {
 
   const columns = [
     {
-      title: '记录ID',
+      title: 'Record ID',
       dataIndex: 'id',
       key: 'id',
       width: 200,
@@ -149,7 +147,7 @@ const FailedRecordsView = () => {
       className: 'text-gray-300'
     },
     {
-      title: '用户DID',
+      title: 'User DID',
       dataIndex: 'userDid',
       key: 'userDid',
       width: 200,
@@ -157,28 +155,28 @@ const FailedRecordsView = () => {
       className: 'text-gray-300'
     },
     {
-      title: '记录类型',
+      title: 'Record Type',
       dataIndex: 'recordType',
       key: 'recordType',
       width: 100,
       className: 'text-gray-300'
     },
     {
-      title: '内容',
+      title: 'Content',
       dataIndex: 'content',
       key: 'content',
       width: 250,
       render: (content) => renderContent(content)
     },
     {
-      title: '状态',
+      title: 'Status',
       key: 'status',
       width: 100,
       align: 'center',
       render: (_, record) => renderStatus(record.status)
     },
     {
-      title: '失败原因',
+      title: 'Failure Reason',
       dataIndex: 'failureReason',
       key: 'failureReason',
       width: 200,
@@ -190,55 +188,61 @@ const FailedRecordsView = () => {
       )
     },
     {
-      title: '时间戳',
+      title: 'Update Time',
       dataIndex: 'timestamp',
       key: 'timestamp',
       width: 160,
-      className: 'text-gray-300',
-      render: (text) => dayjs(Number(text)).format('YYYY-MM-DD HH:mm:ss')
+      render: (text) => {
+        if (typeof text === 'string' && text.includes('T')) {
+          return dayjs(text).format('YYYY-MM-DD HH:mm:ss');
+        }
+        
+        const timestampStr = text.toString().replace('n', '');
+        const milliseconds = Math.floor(Number(timestampStr) / 1000000);
+        return dayjs.unix(Math.floor(milliseconds / 1000)).format('YYYY-MM-DD HH:mm:ss');
+      }
     }
   ];
 
-  // 详情表格的列定义
   const detailColumns = [
     {
-      title: '记录类型',
+      title: 'Record Type',
       dataIndex: 'record_type',
       key: 'record_type',
       width: 120,
       render: (type) => {
         const config = {
-          'LoanRecord': { text: '贷款记录', color: 'blue' },
-          'RepaymentRecord': { text: '还款记录', color: 'green' },
-          'NotificationRecord': { text: '通知记录', color: 'orange' }
+          'LoanRecord': { text: 'Loan Record', color: 'blue' },
+          'RepaymentRecord': { text: 'Repayment Record', color: 'green' },
+          'OverdueRecord': { text: 'Notification Record', color: 'orange' }
         };
         const typeConfig = config[type] || { text: type, color: 'default' };
         return <Tag color={typeConfig.color}>{typeConfig.text}</Tag>;
       },
     },
     {
-      title: '提交时间',
+      title: 'Submit Time',
       dataIndex: 'timestamp',
       key: 'timestamp',
       width: 180,
-      render: (timestamp) => dayjs(Number(timestamp)).format('YYYY-MM-DD HH:mm:ss'),
+      render: (timestamp) => dayjs(Number(timestamp) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
       width: 120,
       render: (status) => {
         const statusConfig = {
-          'pending': { color: 'processing', text: '处理中' },
-          'rejected': { color: 'error', text: '失败' }
+          'pending': { color: 'processing', text: 'Pending' },
+          'rejected': { color: 'error', text: 'Failed' }
         };
         const config = statusConfig[status] || { color: 'default', text: status };
         return <Tag color={config.color}>{config.text}</Tag>;
       },
     },
     {
-      title: '内容',
+      title: 'Content',
       dataIndex: 'content',
       key: 'content',
       render: (content) => {
@@ -246,12 +250,12 @@ const FailedRecordsView = () => {
         
         return (
           <Space direction="vertical">
-            {content.amount && <div>金额: {formatAmount(content.amount)}</div>}
-            {content.term_months && <div>期限: {content.term_months} 个月</div>}
-            {content.interest_rate && <div>年化利率: {content.interest_rate}%</div>}
-            {content.loan_id && <div>贷款ID: {content.loan_id}</div>}
-            {content.repayment_date && <div>还款日期: {content.repayment_date}</div>}
-            {content.days && <div>天数: {content.days} 天</div>}
+            {content.amount && <div>Amount: {formatAmount(content.amount)}</div>}
+            {content.term_months && <div>Term: {content.term_months} months</div>}
+            {content.interest_rate && <div>Interest Rate: {content.interest_rate}%</div>}
+            {content.loan_id && <div>Loan ID: {content.loan_id}</div>}
+            {content.repayment_date && <div>Repayment Date: {content.repayment_date}</div>}
+            {content.days && <div>Days: {content.days} days</div>}
           </Space>
         );
       },
@@ -261,23 +265,25 @@ const FailedRecordsView = () => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-gray-200 mb-2">失败记录查询</h2>
-        <p className="text-gray-400">查看详细的失败数据上传记录</p>
+        <h2 className="text-xl font-semibold text-gray-200 mb-2">Failed Records Query</h2>
+        <p className="text-gray-400">View detailed failed data upload records</p>
       </div>
 
       <Card className="bg-black/20 border-gray-700">
         <Form layout="inline" className="w-full">
           <Space wrap className="w-full justify-between">
             <Space wrap>
-              <Form.Item label={<span className="text-gray-300">状态</span>}>
+              <Form.Item className="w-96" label={<span className="text-gray-300">Status</span>}>
                 <Select
                   value={filters.status}
                   onChange={(value) => handleFilterChange('status', value)}
-                  className="w-32"
+                  className="w-full"
                   allowClear
+                  placeholder="All"
                 >
-                  <Option value="pending">处理中</Option>
-                  <Option value="rejected">失败</Option>
+                  <Option value="confirmed">Success</Option>
+                  <Option value="pending">Pending</Option>
+                  <Option value="rejected">Failed</Option>
                 </Select>
               </Form.Item>
             </Space>
@@ -290,14 +296,14 @@ const FailedRecordsView = () => {
                   onClick={fetchRecords}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
                 >
-                  查询
+                  Search
                 </Button>
                 <Button 
                   icon={<ReloadOutlined />}
                   onClick={handleReset}
                   className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
                 >
-                  重置
+                  Reset
                 </Button>
               </Space>
             </Form.Item>
@@ -314,10 +320,10 @@ const FailedRecordsView = () => {
           className="custom-table"
           scroll={{ x: 1200 }}
           pagination={{
-            defaultPageSize: 10,
+            pageSize: 100,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条记录`
+            showTotal: (total) => `Total ${total} records`
           }}
         />
       </Card>

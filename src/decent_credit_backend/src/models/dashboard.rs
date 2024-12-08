@@ -30,15 +30,12 @@ pub struct InstitutionStats {
     pub total_count: u64,
     pub active_count: u64,
     pub today_new_count: u64,
-    pub monthly_new_count: u64,
-    pub institution_growth_rate: f64,
 }
 
 #[derive(CandidType, Serialize)]
 pub struct DataStats {
     pub total_records: u64,
     pub today_records: u64,
-    pub monthly_records: u64,
     pub growth_rate: f64,
     pub data_distribution: DataDistribution,
 }
@@ -54,7 +51,6 @@ pub struct DataDistribution {
 pub struct ApiStats {
     pub total_calls: u64,
     pub today_calls: u64,
-    pub monthly_calls: u64,
     pub success_rate: f64,
     pub query_stats: QueryStats,
 }
@@ -71,10 +67,9 @@ pub struct QueryStats {
 pub struct TokenStats {
     pub total_rewards: u64,
     pub total_consumption: u64,
+    pub total_balance: u64,
     pub today_rewards: u64,
     pub today_consumption: u64,
-    pub monthly_rewards: u64,
-    pub monthly_consumption: u64,
     pub total_circulation: u64,
     pub average_daily_consumption: f64,
 }
@@ -126,7 +121,6 @@ pub struct BasicInfo {
 #[derive(CandidType, Serialize)]
 pub struct SubmissionStats {
     pub today_submissions: u64,
-    pub monthly_submissions: u64,
     pub total_submissions: u64,
     pub submission_distribution: DataDistribution,
 }
@@ -137,7 +131,6 @@ pub struct InstitutionUsageStats {
     pub queried_by_others: u64,
     pub today_query_others: u64,
     pub today_queried_by_others: u64,
-    pub monthly_queries: u64,
     pub total_queries: u64,
     pub api_quota: ApiQuota,
 }
@@ -151,12 +144,10 @@ pub struct ApiQuota {
 #[derive(CandidType, Serialize)]
 pub struct TokenInfo {
     pub balance: u64,
-    pub total_spent: u64,
-    pub today_spent: u64,
-    pub total_reward: u64,
-    pub today_reward: u64,
-    pub monthly_earned: u64,
-    pub monthly_spent: u64,
+    pub recharge: u64,
+    pub withdraw: u64,
+    pub rewards: u64,
+    pub consumption: u64,
 }
 
 #[derive(CandidType, Serialize)]
@@ -188,16 +179,6 @@ struct DailyStats {
     last_update: u64,
 }
 
-// 月度统计数据
-#[derive(Default)]
-struct MonthlyStats {
-    new_institutions: u64,
-    api_calls: u64,
-    data_uploads: u64,
-    token_rewards: u64,
-    token_consumption: u64,
-    last_update: u64,
-}
 
 // === 错误类型 ===
 

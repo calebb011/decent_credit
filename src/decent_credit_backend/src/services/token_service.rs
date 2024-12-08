@@ -48,7 +48,7 @@ pub struct TokenService {
 thread_local! {
     pub static TOKEN_SERVICE: RefCell<TokenService> = RefCell::new(
         TokenService::new(
-            Principal::from_text("b77ix-eeaaa-aaaaa-qaada-cai").unwrap()
+            Principal::from_text("br5f7-7uaaa-aaaaa-qaaca-cai").unwrap()
         )
     );
 }
@@ -121,7 +121,7 @@ impl TokenService {
         };
 
         // 更新统计
-        self.update_stats(from_id, 0, query_price);
+        self.update_institution_stats(from_id, 0, query_price);
         
         info!("Query fee prepared successfully: {} DCC for user {}", query_price, user_did);
         Ok(transfer_args)
@@ -240,7 +240,7 @@ impl TokenService {
     
         /// 简单的奖励发放方法
         pub async fn send_reward(&mut self, to_id: Principal, amount: u64, memo: String) -> Result<(), String> {
-            info!("Sending reward to account: {}, amount: {}", to_id, amount);
+            info!("Sending rewards to account: {}, amount: {}", to_id, amount);
             
             let transfer_args = TokenTransferArgs {
                 to: to_id,
@@ -261,11 +261,10 @@ impl TokenService {
             match result {
                 Ok(_) => {
                     info!("Reward sent successfully: {} tokens to {}", amount, to_id);
-                    self.update_stats(to_id, amount, 0);  // 保留统计功能
                     Ok(())
                 }
                 Err((code, msg)) => {
-                    error!("Failed to send reward: {:?} - {}", code, msg);
+                    error!("Failed to send rewards: {:?} - {}", code, msg);
                     Err(format!("发送奖励失败: {}", msg))
                 }
             }
@@ -301,7 +300,6 @@ impl TokenService {
         match result {
             Ok(_) => {
                 info!("Tokens deducted successfully: {} tokens from {}", amount, from_id);
-                self.update_stats(from_id, 0, amount);  // 更新统计
                 Ok(())
             }
             Err((code, msg)) => {
@@ -311,8 +309,7 @@ impl TokenService {
         }
     }
 
-      // 修改 send_reward_static，移除所有余额检查
-      pub async fn send_reward_static(
+    pub async fn send_reward_static(
         token_canister_id: Principal,
         to_id: Principal,
         amount: u64,
@@ -320,29 +317,66 @@ impl TokenService {
     ) -> Result<(), String> {
         info!("Static sending reward to account: {}, amount: {}", to_id, amount);
         
+        // 添加调试日志
+        let caller = ic_cdk::caller();
+        info!("Caller principal: {}", caller);
+        
+        // 检查 token_canister 的余额
+        let canister_balance = TokenService::query_balance_static(
+            token_canister_id, 
+            token_canister_id
+        ).await?;
+        
+        info!("Token canister balance: {}", canister_balance);
+        
+        if canister_balance < amount {
+            return Err(format!(
+                "Token canister balance insufficient: has {}, needs {}", 
+                canister_balance, amount
+            ));
+        }
+        
+        // 调用 inspect_message 检查调用者权限
+        let inspect_result: Result<(bool,), _> = ic_cdk::call(
+            token_canister_id,
+            "inspect_message",
+            (caller,)
+        ).await;
+        
+        if let Ok((has_permission,)) = inspect_result {
+            info!("Caller permission check: {}", has_permission);
+        }
+        
         let transfer_args = TokenTransferArgs {
             to: to_id,
             amount,
             memo: memo.into_bytes(),
-            from_subaccount: None,
+            from_subaccount: Some(vec![0; 32]),  // 使用默认子账户
             to_subaccount: None,
             created_at_time: Some(time()),
         };
-
-        // 直接调用 transfer，由 token canister 作为发送方
+    
+        info!("Executing transfer of {} tokens to {} with from_subaccount", amount, to_id);
+        
         let result: Result<(TransferResult,), _> = ic_cdk::call(
             token_canister_id,
             "transfer",
             (transfer_args,)
         ).await;
-
+    
         match result {
             Ok(_) => {
                 info!("Reward sent successfully: {} tokens to {}", amount, to_id);
+                // 验证转账结果
+                let new_balance = Self::query_balance_static(token_canister_id, to_id).await?;
+                info!("Recipient new balance: {}", new_balance);
                 Ok(())
             }
             Err((code, msg)) => {
                 error!("Failed to send reward: {:?} - {}", code, msg);
+                if msg.contains("Insufficient balance") {
+                    error!("Balance check failed - canister: {}, amount: {}", canister_balance, amount);
+                }
                 Err(format!("发送奖励失败: {}", msg))
             }
         }
@@ -430,7 +464,7 @@ impl TokenService {
         };
 
         // 更新统计
-        self.update_stats(institution_id, reward_amount, 0);
+        self.update_institution_stats(institution_id, reward_amount, 0);
         
         info!("Query reward prepared successfully: {} DCC for institution {}", 
               reward_amount, institution_id);
@@ -524,16 +558,23 @@ impl TokenService {
         }
     }
 }
-    fn calculate_reward_amount(&self, base_amount: u64, ratio: u32) -> Result<u64, Error> {
-        info!("Calculating reward amount: base={}, ratio={}", base_amount, ratio);
-        if ratio > 100 {
-            error!("Invalid reward ratio: {}", ratio);
-            return Err(Error::InvalidData("Invalid reward ratio".to_string()));
-        }
-        let amount = (base_amount as f64 * (ratio as f64 / 100.0)) as u64;
-        info!("Calculated reward amount: {}", amount);
-        Ok(amount)
+  fn calculate_reward_amount(&self, base_amount: u64, ratio: u32) -> Result<u64, Error> {
+    info!("Calculating reward amount: base={}, ratio={}", base_amount, ratio);
+    
+    // 验证比例的有效性
+    if ratio > 100 {
+        error!("Invalid reward ratio: {}", ratio);
+        return Err(Error::InvalidData("Invalid reward ratio".to_string()));
     }
+    
+    // 计算剩余比例 (100 - ratio) 
+    let remaining_ratio = 100 - ratio;
+    // 使用剩余比例计算金额
+    let amount = (base_amount * remaining_ratio as u64) / 100;
+    
+    info!("Calculated reward amount with remaining ratio {}: {}", remaining_ratio, amount);
+    Ok(amount)
+}
 
     fn prepare_query_transaction(
         &self,
@@ -582,27 +623,22 @@ impl TokenService {
         Ok(tx_request)
     }
 
-    fn update_stats(&mut self, institution_id: Principal, rewards: u64, consumption: u64) {
+    fn update_institution_stats(&mut self, institution_id: Principal, rewards: u64, consumption: u64) {
         info!("Updating stats for {}: rewards={}, consumption={}", 
             institution_id, rewards, consumption);
-        
-        let stats = self.state.daily_stats
-            .entry(institution_id)
-            .or_insert(InstitutionDailyStats {
-                rewards: 0,
-                consumption: 0,
-                last_update: time(),
+
+
+        ADMIN_SERVICE.with(|service| {
+                let mut service = service.borrow_mut();
+                if rewards > 0 {
+                    service.record_token_reward(institution_id, rewards);
+                }
+                if consumption > 0 {
+                    service.record_token_consumption(institution_id, consumption);
+                }
             });
-
-        stats.rewards += rewards;
-        stats.consumption += consumption;
-        stats.last_update = time();
-
-        info!("Updated institution stats: rewards={}, consumption={}", 
-            stats.rewards, stats.consumption);
-
         DASHBOARD_SERVICE.with(|service| {
-            service.borrow_mut().update_token_stats(rewards, consumption);
+            service.borrow_mut().update_admin_token_stats(rewards, consumption);
         });
     }
 

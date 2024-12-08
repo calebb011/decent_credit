@@ -23,15 +23,7 @@ thread_local! {
 }
 
 
-// 代币操作的数据结构
-#[derive(Clone)]
-pub struct TokenOperation {
-    from_id: Principal,
-    to_id: Principal,
-    user_did: String,
-    query_price: u64,
-    record: CreditRecord,
-}
+
 pub struct RecordService {
     storage_canister_id: Principal,
     records: HashMap<String, CreditRecord>,
@@ -97,7 +89,8 @@ impl RecordService {
             service.get_institution(request.institution_id)
                 .ok_or_else(|| Error::InvalidData("机构不存在".to_string()))
         })?;  // 注意这里添加了 ? 操作符
-        
+        info!("query_price for institution_id: {}", institution.query_price);
+
         let institution_name = institution.name.clone();  
         let institution_full_name= institution.full_name.clone();
         // 序列化内容
@@ -112,7 +105,7 @@ impl RecordService {
         }).map_err(|e| Error::EncryptionFailed(format!("Failed to encrypt: {:?}", e)))?;
 
         let proof = self.zk_service.generate_proof(&content_bytes);
-
+        
             // 在使用 encrypted_content 之前先克隆一份
         let encrypted_content_for_storage = encrypted_content.clone();
             // 完整初始化 CreditRecord
@@ -130,7 +123,8 @@ impl RecordService {
                 canister_id: self.storage_canister_id.to_string(),
                 timestamp: time(),
                 status: RecordStatus::Pending,
-                reward_amount: None // 初始时没有奖励
+                reward_amount: None, // 初始时没有奖励,
+                query_price:institution.query_price.clone()
             };
         
             // 存储记录
@@ -262,13 +256,13 @@ impl RecordService {
                 days: None,
                 period_amount: None
             }),
-            RecordContent::Notification(notification) => Ok(RecordData {
-                amount: notification.amount,
+            RecordContent::Overdue(overdue) => Ok(RecordData {
+                amount: overdue.amount,
                 user_id: record.user_did.as_bytes().to_vec(),
                 record_type: record.record_type.to_u8(),
                 timestamp: record.timestamp,
-                days: Some(notification.days),
-                period_amount: Some(notification.period_amount),
+                days: Some(overdue.overdueDays),
+                period_amount: Some(overdue.period_amount),
                 term_months: None,
                 interest_rate: None,
                 loan_id: None
@@ -295,34 +289,7 @@ impl RecordService {
                             service.institution_record_api_call(institution_id, record.clone(), 1);
                         });
 
-                        // 如果不是查询自己的记录，异步处理代币操作
-                        if record.institution_id != institution_id {
-                            // 获取查询价格
-                            let target_institution = ADMIN_SERVICE.with(|service| {
-                                let service = service.borrow();
-                                service.get_institution(record.institution_id)
-                            });
-
-                            // 如果机构存在，处理代币操作
-                            if let Some(target_institution) = target_institution {
-                                let token_op = TokenOperation {
-                                    from_id: institution_id,
-                                    to_id: record.institution_id,
-                                    user_did: record.user_did.clone(),
-                                    query_price: target_institution.query_price,
-                                    record: record.clone(),
-                                };
-
-                                // 在后台异步处理代币操作
-                                ic_cdk::spawn(async move {
-                                    if let Err(e) = RecordService::process_token_operation(token_op).await {
-                                        error!("代币操作处理失败: {}", e);
-                                    }
-                                });
-                            } else {
-                                warn!("未找到机构信息，跳过代币处理: {}", record.institution_id);
-                            }
-                        }
+ 
                         
                         return Some(record.clone());
                     } else {
@@ -395,18 +362,22 @@ impl RecordService {
     
         // 6. 如果有奖励，执行奖励转账
         if let Some(reward_args) = reward_transfer_args {
-            info!("Executing reward transfer...");
+            info!("Executing rewards transfer...");
             TokenService::execute_transfer(token_canister_id, reward_args)
                 .await
                 .map_err(|e| format!("奖励转账失败: {:?}", e))?;
         } else {
-            info!("No reward transfer needed");
+            info!("No rewards transfer needed");
         }
     
         info!("Token operation completed successfully");
         Ok(())
     }
-        pub fn get_record_userId(
+        
+    
+    
+    
+    pub fn get_record_userId(
             &mut self, 
             institution_id: Principal,
             user_did: String
@@ -419,7 +390,7 @@ impl RecordService {
             let mut result = Vec::new();
             let mut token_operations = Vec::new();
         
-            for record in local_records {
+            for mut  record in local_records {
                 if let Some((storage_id, _)) = with_storage_service(|service| {
                     service.get_chain_data(&record.id)
                 }) {
@@ -459,24 +430,30 @@ impl RecordService {
                                     query_price: target_institution.query_price,
                                     record: record.clone(),
                                 });
+                                record.query_price  = target_institution.query_price;
+                                result.push(record);
+                            }else{
+                                record.query_price  =0;
+                                result.push(record);
+
                             }
-                            result.push(record);
+
                         }
                     }
                 }
             }
     
-            // 异步处理代币操作
-            if !token_operations.is_empty() {
-                ic_cdk::spawn(async move {
-                    for op in token_operations {
-                        if let Err(e) = Self::process_token_operation(op).await {
-                            error!("代币操作处理失败: {:?}", e);
-                            // TODO: 可以添加重试逻辑或错误补偿机制
-                        }
-                    }
-                });
-            }
+            // // 异步处理代币操作
+            // if !token_operations.is_empty() {
+            //     ic_cdk::spawn(async move {
+            //         for op in token_operations {
+            //             if let Err(e) = Self::process_token_operation(op).await {
+            //                 error!("代币操作处理失败: {:?}", e);
+            //                 // TODO: 可以添加重试逻辑或错误补偿机制
+            //             }
+            //         }
+            //     });
+            // }
         
             Ok(result)
         }
@@ -556,9 +533,9 @@ impl RecordService {
                     Ok(())
                 }
             },
-            (RecordType::NotificationRecord, RecordContent::Notification(notification)) => {
-                if notification.amount == 0 || notification.days == 0 {
-                    Err("Invalid notification data: missing required fields")
+            (RecordType::OverdueRecord, RecordContent::Overdue(overdue)) => {
+                if overdue.amount == 0 || overdue.overdueDays == 0 {
+                    Err("Invalid overdue data: missing required fields")
                 } else {
                     Ok(())
                 }
@@ -602,7 +579,8 @@ impl RecordService {
                 canister_id: self.storage_canister_id.to_string(),
                 timestamp: time(),
                 status: RecordStatus::Rejected,
-                reward_amount: None
+                reward_amount: None,
+                query_price: 0
             };
     
             // 保存记录到本地和链上
@@ -725,56 +703,84 @@ impl RecordService {
         operator: Principal,
         request: CreateCreditRecordRequest
     ) -> Result<CreditDeductionRecord, String> {
+        info!("Starting create_deduction_record for institution: {}", request.institution_id);
+        debug!("Request details: deduction_points={}, reason={}", request.deduction_points, request.reason);
+        
         // 1. 通过 ADMIN_SERVICE 获取机构信息和分数
-        let current_score = ADMIN_SERVICE.with(|service| {
+        info!("Fetching institution information");
+        let institution = ADMIN_SERVICE.with(|service| {
             let service = service.borrow();
             service.get_institution(request.institution_id)
-                .map(|inst| inst.credit_score.score)
-                .ok_or_else(|| "机构不存在".to_string())
-        })?;
-        
+        });
+    
+        let institution = match institution {
+            Some(inst) => {
+                info!("Institution found: {}", inst.name);
+                inst
+            },
+            None => {
+                error!("Institution not found: {}", request.institution_id);
+                return Err("Institution does not exist".to_string());
+            }
+        };
+    
+        let current_score = institution.credit_score.score;
+        debug!("Current credit score: {}", current_score);
+    
         // 2. 检查扣分后是否会小于0
         if current_score < request.deduction_points as u64 {
+            error!(
+                "Deduction points ({}) exceed current credit score ({})",
+                request.deduction_points,
+                current_score
+            );
             return Err(format!(
-                "扣分分数({})大于当前信用分数({})", 
+                "Deduction points ({}) exceed current credit score ({})",
                 request.deduction_points,
                 current_score
             ));
         }
-
+    
         // 3. 更新机构分数
         let new_score = current_score - request.deduction_points as u64;
-        ADMIN_SERVICE.with(|service| {
+        info!("Updating credit score from {} to {}", current_score, new_score);
+        
+        match ADMIN_SERVICE.with(|service| {
             let mut service = service.borrow_mut();
             service.update_credit_score(request.institution_id, new_score)
-        })?;
-
-        // 4. 获取机构名称并创建扣分记录
-        let institution_name = ADMIN_SERVICE.with(|service| {
-            let service = service.borrow();
-            service.get_institution(request.institution_id)
-                .map(|inst| inst.name)
-                .unwrap_or_else(|| "未知机构".to_string())
-        });
-
+        }) {
+            Ok(_) => {
+                info!("Successfully updated credit score");
+            },
+            Err(e) => {
+                error!("Failed to update credit score: {}", e);
+                return Err(format!("Failed to update credit score: {}", e));
+            }
+        }
+    
+        // 4. 创建扣分记录
+        debug!("Creating deduction record with ID: {}", self.deduction_records.len() + 1);
         let record = CreditDeductionRecord {
             id: format!("{}", self.deduction_records.len() + 1),
-            record_id: format!("CR{}{:03}", 
+            record_id: format!("CR{}{:03}",
                 time() / 1_000_000_000,
                 self.deduction_records.len() + 1
             ),
             institution_id: request.institution_id,
-            institution_name,
+            institution_name: institution.name.clone(),
             deduction_points: request.deduction_points,
-            reason: request.reason,
-            data_quality_issue: request.data_quality_issue,
+            reason: request.reason.clone(),
+            data_quality_issue: request.data_quality_issue.clone(),
             created_at: time(),
             operator_id: operator,
-            operator_name: "管理员".to_string(), 
+            operator_name: "Administrator".to_string(),
         };
-
+    
         // 5. 保存记录
+        info!("Saving deduction record: {}", record.record_id);
         self.deduction_records.push(record.clone());
+        
+        info!("Successfully created deduction record: {}", record.record_id);
         
         Ok(record)
     }
@@ -829,7 +835,7 @@ impl RecordType {
         match self {
             RecordType::LoanRecord => 1,
             RecordType::RepaymentRecord => 2,
-            RecordType::NotificationRecord => 3,
+            RecordType::OverdueRecord => 3,
         }
     }
 }

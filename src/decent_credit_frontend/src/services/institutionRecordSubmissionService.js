@@ -1,7 +1,6 @@
 // creditRecordService.js
-import { createActor,getActor } from './IDL';
+import { getActor } from './IDL';
 import { Principal } from '@dfinity/principal';
-import { authClientService } from './authClient';
 
 
 /**
@@ -14,8 +13,8 @@ function getRecordType(type) {
       return { 'LoanRecord': null };  // 修改为对应后端的 RecordType 枚举
     case 'repayment':
       return { 'RepaymentRecord': null };
-    case 'notification':
-      return { 'NotificationRecord': null };
+    case 'overdue':
+      return { 'OverdueRecord': null };
     default:
       throw new Error(`Invalid record type: ${type}`);
   }
@@ -85,11 +84,11 @@ function formatRecordRequest(formValues) {
       };
       break;
 
-    case 'notification':
+    case 'overdue':
       request.content = {
-        Notification: {  // 变为 Notification
+        Overdue: {  // 变为 Overdue
           amount: BigInt(Math.floor(Number(formValues.amount) * 100)),
-          days: BigInt(formValues.days || 0),
+          overdueDays: BigInt(formValues.overdueDays), 
           period_amount: BigInt(Math.floor(Number(formValues.periodAmount || formValues.amount) * 100))
         }
       };
@@ -151,7 +150,7 @@ function formatBatchRecord(record) {
       term_months: record.term ? [BigInt(Math.floor(Number(record.term)))] : [],
       interest_rate: record.interestRate ? [Number(record.interestRate)] : [],
       loan_id: record.originalLoanId ? [record.originalLoanId] : [],
-      days: record.overdueDays ? [BigInt(Math.floor(Number(record.overdueDays)))] : [],
+      overdueDays: record.overdueDays ? [BigInt(Math.floor(Number(record.overdueDays)))] : [],
       period_amount: record.amount ? [BigInt(Math.floor(Number(record.amount) * 100))] : []
     }
   };
@@ -228,7 +227,7 @@ function validateRow(row) {
   }
 
     // 检查记录类型
-    if (!['loan', 'repayment', 'notification'].includes(row.recordType)) {
+    if (!['loan', 'repayment', 'overdue'].includes(row.recordType)) {
       return false;
     }
   
@@ -239,8 +238,8 @@ function validateRow(row) {
                !isNaN(Number(row.interestRate)) && Number(row.interestRate) >= 0;
       case 'repayment':
         return Boolean(row.originalLoanId);
-      case 'notification':
-        return !isNaN(Number(row.days)) && Number(row.days) > 0 &&
+      case 'overdue':
+        return !isNaN(Number(row.overdueDays)) && Number(row.overdueDays) > 0 &&
                !isNaN(Number(row.periodAmount)) && Number(row.periodAmount) > 0;
       default:
         return false;

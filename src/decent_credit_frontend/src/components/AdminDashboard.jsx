@@ -15,10 +15,10 @@ const AdminDashboard = () => {
         if (response.success) {
           setDashboardData(response.data);
         } else {
-          console.error('获取概览数据失败:', response.message);
+          console.error('Failed to fetch overview data:', response.message);
         }
       } catch (error) {
-        console.error('获取概览数据异常:', error);
+        console.error('Error fetching overview data:', error);
       } finally {
         setLoading(false);
       }
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Spin tip="加载中..." size="large" />
+        <Spin tip="Loading..." size="large" />
       </div>
     );
   }
@@ -38,76 +38,74 @@ const AdminDashboard = () => {
   if (!dashboardData) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <Empty description={<span className="text-gray-400">暂无数据</span>} />
+        <Empty description={<span className="text-gray-400">No data available</span>} />
       </div>
     );
   }
 
   const mainCards = [
     {
-      title: '机构数据',
+      title: 'Institutions',
       icon: <Building className="h-8 w-8 text-blue-500" />,
       bgColor: 'from-blue-500/20 to-blue-600/20',
       mainValue: dashboardData.institutionStats.totalCount,
-      subValue: `今日新增: +${dashboardData.institutionStats.todayNewCount}`
+      subValue: `New today: +${dashboardData.institutionStats.todayNewCount}`
     },
     {
-      title: '信用数据总量',
+      title: 'Total Credit Data',
       icon: <Database className="h-8 w-8 text-green-500" />,
       bgColor: 'from-green-500/20 to-green-600/20',
       mainValue: dashboardData.dataStats.totalRecords.toLocaleString(),
-      subValue: `今日上传: ${dashboardData.dataStats.todayRecords.toLocaleString()}`,
       extra: {
-        label: '同比增长',
+        label: 'YoY Growth',
         value: `+${dashboardData.dataStats.growthRate}%`,
         color: 'text-green-500'
       }
     },
     {
-      title: '信用记录查询次数',
+      title: 'Credit Record Queries',
       icon: <Activity className="h-8 w-8 text-purple-500" />,
       bgColor: 'from-purple-500/20 to-purple-600/20',
       mainValue: dashboardData.apiStats.totalCalls.toLocaleString(),
-      subValue: `今日调用: ${dashboardData.apiStats.todayCalls.toLocaleString()}`
+      subValue: `Today's calls: ${dashboardData.apiStats.todayCalls.toLocaleString()}`
     }
   ];
 
   const tokenStats = [
     {
-      title: '历史总奖励',
+      title: 'Total Institution Balance',
+      value: `${dashboardData.tokenStats.totalBalance.toLocaleString()} DCC`,
+      textColor: 'text-green-500'
+    },
+    {
+      title: 'Total Institution Rewards',
       value: `${dashboardData.tokenStats.totalRewards.toLocaleString()} DCC`,
       textColor: 'text-green-500'
     },
     {
-      title: '历史总消耗',
+      title: 'Total Institution Consumption',
       value: `${dashboardData.tokenStats.totalConsumption.toLocaleString()} DCC`,
       textColor: 'text-red-500'
     },
     {
-      title: '今日奖励',
-      value: `${dashboardData.tokenStats.todayRewards.toLocaleString()} DCC`,
-      textColor: 'text-green-500',
-      percentage: `+${((dashboardData.tokenStats.todayRewards / dashboardData.tokenStats.totalRewards) * 100).toFixed(1)}%`
-    },
-    {
-      title: '今日消耗',
-      value: `${dashboardData.tokenStats.todayConsumption.toLocaleString()} DCC`,
-      textColor: 'text-red-500',
-      percentage: `+${((dashboardData.tokenStats.todayConsumption / dashboardData.tokenStats.totalConsumption) * 100).toFixed(1)}%`
+      title: 'Platform Fee Revenue',
+      value: `${(dashboardData.tokenStats.totalConsumption * 0.1).toLocaleString()} DCC`, // Assuming 10% fee
+      textColor: 'text-blue-500',
+      subValue: 'Fee rate: 10%'
     }
   ];
 
   return (
     <div className="space-y-4">
-      {/* 头部标题 */}
+      {/* Header Title */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-200 mb-2">系统运营概览</h2>
+        <h2 className="text-xl font-semibold text-gray-200 mb-2">System Operation Overview</h2>
         <div className="text-gray-400">
-          平台当前共有 {dashboardData.institutionStats.totalCount} 家机构
+          Platform currently has {dashboardData.institutionStats.totalCount} institutions
         </div>
       </div>
 
-      {/* 主要状态卡片 */}
+      {/* Main Status Cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {mainCards.map((card, index) => (
           <Card key={index} className="bg-black/20 border-gray-700 hover:border-gray-600 transition-colors">
@@ -135,9 +133,9 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* DCC代币统计 */}
+      {/* DCC Token Statistics */}
       <Card 
-        title={<span className="text-gray-200">DCC代币使用统计</span>}
+        title={<span className="text-gray-200">DCC Token Usage Statistics</span>}
         className="bg-black/20 border-gray-700"
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -154,6 +152,11 @@ const AdminDashboard = () => {
                   </span>
                 )}
               </div>
+              {stat.subValue && (
+                <span className="text-xs text-gray-400 mt-1">
+                  {stat.subValue}
+                </span>
+              )}
             </div>
           ))}
         </div>

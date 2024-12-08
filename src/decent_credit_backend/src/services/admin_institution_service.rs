@@ -10,7 +10,8 @@ use crate::models::dashboard::*;
 use log::{info, debug, warn, error};
 use crate::utils::error::Error;
 use crate::services::token_service::*;
-
+use crate::services::record_service::*;
+use crate::services::record_service::RecordService;
 const DEFAULT_PASSWORD: &str = "123"; // 默认密码
 
 
@@ -90,7 +91,7 @@ impl AdminService {
             join_time: time(),
             last_active: time(),
             api_calls: 0,
-            dcc_consumed: 100,
+            dcc_consumed: 0,
             data_uploads: 0,
             credit_score: CreditScore {
                 score: 80,
@@ -104,7 +105,10 @@ impl AdminService {
             query_price:0,
             reward_share_ratio:0,
             inbound_queries:0,
-            outbound_queries:0
+            outbound_queries:0,
+            consumption:0,
+            rewards:0,
+            balance:0,
         };
 
         self.institutions.insert(institution_id, institution);
@@ -142,7 +146,7 @@ impl AdminService {
         // 更新设置
         institution.data_service_enabled = request.data_service_enabled;
         institution.query_price = request.query_price;
-        institution.reward_share_ratio = request.reward_share_ratio;
+        institution.reward_share_ratio = 10;
 
         // 记录更新
         info!(
@@ -203,7 +207,34 @@ impl AdminService {
                 target_institution.inbound_queries += count;
                 target_institution.last_active = time();
             }
+
+             // 获取查询价格
+             let target_institution = self.get_institution(record.institution_id);
+
+
+            // 如果机构存在，处理代币操作
+            if let Some(target_institution) = target_institution {
+                let token_op =TokenOperation {
+                    from_id: id,
+                    to_id: record.institution_id,
+                    user_did: record.user_did.clone(),
+                    query_price: target_institution.query_price,
+                    record: record.clone(),
+                };
+
+                // 在后台异步处理代币操作
+                ic_cdk::spawn(async move {
+                    if let Err(e) = RecordService::process_token_operation(token_op).await {
+                        error!("代币操作处理失败: {}", e);
+                    }
+                });
+            } else {
+                warn!("未找到机构信息，跳过代币处理: {}", record.institution_id);
+            }
         }
+
+                               
+                            
     }
 
     pub fn institution_record_data_upload(&mut self, id: Principal, count: u64) {
@@ -247,56 +278,86 @@ impl AdminService {
         })
     }
 
-    // pub async fn process_dcc_reward(
-    //     &mut self,
-    //     id: Principal,
-    //     request: DCCTransactionRequest,
-    //     token_canister_id: Principal
-    // ) -> Result<(), String> {
-    //     let institution = self.institutions
-    //         .get_mut(&id)
-    //         .ok_or_else(|| "机构不存在".to_string())?;
-        
-    //     // 使用 TokenService 的发送奖励方法
-    //     TOKEN_SERVICE.with(|service| async move {
-    //         service.borrow_mut()
-    //             .send_reward(id, request.dcc_amount, request.remarks)
-    //             .await
-    //     }).await?;
-        
-    //     // 更新本地记录
-    //     institution.token_trading.bought += request.dcc_amount;
-    //     self.dcc_transactions.push(request);
-    //     institution.last_active = time();
-        
-    //     Ok(())
-    // }
     
-    // pub async fn process_dcc_deduction(
-    //     &mut self,
-    //     id: Principal,
-    //     request: DCCTransactionRequest,
-    //     token_canister_id: Principal
-    // ) -> Result<(), String> {
-    //     let institution = self.institutions
-    //         .get_mut(&id)
-    //         .ok_or_else(|| "机构不存在".to_string())?;
+pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    info!("DCC recharge initiated by {} for institution: {}", caller.to_text(), id.to_text());
+    debug!("Recharge details - Amount: {}", request.dcc_amount);
+
+    // Clone 必要的值，避免所有权问题
+    let dcc_amount = request.dcc_amount;
+    let remarks = request.remarks.clone();
+
+    // 获取充值前余额
+    let balance_before = TOKEN_SERVICE.with(|service| {
+        let token_service = service.borrow();
+        let token_canister_id = token_service.token_canister_id;
+        TokenService::query_balance_static(token_canister_id, id)
+    }).await?;
     
-    //     // 使用 TokenService 的扣除代币方法
-    //     TOKEN_SERVICE.with(|service| async move {
-    //         service.borrow_mut()
-    //             .deduct_tokens(id, request.dcc_amount, request.remarks)
-    //             .await
-    //     }).await?;
-    
-    //     // 更新本地记录
-    //     institution.token_trading.sold += request.dcc_amount;
-    //     institution.dcc_consumed += request.dcc_amount;
-    //     self.dcc_transactions.push(request);
-    //     institution.last_active = time();
+    info!("Balance before recharge: {}", balance_before);
+
+    // 使用 TokenService 直接调用充值方法
+    let result = TOKEN_SERVICE.with(|service| {
+        let token_service = service.borrow();
+        let token_canister_id = token_service.token_canister_id;
         
-    //     Ok(())
-    // }
+        // 使用普通函数调用而不是异步闭包
+        TokenService::send_reward_static(token_canister_id, id, dcc_amount, remarks)
+    }).await;
+
+     // 验证充值后余额
+     let balance_after = TOKEN_SERVICE.with(|service| {
+        let token_service = service.borrow();
+        let token_canister_id = token_service.token_canister_id;
+        TokenService::query_balance_static(token_canister_id, id)
+    }).await?;
+    
+    info!("Balance after recharge: {}", balance_after);
+    
+    if balance_after <= balance_before {
+        return Err("充值未能增加余额".to_string());
+    }
+
+    // 如果成功，更新本地记录
+    if result.is_ok() {
+        ADMIN_SERVICE.with(|service| {
+            let mut admin_service = service.borrow_mut();
+            admin_service.record_token_trading(id, true, dcc_amount);
+        });
+    }
+
+    result
+}
+
+pub async fn deduct_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    info!("DCC deduction initiated by {} for institution: {}", caller.to_text(), id.to_text());
+    debug!("Deduction details - Amount: {}", request.dcc_amount);
+
+    // Clone 必要的值，避免所有权问题
+    let dcc_amount = request.dcc_amount;
+    let remarks = request.remarks.clone();
+
+    // 使用 TokenService 直接调用扣除方法
+    let result = TOKEN_SERVICE.with(|service| {
+        let token_service = service.borrow();
+        let token_canister_id = token_service.token_canister_id;
+        
+        // 使用普通函数调用而不是异步闭包
+        TokenService::deduct_tokens_static(token_canister_id, id, dcc_amount, remarks)
+    }).await;
+
+    // 如果成功，更新本地记录
+    if result.is_ok() {
+        ADMIN_SERVICE.with(|service| {
+            let mut admin_service = service.borrow_mut();
+            admin_service.record_token_trading(id, false, dcc_amount);
+        });
+    }
+
+    result
+}
 
     pub fn update_usdt_rate(&mut self, rate: f64) -> Result<(), String> {
         if rate <= 0.0 {
@@ -312,13 +373,32 @@ impl AdminService {
         if let Some(institution) = self.institutions.get_mut(&id) {
             if is_buy {
                 institution.token_trading.bought += amount;
+                institution.balance+=amount;
             } else {
                 institution.token_trading.sold += amount;
+                institution.balance-=amount;
             }
             institution.last_active = time();
         }
     }
+    pub fn record_token_reward(&mut self, id: Principal, amount: u64) {
+        if let Some(institution) = self.institutions.get_mut(&id) {
+            institution.rewards += amount;
+            institution.balance +=amount;
+            institution.last_active = time();
+            info!("Updated institution rewards: +{} for {}", amount, id);
+        }
+    }
 
+    pub fn record_token_consumption(&mut self, id: Principal, amount: u64) {
+        if let Some(institution) = self.institutions.get_mut(&id) {
+            institution.consumption += amount;
+            institution.balance -=amount;
+
+            institution.last_active = time();
+            info!("Updated institution consumption: +{} for {}", amount, id);
+        }
+    }
 
 
 

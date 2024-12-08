@@ -38,7 +38,7 @@ let _lastRefreshTime = 0;
   const RecordType = IDL.Variant({
     'LoanRecord': IDL.Null,
     'RepaymentRecord': IDL.Null,
-    'NotificationRecord': IDL.Null
+    'OverdueRecord': IDL.Null
   });
 
   const RecordStatus = IDL.Variant({
@@ -60,16 +60,16 @@ let _lastRefreshTime = 0;
     'repayment_date': IDL.Text
   });
 
-  const NotificationContent = IDL.Record({
+  const OverdueContent = IDL.Record({
     'amount': IDL.Nat64,
-    'days': IDL.Nat64,
+    'overdueDays': IDL.Nat64,
     'period_amount': IDL.Nat64
   });
 
   const RecordContent = IDL.Variant({
     'Loan': LoanContent,
     'Repayment': RepaymentContent,
-    'Notification': NotificationContent
+    'Overdue': OverdueContent
   });
 
   // === 核心记录类型（其他类型的基础）===
@@ -87,7 +87,8 @@ let _lastRefreshTime = 0;
     'canister_id': IDL.Text,
     'timestamp': IDL.Nat64,
     'status': RecordStatus,
-    'reward_amount': IDL.Opt(IDL.Nat64)
+    'reward_amount': IDL.Opt(IDL.Nat64),
+    'query_price': IDL.Nat64,
   });
   // === 新增服务设置相关类型定义 ===
   const UpdateServiceSettingsRequest = IDL.Record({
@@ -130,8 +131,10 @@ let _lastRefreshTime = 0;
     // 新增字段
     'data_service_enabled': IDL.Bool,
     'query_price': IDL.Nat64,
-    'reward_share_ratio': IDL.Nat8
-    
+    'reward_share_ratio': IDL.Nat8,
+    'rewards': IDL.Nat64,
+    'consumption': IDL.Nat64,
+    'balance': IDL.Nat64
   });
 
   // === 查询相关结构 ===
@@ -309,7 +312,6 @@ const BasicInfo = IDL.Record({
 
 const SubmissionStats = IDL.Record({
   'today_submissions': IDL.Nat64,
-  'monthly_submissions': IDL.Nat64,
   'total_submissions': IDL.Nat64,
   'submission_distribution': DataDistribution
 });
@@ -324,19 +326,16 @@ const InstitutionUsageStats = IDL.Record({
   'queried_by_others': IDL.Nat64,
   'today_query_others': IDL.Nat64,
   'today_queried_by_others': IDL.Nat64,
-  'monthly_queries': IDL.Nat64,
   'total_queries': IDL.Nat64,
   'api_quota': ApiQuota
 });
 
 const TokenInfo = IDL.Record({
   'balance': IDL.Nat64,
-  'total_spent': IDL.Nat64,
-  'today_spent': IDL.Nat64,
-  'total_reward': IDL.Nat64,
-  'today_reward': IDL.Nat64,
-  'monthly_earned': IDL.Nat64,
-  'monthly_spent': IDL.Nat64
+  'recharge': IDL.Nat64,
+  'withdraw': IDL.Nat64,
+  'rewards': IDL.Nat64,
+  'consumption': IDL.Nat64,
 });
 
 
@@ -365,7 +364,6 @@ const SystemStatus = IDL.Record({
   const DataStats = IDL.Record({
     'total_records': IDL.Nat64,
     'today_records': IDL.Nat64,
-    'monthly_records': IDL.Nat64,
     'growth_rate': IDL.Float64,
     'data_distribution': DataDistribution
   });
@@ -373,14 +371,11 @@ const SystemStatus = IDL.Record({
   'total_count': IDL.Nat64,
   'active_count': IDL.Nat64,
   'today_new_count': IDL.Nat64,
-  'monthly_new_count': IDL.Nat64,
-  'institution_growth_rate': IDL.Float64
 });
 
 const ApiStats = IDL.Record({
   'total_calls': IDL.Nat64,
   'today_calls': IDL.Nat64,
-  'monthly_calls': IDL.Nat64,
   'success_rate': IDL.Float64,
   'query_stats': IDL.Record({
     'total_queries': IDL.Nat64,
@@ -393,10 +388,9 @@ const ApiStats = IDL.Record({
 const TokenStats = IDL.Record({
   'total_rewards': IDL.Nat64,
   'total_consumption': IDL.Nat64,
+  'total_balance': IDL.Nat64,
   'today_rewards': IDL.Nat64,
   'today_consumption': IDL.Nat64,
-  'monthly_rewards': IDL.Nat64,
-  'monthly_consumption': IDL.Nat64,
   'total_circulation': IDL.Nat64,
   'average_daily_consumption': IDL.Float64
 });
@@ -467,7 +461,7 @@ const AdminDashboardData = IDL.Record({
       'Err': IDL.Text 
     })], ['update']),
     'create_credit_record': IDL.Func([CreateCreditRecordRequest], [IDL.Variant({ 'Ok': CreditDeductionRecord, 'Err': IDL.Text })], ['update']),
-    'get_credit_records': IDL.Func([IDL.Opt(IDL.Principal)], [IDL.Vec(CreditDeductionRecord)], ['query']),
+    'get_credit_records': IDL.Func([], [IDL.Vec(CreditDeductionRecord)], ['query']),
     'query_institution_records_list': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': InstitutionRecordResponse, 'Err': IDL.Text })], ['update']),
     'deduct_query_token': IDL.Func([IDL.Principal], [IDL.Variant({ 'Ok': IDL.Bool, 'Err': IDL.Text })], ['update']),
     'get_risk_assessment': IDL.Func([IDL.Principal, IDL.Text], [IDL.Variant({ 'Ok': RiskAssessment, 'Err': IDL.Text })], ['query']),
@@ -556,7 +550,7 @@ const AdminDashboardData = IDL.Record({
         'Ok': CreditRecord,
         'Err': IDL.Text
       })],
-      ['query']  // 标记为查询方法
+      ['update']  // 标记为查询方法
     ),
   });
 };

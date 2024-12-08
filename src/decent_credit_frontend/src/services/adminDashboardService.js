@@ -1,166 +1,124 @@
 import { getActor } from './IDL';
 import { Principal } from '@dfinity/principal';
-import { authClientService } from './authClient';
-
-
 
 /**
  * 获取管理员看板数据
- * @param {boolean} useMock 是否使用模拟数据
- * @returns {Promise<AdminDashboardData>} 管理员看板数据
  */
 export async function getAdminDashboardData() {
-
-
-
- const actor = await getActor();
- try {
-    // 获取所有机构数据
-    const institutions = await actor.get_all_institutions();
-    const formattedInstitutions = institutions.map(formatInstitution);
-    
-    // 统计活跃和非活跃机构
-    const activeInstitutions = formattedInstitutions.filter(inst => inst.status === 'active');
-    
-    // 计算今日新增机构数
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTime = today.getTime();
-    const newInstitutions = formattedInstitutions.filter(inst => {
-      const joinTime = new Date(inst.join_time).getTime();
-      return joinTime >= todayTime;
-    });
-
-    // 统计API调用和数据上传
-    const apiStats = calculateApiStats(formattedInstitutions);
-    const dataStats = calculateDataStats(formattedInstitutions);
-    const tokenStats = calculateTokenStats(formattedInstitutions);
-
-    return {
-      success: true,
-      data: {
-        institutionStats: {
-          totalCount: institutions.length,
-          activeCount: activeInstitutions.length,
-          todayNewCount: newInstitutions.length,
-        },
-        dataStats,
-        apiStats,
-        tokenStats,
-      }
-    };
-  } catch (error) {
-    console.error('获取管理员看板数据失败:', error);
-    return {
-      success: false,
-      message: error.message || '获取数据失败'
-    };
-  }
-}
-
-/**
- * 格式化机构数据
- */
-function formatInstitution(raw) {
-  if (!raw) return null;
-
-  const nsToMs = (ns) => {
-    if (!ns) return 0;
-    return Math.floor(Number(ns.toString()) / 1_000_000);
-  };
-
-  return {
-    id: raw.id.toText(),
-    name: raw.name || '',
-    status: raw.status?.Active ? 'active' : 'inactive',
-    join_time: raw.join_time ? new Date(nsToMs(raw.join_time)).toISOString() : null,
-    api_calls: Number(raw.api_calls || 0),
-    dcc_consumed: Number(raw.dcc_consumed || 0),
-    data_uploads: Number(raw.data_uploads || 0),
-    token_trading: {
-      bought: Number(raw.token_trading?.bought || 0),
-      sold: Number(raw.token_trading?.sold || 0)
+    const actor = await getActor();
+    try {
+        const dashboardData = await actor.get_admin_dashboard_data();
+        return formatResponse(dashboardData);
+    } catch (error) {
+        console.error('Failed to fetch admin dashboard data:', error);
+        return {
+            success: false,
+            message: error.message || 'Failed to fetch data'
+        };
     }
-  };
 }
 
 /**
- * 计算API统计数据
+ * 格式化响应数据
  */
-function calculateApiStats(institutions) {
-  const totalCalls = institutions.reduce((sum, inst) => sum + inst.api_calls, 0);
-  const todayCalls = institutions.reduce((sum, inst) => {
-    // 这里需要后端提供今日调用数据
-    return sum + 0;
-  }, 0);
+function formatResponse(raw) {
+    if (!raw) return { success: false, message: 'No data' };
 
-  return {
-    totalCalls,
-    todayCalls,
-    successRate: 99.9 // 需要后端提供实际成功率
-  };
+    try {
+        const institutionStats = {
+            totalCount: Number(raw.institution_stats.total_count),
+            activeCount: Number(raw.institution_stats.active_count),
+            todayNewCount: Number(raw.institution_stats.today_new_count)
+        };
+
+        const dataStats = {
+            totalRecords: Number(raw.data_stats.total_records),
+            todayRecords: Number(raw.data_stats.today_records),
+            growthRate: Number(raw.data_stats.growth_rate),
+            dataDistribution: {
+                loanRecords: Number(raw.data_stats.data_distribution.loan_records),
+                repaymentRecords: Number(raw.data_stats.data_distribution.repayment_records),
+                notificationRecords: Number(raw.data_stats.data_distribution.notification_records)
+            }
+        };
+
+        const apiStats = {
+            totalCalls: Number(raw.api_stats.total_calls),
+            todayCalls: Number(raw.api_stats.today_calls),
+            successRate: Number(raw.api_stats.success_rate),
+            queryStats: {
+                totalQueries: Number(raw.api_stats.query_stats.total_queries),
+                todayQueries: Number(raw.api_stats.query_stats.today_queries),
+                outboundQueries: Number(raw.api_stats.query_stats.outbound_queries),
+                inboundQueries: Number(raw.api_stats.query_stats.inbound_queries)
+            }
+        };
+
+        const tokenStats = {
+            totalRewards: Number(raw.token_stats.total_rewards),
+            totalConsumption: Number(raw.token_stats.total_consumption),
+            totalBalance: Number(raw.token_stats.total_balance),
+            todayRewards: Number(raw.token_stats.today_rewards),
+            todayConsumption: Number(raw.token_stats.today_consumption),
+            totalCirculation: Number(raw.token_stats.total_circulation),
+            averageDailyConsumption: Number(raw.token_stats.average_daily_consumption)
+        };
+
+        const creditStats = {
+            averageScore: Number(raw.credit_stats.average_score),
+            levelDistribution: {
+                aaaCount: Number(raw.credit_stats.level_distribution.aaa_count),
+                aaCount: Number(raw.credit_stats.level_distribution.aa_count),
+                aCount: Number(raw.credit_stats.level_distribution.a_count),
+                bbbCount: Number(raw.credit_stats.level_distribution.bbb_count),
+                bbCount: Number(raw.credit_stats.level_distribution.bb_count),
+                otherCount: Number(raw.credit_stats.level_distribution.other_count)
+            }
+        };
+
+        const systemStatus = {
+            apiHealth: raw.system_status.api_health,
+            hasAnnouncement: raw.system_status.has_announcement,
+            lastUpdateTime: Number(raw.system_status.last_update_time),
+            systemVersion: raw.system_status.system_version
+        };
+
+        return {
+            success: true,
+            data: {
+                institutionStats,
+                dataStats,
+                apiStats,
+                tokenStats,
+                creditStats,
+                systemStatus
+            }
+        };
+    } catch (error) {
+        console.error('Error formatting dashboard data:', error);
+        return {
+            success: false,
+            message: 'Error formatting data'
+        };
+    }
 }
 
 /**
- * 计算数据统计信息
+ * 辅助函数：格式化日期时间
  */
-function calculateDataStats(institutions) {
-  const totalRecords = institutions.reduce((sum, inst) => sum + inst.data_uploads, 0);
-  const todayRecords = institutions.reduce((sum, inst) => {
-    // 这里需要后端提供今日上传数据
-    return sum + 0;
-  }, 0);
-
-  return {
-    totalRecords,
-    todayRecords,
-    growthRate: calculateGrowthRate(totalRecords, todayRecords)
-  };
+function formatTimestamp(ns) {
+    if (!ns) return null;
+    return new Date(Number(ns) / 1_000_000).toISOString();
 }
 
 /**
- * 计算DCC代币统计信息
+ * 辅助函数：确保数字类型
  */
-function calculateTokenStats(institutions) {
-  // 计算历史总奖励 (bought)
-  const totalRewards = institutions.reduce((sum, inst) => sum + inst.token_trading.bought, 0);
-  
-  // 计算历史总消耗 (dcc_consumed)
-  const totalConsumption = institutions.reduce((sum, inst) => sum + inst.dcc_consumed, 0);
-  
-  // 获取今日时间戳
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayTime = today.getTime();
-  
-  // 计算今日奖励
-  const todayRewards = institutions.reduce((sum, inst) => {
-    // 这里需要后端提供今日奖励数据
-    return sum + 0;
-  }, 0);
-  
-  // 计算今日消耗
-  const todayConsumption = institutions.reduce((sum, inst) => {
-    // 这里需要后端提供今日消耗数据
-    return sum + 0;
-  }, 0);
-
-  return {
-    totalRewards,
-    totalConsumption,
-    todayRewards,
-    todayConsumption
-  };
-}
-
-/**
- * 计算增长率
- */
-function calculateGrowthRate(total, today) {
-  if (total === 0) return 0;
-  return Number(((today / total) * 100).toFixed(1));
+function ensureNumber(value) {
+    if (typeof value === 'undefined' || value === null) return 0;
+    return Number(value);
 }
 
 export default {
-  getAdminDashboardData
+    getAdminDashboardData
 };

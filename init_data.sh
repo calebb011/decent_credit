@@ -192,11 +192,11 @@ done
 dfx canister call $CANISTER_ID submit_record '(
   record {
     institution_id = principal "'$FINANCE_C_ID'";
-    record_type = variant { NotificationRecord };
+    record_type = variant { OverdueRecord };
     user_did = "'$USER_3_DID'";
     event_date = "2024-02-15";
     content = variant { 
-      Notification = record {
+      Overdue = record {
         amount = 2_500;
         days = 7;
         period_amount = 2_600;
@@ -230,11 +230,11 @@ dfx canister call $CANISTER_ID submit_record '(
 dfx canister call $CANISTER_ID submit_record '(
   record {
     institution_id = principal "'$BANK_A_ID'";
-    record_type = variant { NotificationRecord };
+    record_type = variant { OverdueRecord };
     user_did = "'$USER_4_DID'";
     event_date = "2024-01-15";
     content = variant { 
-      Notification = record {
+      Overdue = record {
         amount = 6_500;
         days = 15;
         period_amount = 7_000;

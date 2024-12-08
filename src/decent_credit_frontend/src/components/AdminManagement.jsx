@@ -1,19 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, Database, AlertCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { BarChart2, Database, AlertCircle, ArrowUpCircle, ArrowDownCircle, FileText, Search } from 'lucide-react';
 import { getAllInstitutions, registerInstitution, updateInstitutionStatus } from '../services/adminInstitutionService';
-import {  rechargeDCC, deductDCC } from '../services/dccService';
-import { Card, Input, Button, Form, Modal, Spin, Empty, Space, Tag } from 'antd';
-
+import { rechargeDCC, deductDCC } from '../services/dccService';
+import { Card, Input, Button, Form, Modal, Spin, Empty, Space, Tag, Tooltip } from 'antd';
 import InstitutionDialog from './RegisterInstitutionDialog';
 
-// DCC to USDT conversion rate (e.g., 1 DCC = 0.1 USDT)
+// Constants
 const DCC_TO_USDT_RATE = 0.1;
+
+// Mock license data - In production, this would come from your backend
+const MOCK_LICENSE = {
+  licenseNumber: "FIN2024001",
+  issuedBy: "Financial Regulatory Authority",
+  issuedDate: "2024-01-01",
+  expiryDate: "2025-01-01",
+  status: "Active",
+  certifications: [
+    "Digital Currency Trading License",
+    "Financial Data Service Provider",
+    "Credit Information Exchange"
+  ]
+};
+
+const formatTime = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
 
 const InstitutionList = () => {
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDCCModalOpen, setIsDCCModalOpen] = useState(false);
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
   const [editingInstitution, setEditingInstitution] = useState(null);
   const [selectedInstitution, setSelectedInstitution] = useState(null);
   const [transactionType, setTransactionType] = useState('');
@@ -27,60 +53,54 @@ const InstitutionList = () => {
   const handleAddOrEdit = async (formData) => {
     try {
       if (editingInstitution) {
-        console.log('修改机构:', formData);
+        console.log('Modifying institution:', formData);
       } else {
-
         await registerInstitution(formData);
       }
       const data = await getAllInstitutions();
       setInstitutions(data);
     } catch (error) {
-      console.error('操作失败:', error);
+      console.error('Operation failed:', error);
       throw error;
     }
   };
 
   useEffect(() => {
-    const fetchInstitutions = async () => {
-      setLoading(true);
-      try {
-        const data = await getAllInstitutions();
-        setInstitutions(data);
-      } catch (error) {
-        console.error('获取机构列表失败:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchInstitutions();
   }, []);
 
+  const fetchInstitutions = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllInstitutions();
+      setInstitutions(data);
+    } catch (error) {
+      console.error('Failed to fetch institutions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStatusChange = async (institution) => {
     const newStatus = institution.status !== 'active';
-    const actionText = newStatus ? '接入' : '解除接入';
+    const actionText = newStatus ? 'activate' : 'deactivate';
     
-    if (window.confirm(`确认${actionText}机构 ${institution.name} 吗？`)) {
+    if (window.confirm(`Are you sure you want to ${actionText} institution ${institution.name}?`)) {
       try {
         const principalId = typeof institution.id === 'string' 
           ? institution.id 
           : institution.id.toText();
         
         await updateInstitutionStatus(principalId, newStatus);
-        const data =await getAllInstitutions();
-        setInstitutions(data);
+        await fetchInstitutions();
       } catch (error) {
-        console.error(`${actionText}失败:`, error);
-        alert(error.message || `${actionText}失败`);
+        console.error(`Failed to ${actionText}:`, error);
+        alert(error.message || `Failed to ${actionText}`);
       }
     }
   };
- 
-  const dealQuery = async() =>{
-    const data = await getAllInstitutions();
-    setInstitutions(data);
-  }
+
   const handleDCCOperation = async (e) => {
-    
     try {
       const operationData = {
         dccAmount: parseFloat(formData.amount),
@@ -96,11 +116,10 @@ const InstitutionList = () => {
       }
       
       setIsDCCModalOpen(false);
-      const data = await getAllInstitutions();
-      setInstitutions(data);
+      await fetchInstitutions();
     } catch (error) {
-      console.error('操作失败:', error);
-      alert(error.message || '操作失败');
+      console.error('Operation failed:', error);
+      alert(error.message || 'Operation failed');
     }
   };
 
@@ -116,7 +135,11 @@ const InstitutionList = () => {
     });
   };
 
-  // Function to handle DCC amount change and automatically calculate USDT
+  const handleOpenLicenseModal = (institution) => {
+    setSelectedInstitution(institution);
+    setIsLicenseModalOpen(true);
+  };
+
   const handleDCCAmountChange = (value) => {
     const dccAmount = parseFloat(value) || 0;
     const usdtAmount = (dccAmount * DCC_TO_USDT_RATE).toFixed(2);
@@ -126,81 +149,93 @@ const InstitutionList = () => {
       usdtAmount: usdtAmount
     });
   };
+
   return (
-    <div className="space-y-4">
-      {/* 头部信息 */}
-      <div className="flex justify-between items-center">
+    <div className="max-w-8xl mx-auto px-4 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center py-6 bg-black/20 px-6 rounded-lg">
         <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-2">机构管理</h2>
-          <p className="text-gray-400">管理系统接入的金融机构及其数据使用情况</p>
+          <h2 className="text-2xl font-semibold text-gray-200">Institution Management</h2>
+          <p className="text-gray-400 text-sm">Manage financial institutions and monitor their data usage</p>
         </div>
-        <Space>
+        <Space size="large">
           <Button
+            icon={<Search className="w-4 h-4" />}
             className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-gray-700 text-gray-200 hover:border-gray-600"
-            onClick={dealQuery}
+            onClick={fetchInstitutions}
           >
-            刷新
+            Refresh
           </Button>
           <Button
             type="primary"
+            icon={<FileText className="w-4 h-4" />}
             className="bg-gradient-to-r from-blue-500 to-blue-600 border-0"
             onClick={() => {
               setEditingInstitution(null);
               setIsDialogOpen(true);
             }}
           >
-            + 接入新机构
+            + New Institution
           </Button>
         </Space>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Spin tip="加载中..." size="large" />
+        <div className="flex items-center justify-center h-64">
+          <Spin size="large" tip="Loading..." />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-6">
           {institutions.map((institution) => (
             <Card 
               key={institution.id} 
               className="bg-black/20 border-gray-700 hover:border-gray-600 transition-colors"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-base font-medium text-gray-200">
-                      {institution.id} - {institution.name}
+              {/* Institution Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-medium text-gray-200 truncate">
+                      {institution.name}
                     </h3>
                     <Tag color={institution.status === 'active' ? 'success' : 'error'}>
-                      {institution.status === 'active' ? '已接入' : '未接入'}
+                      {institution.status === 'active' ? 'Active' : 'Inactive'}
                     </Tag>
+                    <Button
+                      type="link"
+                      className="text-blue-400 hover:text-blue-300 p-0"
+                      onClick={() => handleOpenLicenseModal(institution)}
+                    >
+                      View License
+                    </Button>
                   </div>
-                  <p className="mt-1 text-sm text-gray-400">{institution.full_name}</p>
+                  <p className="mt-2 text-sm text-gray-400">ID: {institution.id}</p>
+                  <p className="text-sm text-gray-400">{institution.full_name}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-400">
-                    接入时间: {institution.join_time}
+                <div className="text-right text-sm space-y-2">
+                  <div className="text-gray-400">
+                    Joined: {formatTime(institution.join_time)}
                   </div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    最近活跃: {institution.last_active}
+                  <div className="text-gray-400">
+                    Last Active: {formatTime(institution.last_active)}
                   </div>
                 </div>
               </div>
 
-              {/* 数据卡片网格 */}
-              <div className="mt-4 grid grid-cols-4 gap-4">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <StatCard
                   icon={<BarChart2 />}
-                  title="信用记录查询次数"
+                  title="API Calls"
                   value={institution.api_calls}
-                  subValue={`消耗 ${institution.dcc_consumed.toLocaleString()} DCC`}
+                  subValue={`${institution.dcc_consumed.toLocaleString()} DCC consumed`}
                   iconColor="text-blue-500"
                   bgColor="from-blue-500/20 to-blue-600/20"
                 />
                 
                 <StatCard
                   icon={<Database />}
-                  title="信用记录上传量"
+                  title="Data Uploads"
                   value={institution.data_uploads}
                   iconColor="text-green-500"
                   bgColor="from-green-500/20 to-green-600/20"
@@ -208,42 +243,49 @@ const InstitutionList = () => {
 
                 <StatCard
                   icon={<AlertCircle />}
-                  title="信用评分"
+                  title="Credit Score"
                   value={institution.credit_score.score}
-                  subValue={`更新于: ${new Date(institution.credit_score.last_update).toLocaleString()}`}
+                  subValue={`Updated: ${formatTime(institution.credit_score.last_update)}`}
                   iconColor="text-yellow-500"
                   bgColor="from-yellow-500/20 to-yellow-600/20"
                 />
 
                 <TokenTradingCard
+                  balance={institution.balance}
                   bought={institution.token_trading.bought}
                   sold={institution.token_trading.sold}
+                  rewards={institution.rewards}
+                  consumption={institution.consumption}
                 />
               </div>
 
-              {/* 操作按钮 */}
-              <div className="mt-4 flex justify-end space-x-3">
-                <Button
-                  type="primary"
-                  icon={<ArrowUpCircle className="w-4 h-4" />}
-                  className="bg-gradient-to-r from-green-500 to-green-600 border-0"
-                  onClick={() => handleOpenDCCModal(institution, 'recharge')}
-                >
-                  充值DCC
-                </Button>
-                <Button
-                  danger
-                  icon={<ArrowDownCircle className="w-4 h-4" />}
-                  onClick={() => handleOpenDCCModal(institution, 'deduct')}
-                >
-                  卖出DCC
-                </Button>
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
+                <Tooltip title="Add DCC tokens">
+                  <Button
+                    type="primary"
+                    icon={<ArrowUpCircle className="w-4 h-4" />}
+                    className="bg-gradient-to-r from-green-500 to-green-600 border-0"
+                    onClick={() => handleOpenDCCModal(institution, 'recharge')}
+                  >
+                    Recharge DCC
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Sell DCC tokens">
+                  <Button
+                    danger
+                    icon={<ArrowDownCircle className="w-4 h-4" />}
+                    onClick={() => handleOpenDCCModal(institution, 'deduct')}
+                  >
+                    Sell DCC
+                  </Button>
+                </Tooltip>
                 <Button
                   type={institution.status === 'active' ? 'default' : 'primary'}
                   danger={institution.status === 'active'}
                   onClick={() => handleStatusChange(institution)}
                 >
-                  {institution.status === 'active' ? '解除接入' : '接入'}
+                  {institution.status === 'active' ? 'Deactivate' : 'Activate'}
                 </Button>
               </div>
             </Card>
@@ -251,11 +293,11 @@ const InstitutionList = () => {
         </div>
       )}
 
-      {/* DCC交易模态框 */}
+      {/* DCC Transaction Modal */}
       <Modal
         title={
           <span className="text-gray-200">
-            {transactionType === 'recharge' ? '充值DCC' : '扣除DCC'} - {selectedInstitution?.name}
+            {transactionType === 'recharge' ? 'Recharge DCC' : 'Sell DCC'} - {selectedInstitution?.name}
           </span>
         }
         open={isDCCModalOpen}
@@ -265,7 +307,7 @@ const InstitutionList = () => {
       >
         <Form onFinish={handleDCCOperation} layout="vertical">
           <Form.Item
-            label={<span className="text-gray-400">DCC数量</span>}
+            label={<span className="text-gray-400">DCC Amount</span>}
             required
           >
             <Input
@@ -277,7 +319,7 @@ const InstitutionList = () => {
           </Form.Item>
           
           <Form.Item
-            label={<span className="text-gray-400">USDT金额 (自动计算: 1 DCC = {DCC_TO_USDT_RATE} USDT)</span>}
+            label={<span className="text-gray-400">USDT Amount (1 DCC = {DCC_TO_USDT_RATE} USDT)</span>}
           >
             <Input
               value={formData.usdtAmount}
@@ -287,7 +329,7 @@ const InstitutionList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-gray-400">交易哈希</span>}
+            label={<span className="text-gray-400">Transaction Hash</span>}
             required
           >
             <Input
@@ -298,7 +340,7 @@ const InstitutionList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-gray-400">备注</span>}
+            label={<span className="text-gray-400">Remarks</span>}
           >
             <Input.TextArea
               value={formData.remarks}
@@ -308,28 +350,99 @@ const InstitutionList = () => {
             />
           </Form.Item>
 
-          <Form.Item className="flex justify-end mb-0">
+          <Form.Item className="mb-0 text-right">
             <Space>
               <Button
                 onClick={() => setIsDCCModalOpen(false)}
                 className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
               >
-                取消
+                Cancel
               </Button>
               <Button
                 type="primary"
                 htmlType="submit"
-                className={
+                className={`${
                   transactionType === 'recharge'
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 border-0'
-                    : 'bg-gradient-to-r from-red-500 to-red-600 border-0'
-                }
+                    ? 'bg-gradient-to-r from-green-500 to-green-600'
+                    : 'bg-gradient-to-r from-red-500 to-red-600'
+                } border-0`}
               >
-                确认
+                Confirm
               </Button>
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* License Modal */}
+      <Modal
+        title={
+          <span className="text-gray-200">
+            Institution License - {selectedInstitution?.name}
+          </span>
+        }
+        open={isLicenseModalOpen}
+        onCancel={() => setIsLicenseModalOpen(false)}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setIsLicenseModalOpen(false)}
+            className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+          >
+            Close
+          </Button>
+        ]}
+        className="dark-modal"
+        width={600}
+        >
+  {/* Modal Content */}
+
+        {/* License Modal Content */}
+        <div className="space-y-6">
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-400">License Number</label>
+                <p className="text-gray-200 font-medium">{MOCK_LICENSE.licenseNumber}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400">Status</label>
+                <p>
+                  <Tag color="success">{MOCK_LICENSE.status}</Tag>
+                </p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400">Issued Date</label>
+                <p className="text-gray-200">{MOCK_LICENSE.issuedDate}</p>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400">Expiry Date</label>
+                <p className="text-gray-200">{MOCK_LICENSE.expiryDate}</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-gray-200 font-medium mb-3">Issued By</h4>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-gray-200">{MOCK_LICENSE.issuedBy}</p>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-gray-200 font-medium mb-3">Certifications</h4>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <div className="space-y-2">
+                {MOCK_LICENSE.certifications.map((cert, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-gray-200">{cert}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </Modal>
 
       <InstitutionDialog
@@ -345,40 +458,52 @@ const InstitutionList = () => {
   );
 };
 
-// 统计卡片组件
+// Stat Card Component
 const StatCard = ({ icon, title, value, subValue, iconColor, bgColor }) => (
-  <div className="border border-gray-700 rounded-lg p-3 bg-black/30">
-    <div className={`flex items-center text-sm font-medium text-gray-400`}>
+  <div className="border border-gray-700 rounded-lg p-4 bg-black/30 hover:bg-black/40 transition-colors">
+    <div className="flex items-center text-sm font-medium text-gray-400 mb-3">
       <div className={`p-2 rounded-lg bg-gradient-to-br ${bgColor} mr-2`}>
         {React.cloneElement(icon, { className: `w-4 h-4 ${iconColor}` })}
       </div>
       {title}
     </div>
-    <div className="mt-1">
+    <div>
       <div className="text-xl font-semibold text-gray-200">
         {value.toLocaleString()}
       </div>
-      {subValue && <div className="text-sm text-gray-500">{subValue}</div>}
+      {subValue && (
+        <div className="text-sm text-gray-500 mt-1 truncate">
+          {subValue}
+        </div>
+      )}
     </div>
   </div>
 );
 
-// 代币交易卡片组件
-const TokenTradingCard = ({ bought, sold }) => (
-  <div className="border border-gray-700 rounded-lg p-3 bg-black/30">
-    <div className="text-sm font-medium text-gray-400">代币交易量</div>
-    <div className="mt-1 space-y-1">
+// Token Trading Card Component
+const TokenTradingCard = ({ bought, sold, balance, rewards, consumption }) => (
+  <div className="border border-gray-700 rounded-lg p-4 bg-black/30 hover:bg-black/40 transition-colors">
+    <div className="text-sm font-medium text-gray-400 mb-3">Token Information</div>
+    <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-sm text-green-500">买入:</span>
-        <span className="text-base font-semibold text-gray-200">
-          {bought.toLocaleString()} DCC
-        </span>
+        <span className="text-green-500">Recharged</span>
+        <span className="font-medium text-gray-200">{bought?.toLocaleString() || 0} DCC</span>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-sm text-red-500">卖出:</span>
-        <span className="text-base font-semibold text-gray-200">
-          {sold.toLocaleString()} DCC
-        </span>
+        <span className="text-red-500">Sold</span>
+        <span className="font-medium text-gray-200">{sold?.toLocaleString() || 0} DCC</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-blue-500">Balance</span>
+        <span className="font-medium text-gray-200">{balance?.toLocaleString() || 0} DCC</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-yellow-500">Rewards</span>
+        <span className="font-medium text-gray-200">{rewards?.toLocaleString() || 0} DCC</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-purple-500">Consumed</span>
+        <span className="font-medium text-gray-200">{consumption?.toLocaleString() || 0} DCC</span>
       </div>
     </div>
   </div>

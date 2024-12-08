@@ -45,7 +45,7 @@ pub async fn submit_record(request: RecordSubmissionRequest) -> Result<RecordSub
 pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<BatchSubmissionResponse, String> {
     let caller = ic_cdk::caller();
 
-    info!("Institution registration attempt by {}", caller.to_text());
+    info!("Institution submit_records_batch attempt by {}", caller.to_text());
 
     // 批量提交限制检查
     if request.records.is_empty() {
@@ -85,7 +85,7 @@ pub async fn submit_records_batch(request: BatchSubmissionRequest) -> Result<Bat
     })
 }
 
-#[query]
+#[update]
 pub fn query_record_by_id(record_id: String, institution_id: Principal) -> Result<CreditRecord, String> {
     debug!("Querying record by id: {}", record_id);
 

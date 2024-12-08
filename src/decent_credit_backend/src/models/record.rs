@@ -18,15 +18,23 @@ pub struct CreditRecord {
     pub canister_id: String,           // 存储Canister ID
     pub timestamp: u64,                // 记录时间戳
     pub status: RecordStatus,          // 记录状态
-    pub reward_amount: Option<u64>     // 奖励代币数量
+    pub reward_amount: Option<u64>,     // 奖励代币数量
+    pub query_price: u64
 }
-
+#[derive(Clone)]
+pub struct TokenOperation {
+    pub from_id: Principal,
+    pub to_id: Principal,
+    pub user_did: String,
+    pub query_price: u64,
+    pub record: CreditRecord,
+}
 // === 记录类型和状态枚举 ===
 #[derive(CandidType, Deserialize,Serialize, Clone, Debug, PartialEq)]
 pub enum RecordType {
     LoanRecord,
     RepaymentRecord,
-    NotificationRecord
+    OverdueRecord
 }
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
@@ -41,7 +49,7 @@ pub enum RecordStatus {
 pub enum RecordContent {
     Loan(LoanContent),
     Repayment(RepaymentContent),
-    Notification(NotificationContent)
+    Overdue(OverdueContent)
 }
 
 
@@ -219,8 +227,10 @@ pub struct RepaymentContent {
 }
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug, PartialEq)]  // Added Serialize
-pub struct NotificationContent {
+pub struct OverdueContent {
     pub amount: u64,           // 通知金额
-    pub days: u64,             // 通期天数
+    pub overdueDays: u64,             // 通期天数
     pub period_amount: u64     // 通期金额
 }
+
+

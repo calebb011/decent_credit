@@ -24,7 +24,7 @@ export const getInstitutionSettings = async () => {
       success: true,
       data: {
         dataServiceEnabled: institutionData.data_service_enabled,
-        queryPrice: Number(institutionData.query_price) / 100, // 转换为小数
+        queryPrice: Number(institutionData.query_price), // 转换为小数
         rewardShareRatio: Number(institutionData.reward_share_ratio) // 0-100整数
       }
     };
@@ -42,7 +42,7 @@ export const updateInstitutionSettings = async (settings) => {
     const actor = await getActor();
     const result = await actor.update_service_settings({
       data_service_enabled: settings.dataServiceEnabled,
-      query_price: Math.round(settings.queryPrice * 100), // 转换为整数存储
+      query_price: Math.round(settings.queryPrice), // 转换为整数存储
       reward_share_ratio: settings.rewardShareRatio
     });
     

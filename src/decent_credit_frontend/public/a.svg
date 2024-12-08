@@ -1,0 +1,28 @@
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" className="h-10">
+  <defs>
+    <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style={{stopColor:'#60A5FA'}}/>
+      <stop offset="100%" style={{stopColor:'#A855F7'}}/>
+    </linearGradient>
+  </defs>
+  
+  <circle cx="15" cy="20" r="1.5" fill="url(#techGradient)">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="25" cy="14" r="1.5" fill="url(#techGradient)">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="35" cy="20" r="1.5" fill="url(#techGradient)">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="25" cy="26" r="1.5" fill="url(#techGradient)">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <line x1="15" y1="20" x2="25" y2="14" stroke="url(#techGradient)" strokeWidth="0.5" opacity="0.5"/>
+  <line x1="25" y1="14" x2="35" y2="20" stroke="url(#techGradient)" strokeWidth="0.5" opacity="0.5"/>
+  <line x1="35" y1="20" x2="25" y2="26" stroke="url(#techGradient)" strokeWidth="0.5" opacity="0.5"/>
+  <line x1="25" y1="26" x2="15" y2="20" stroke="url(#techGradient)" strokeWidth="0.5" opacity="0.5"/>
+  
+  <text x="45" y="24" fontFamily="Arial" fontWeight="bold" fontSize="16" fill="url(#techGradient)">DecentCredit AI</text>
+</svg>

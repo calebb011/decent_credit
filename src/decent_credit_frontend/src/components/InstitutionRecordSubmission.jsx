@@ -246,7 +246,7 @@ const tabItems = [
           <div>
             <h3 className="text-lg font-medium text-gray-200 mb-2">Batch Upload Instructions</h3>
             <ul className="list-disc list-inside text-gray-300 space-y-2">
-              <li>Support three types of records: Loan, Repayment, and Notification records</li>
+              <li>Support three types of records: Loan, Repayment, and Overdue records</li>
               <li>Maximum 1000 records per batch submission</li>
               <li>All amounts should be in base currency units (e.g., cents, not dollars)</li>
               <li>Each record must contain required fields based on its type</li>
@@ -277,12 +277,12 @@ const tabItems = [
                 </ul>
               </div>
               <div>
-                <p className="text-yellow-400 mb-1">Notification Record:</p>
+                <p className="text-yellow-400 mb-1">Overdue Record:</p>
                 <ul className="list-disc list-inside text-gray-300 ml-4">
                   <li>userDid - User's DID identifier</li>
-                  <li>amount - Notification amount</li>
+                  <li>amount - Overdue amount</li>
                   <li>eventDate - Format: YYYY-MM-DD</li>
-                  <li>days - Number of days</li>
+                  <li>overdueDays - Number of days</li>
                   <li>periodAmount - Amount per period</li>
                 </ul>
               </div>

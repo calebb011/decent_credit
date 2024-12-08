@@ -22,8 +22,8 @@ export const idlFactory = ({ IDL }) => {
     'repayment_date' : IDL.Text,
     'amount' : IDL.Nat64,
   });
-  const NotificationContent = IDL.Record({
-    'days' : IDL.Nat64,
+  const OverdueContent = IDL.Record({
+    'overdueDays' : IDL.Nat64,
     'period_amount' : IDL.Nat64,
     'amount' : IDL.Nat64,
   });
@@ -35,7 +35,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const RecordContent = IDL.Variant({
     'Repayment' : RepaymentContent,
-    'Notification' : NotificationContent,
+    'Overdue' : OverdueContent,
     'Loan' : LoanContent,
   });
   const RecordSubmissionRequest = IDL.Record({

@@ -3,11 +3,13 @@ use ic_cdk_macros::*;
 use log::{info, debug, warn, error};  // 替换原来的 log_info
 use serde::Serialize;
 
-use crate::services::admin_institution_service::ADMIN_SERVICE;
+use crate::services::admin_institution_service::*;
 use crate::models::record::{DCCTransactionRequest, BalanceResponse};
 use crate::models::dashboard::{AdminDashboardData};
 use crate::models::institution::*;
 use crate::services::token_service::*;
+use ic_cdk::api::time;
+
 
 
 
@@ -48,7 +50,7 @@ pub async fn update_service_settings(request: UpdateServiceSettingsRequest) -> R
 
     // 验证参数
     if request.reward_share_ratio > 100 {
-        error!("Invalid reward share ratio: {}", request.reward_share_ratio);
+        error!("Invalid rewards share ratio: {}", request.reward_share_ratio);
         return Err("奖励分成比例必须在0-100之间".to_string());
     }
 
@@ -142,65 +144,6 @@ pub async fn update_credit_score(id: Principal, score: u64) -> Result<(), String
     })
 }
 
-#[update]
-pub async fn recharge_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
-    let caller = ic_cdk::caller();
-    info!("DCC recharge initiated by {} for institution: {}", caller.to_text(), id.to_text());
-    debug!("Recharge details - Amount: {}", request.dcc_amount);
-
-    // Clone 必要的值，避免所有权问题
-    let dcc_amount = request.dcc_amount;
-    let remarks = request.remarks.clone();
-
-    // 使用 TokenService 直接调用充值方法
-    let result = TOKEN_SERVICE.with(|service| {
-        let token_service = service.borrow();
-        let token_canister_id = token_service.token_canister_id;
-        
-        // 使用普通函数调用而不是异步闭包
-        TokenService::send_reward_static(token_canister_id, id, dcc_amount, remarks)
-    }).await;
-
-    // 如果成功，更新本地记录
-    if result.is_ok() {
-        ADMIN_SERVICE.with(|service| {
-            let mut admin_service = service.borrow_mut();
-            admin_service.record_token_trading(id, true, dcc_amount);
-        });
-    }
-
-    result
-}
-
-#[update]
-pub async fn deduct_dcc(id: Principal, request: DCCTransactionRequest) -> Result<(), String> {
-    let caller = ic_cdk::caller();
-    info!("DCC deduction initiated by {} for institution: {}", caller.to_text(), id.to_text());
-    debug!("Deduction details - Amount: {}", request.dcc_amount);
-
-    // Clone 必要的值，避免所有权问题
-    let dcc_amount = request.dcc_amount;
-    let remarks = request.remarks.clone();
-
-    // 使用 TokenService 直接调用扣除方法
-    let result = TOKEN_SERVICE.with(|service| {
-        let token_service = service.borrow();
-        let token_canister_id = token_service.token_canister_id;
-        
-        // 使用普通函数调用而不是异步闭包
-        TokenService::deduct_tokens_static(token_canister_id, id, dcc_amount, remarks)
-    }).await;
-
-    // 如果成功，更新本地记录
-    if result.is_ok() {
-        ADMIN_SERVICE.with(|service| {
-            let mut admin_service = service.borrow_mut();
-            admin_service.record_token_trading(id, false, dcc_amount);
-        });
-    }
-
-    result
-}
 
 #[update]
 pub async fn get_balance(id: Principal) -> Result<BalanceResponse, String> {
@@ -221,7 +164,7 @@ pub async fn get_balance(id: Principal) -> Result<BalanceResponse, String> {
         let token_canister_id = token_service.token_canister_id;
         TokenService::query_balance_static(token_canister_id, id)
     }).await?;
-    
+
 
     
     let usdt_value = (chain_balance as f64) * 7.1;
@@ -255,23 +198,53 @@ pub async fn update_usdt_rate(rate: f64) -> Result<(), String> {
 }
 
 
-
-/// 记录代币交易
 #[update]
-pub fn record_token_trading(id: Principal, is_buy: bool, amount: u64) {
+pub async fn record_token_trading(id: Principal, is_buy: bool, amount: u64) -> Result<(), String> {
     info!("Recording token trading for institution: {}", id.to_text());
     debug!("Trading details - Type: {}, Amount: {}", 
         if is_buy { "Buy" } else { "Sell" }, 
         amount
     );
 
-    ADMIN_SERVICE.with(|service| {
-        let mut service = service.borrow_mut();
-        service.record_token_trading(id, is_buy, amount);
-        debug!("Successfully recorded token trading");
-    })
-}
+    // 创建交易请求
+    let request = DCCTransactionRequest {
+        dcc_amount: amount,
+        remarks: if is_buy { 
+            "Purchase DCC tokens".to_string() 
+        } else { 
+            "Sell DCC tokens".to_string() 
+        },
+        tx_hash: format!("TX_{}_{}_{}", 
+            if is_buy { "BUY" } else { "SELL" },
+            time() / 1_000_000_000,
+            id.to_text()
+        ),
+        usdt_amount: 0.0,
+        created_at: time(),
+    };
 
+    // 使用关联函数语法调用
+    let result = if is_buy {
+        ADMIN_SERVICE.with(|_service| {
+            AdminService::recharge_dcc(id, request)
+        }).await
+    } else {
+        ADMIN_SERVICE.with(|_service| {
+            AdminService::deduct_dcc(id, request)
+        }).await
+    };
+
+    match result {
+        Ok(_) => {
+            debug!("Successfully processed token trading");
+            Ok(())
+        }
+        Err(e) => {
+            error!("Failed to process token trading: {}", e);
+            Err(e)
+        }
+    }
+}
 // === 会话相关接口 ===
 
 /// 登录接口

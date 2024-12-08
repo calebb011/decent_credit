@@ -27,43 +27,42 @@ const CreditRecordQuery = () => {
   const [assessmentLoading, setAssessmentLoading] = useState(false);
   const [userDid, setUserDid] = useState('');
 
-  // 根据记录类型获取显示文本和颜色
+  // Record type configuration
   const getRecordTypeConfig = (type) => {
     const config = {
-      'LoanRecord': { text: '贷款记录', color: 'blue' },
-      'RepaymentRecord': { text: '还款记录', color: 'green' },
-      'NotificationRecord': { text: '通知记录', color: 'orange' }
+      'LoanRecord': { text: 'Loan Record', color: 'blue' },
+      'RepaymentRecord': { text: 'Repayment Record', color: 'green' },
+      'OverdueRecord': { text: 'Notification Record', color: 'orange' }
     };
     return config[type] || { text: type, color: 'default' };
   };
 
-  // 格式化金额
   const formatAmount = (amount) => {
-    return new Intl.NumberFormat('zh-CN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'CNY'
+      currency: 'USD'
     }).format(amount);
   };
+
   const handleSearch = async (values) => {
     setLoading(true);
     setSearchPerformed(true);
     try {
-       // 保存 userDid 到状态中
-       setUserDid(values.userDid);
+      setUserDid(values.userDid);
       const response = await queryRecordsByUserDid(values.userDid);
       console.log(response)
       if (response.success) {
         setRecords(response.data);
         setCurrentUserDid(values.userDid);
         if (response.data.length === 0) {
-          message.info('未找到相关记录');
+          message.info('No records found');
         }
       } else {
-        message.error(response.message || '查询失败');
+        message.error(response.message || 'Query failed');
       }
     } catch (error) {
-      console.error('查询失败:', error);
-      message.error(error.message || '查询失败');
+      console.error('Query failed:', error);
+      message.error(error.message || 'Query failed');
     } finally {
       setLoading(false);
     }
@@ -96,7 +95,7 @@ const CreditRecordQuery = () => {
             id: response.data.id,
             record_type: response.data.record_type === 'loan' ? 'LoanRecord' :
                         response.data.record_type === 'repayment' ? 'RepaymentRecord' :
-                        response.data.record_type === 'notification' ? 'NotificationRecord' :
+                        response.data.record_type === 'overdue' ? 'OverdueRecord' :
                         response.data.record_type,
             timestamp: response.data.timestamp,
             status: response.data.status === 'pending' ? 'Pending' :
@@ -124,13 +123,12 @@ const CreditRecordQuery = () => {
       setDetailLoading(false);
     }
   };
- 
   const handleRiskAssessment = async () => {
     setAssessmentLoading(true);
     try {
       const loginInstitutionId = localStorage.getItem('userPrincipal');
       if (!loginInstitutionId) {
-        throw new Error('请重新登录');
+        throw new Error('Please login again');
       }
       console.log(loginInstitutionId)
       const response = await getRiskAssessment(loginInstitutionId,userDid);
@@ -142,13 +140,12 @@ const CreditRecordQuery = () => {
         throw new Error(response.message);
       }
     } catch (error) {
-      message.error('风险评估失败: ' + (error.message || '未知错误'));
+      message.error('Risk assessment failed: ' + (error.message || 'Unknown error'));
     } finally {
       setAssessmentLoading(false);
     }
   };
 
-  // 列定义
   const columns = [
     {
       title: 'ID',
@@ -157,27 +154,37 @@ const CreditRecordQuery = () => {
       width: '30%',
     },
     {
-      title: '机构名称',
+      title: 'Institution ID',
+      dataIndex: 'institution_id',
+      key: 'institution_id',
+      width: '30%',
+      ellipsis: true,
+    },
+    {
+      title: 'Institution Name',
       dataIndex: 'institution_full_name',
       key: 'institution_full_name',
       width: '30%',
     },
     {
-      title: '上传时间',
+      title: 'Upload Time',
       dataIndex: 'timestamp',
       key: 'timestamp',
-      width: '25%',
+      width: '20%',
       render: (timestamp) => dayjs(Number(timestamp) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
-      title: '机构ID',
-      dataIndex: 'institution_id',
-      key: 'institution_id',
-      width: '35%',
-      ellipsis: true,
+      title: 'Query Price',
+      dataIndex: 'query_price',
+      key: 'query_price',
+      width: '10%',
+      render: (price) => {
+        if (price === null || price === undefined) return '-';
+        return `${Number(price)} DCC`;
+      },
     },
     {
-      title: '操作',
+      title: 'Action',
       key: 'action',
       width: '10%',
       render: (_, record) => (
@@ -187,17 +194,15 @@ const CreditRecordQuery = () => {
           onClick={() => handleViewDetails(record)}
           loading={detailLoading}
         >
-          查看详情
+          View Details
         </Button>
       ),
     }
   ];
 
-
-  // 详情记录列定义
   const detailColumns = [
     {
-      title: '记录类型',
+      title: 'Record Type',
       dataIndex: 'record_type',
       key: 'record_type',
       width: 120,
@@ -207,44 +212,43 @@ const CreditRecordQuery = () => {
       },
     },
     {
-      title: '提交时间',
+      title: 'Submission Time',
       dataIndex: 'timestamp',
       key: 'timestamp',
       width: 180,
       render: (timestamp) => dayjs(Number(timestamp) / 1000000).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
       width: 120,
       render: (status) => {
         const statusConfig = {
-          'Pending': { color: 'processing', text: '处理中' },
-          'Confirmed': { color: 'success', text: '已确认' },
-          'Failed': { color: 'error', text: '失败' }
+          'Pending': { color: 'processing', text: 'Processing' },
+          'Confirmed': { color: 'success', text: 'Confirmed' },
+          'Failed': { color: 'error', text: 'Failed' }
         };
         const config = statusConfig[status] || { color: 'default', text: status };
         return <Tag color={config.color}>{config.text}</Tag>;
       },
     },
     {
-      title: '内容',
+      title: 'Content',
       dataIndex: 'content',
       key: 'content',
       render: (content, record) => {
         if (!content) return '-';
   
-        // 直接使用 content 中的字段
         return (
           <Space direction="vertical">
-            {content.amount && <div>金额: {formatAmount(content.amount)}</div>}
-            {content.term_months && <div>期限: {content.term_months} 个月</div>}
-            {content.interest_rate && <div>年化利率: {content.interest_rate}%</div>}
-            {content.loan_id && <div>贷款ID: {content.loan_id}</div>}
-            {content.repayment_date && <div>还款日期: {content.repayment_date}</div>}
-            {content.days && <div>逾期天数: {content.days} 天</div>}
-            {content.period_amount && <div>期间金额: {formatAmount(content.period_amount)}</div>}
+            {content.amount && <div>Amount: {formatAmount(content.amount)}</div>}
+            {content.term_months && <div>Term: {content.term_months} months</div>}
+            {content.interest_rate && <div>Annual Interest Rate: {content.interest_rate}%</div>}
+            {content.loan_id && <div>Loan ID: {content.loan_id}</div>}
+            {content.repayment_date && <div>Repayment Date: {content.repayment_date}</div>}
+            {content.overdueDays && <div>Overdue Days: {content.overdueDays} days</div>}
+            {content.period_amount && <div>Period Amount: {formatAmount(content.period_amount)}</div>}
           </Space>
         );
       },
@@ -252,149 +256,148 @@ const CreditRecordQuery = () => {
   ];
 
   return (
-    <div className="space-y-4"> {/* 改外层容器 */}
-  <div>
-    <h2 className="text-xl font-semibold text-gray-200 mb-2">信用记录查询</h2>
-    <p className="text-gray-400">查询和管理用户的历史信用记录信息</p>
-  </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-200 mb-2">Credit Record Query</h2>
+        <p className="text-gray-400">Query and manage user credit history records</p>
+      </div>
 
       <div className="grid grid-cols-1 gap-6">
-      <Card className="bg-black/20 border-gray-700">
-  <Form
-    form={form}
-    layout="inline"
-    className="w-full"
-    onFinish={handleSearch}
-  >
-    <Space wrap className="w-full justify-between">
-      <Space wrap>
-        <Form.Item
-          name="userDid"
-          label={<span className="text-gray-300">用户DID</span>}
-          rules={[{ required: true, message: '请输入用户DID' }]}
-        >
-          <Input 
-            prefix={<SearchOutlined className="text-gray-400" />} 
-            placeholder="请输入用户DID"
-            className="bg-gray-800 border-gray-700 text-gray-200"
-          />
-        </Form.Item>
-      </Space>
-
-      <Form.Item>
-        <Space>
-          <Button 
-            type="primary" 
-            icon={<SearchOutlined />}
-            htmlType="submit"
-            loading={loading}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+        <Card className="bg-black/20 border-gray-700">
+          <Form
+            form={form}
+            layout="inline"
+            className="w-full"
+            onFinish={handleSearch}
           >
-            查询记录
-          </Button>
-          <Button 
-            onClick={() => form.resetFields()}
-            className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
-          >
-            重置
-          </Button>
-        </Space>
-      </Form.Item>
-        </Space>
-      </Form>
-    </Card>
+            <Space wrap className="w-full justify-between">
+              <Space wrap>
+                <Form.Item
+                  name="userDid"
+                  label={<span className="text-gray-300">User DID</span>}
+                  rules={[{ required: true, message: 'Please input User DID' }]}
+                >
+                  <Input 
+                    prefix={<SearchOutlined className="text-gray-400" />} 
+                    placeholder="Enter User DID"
+                    className="bg-gray-800 border-gray-700 text-gray-200"
+                  />
+                </Form.Item>
+              </Space>
 
-    <Card 
-  className="bg-black/20 border-gray-700"
-  title={
-    <div className="flex justify-between items-center text-gray-200">
-      <Space><FileTextOutlined /> 查询结果</Space>
-      {records.length > 0 && (
-        <Button
-          type="primary"
-          icon={<SafetyCertificateOutlined />}
-          onClick={handleRiskAssessment}
-          loading={assessmentLoading}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+              <Form.Item>
+                <Space>
+                  <Button 
+                    type="primary" 
+                    icon={<SearchOutlined />}
+                    htmlType="submit"
+                    loading={loading}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+                  >
+                    Query Records
+                  </Button>
+                  <Button 
+                    onClick={() => form.resetFields()}
+                    className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+                  >
+                    Reset
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Space>
+          </Form>
+        </Card>
+
+        <Card 
+          className="bg-black/20 border-gray-700"
+          title={
+            <div className="flex justify-between items-center text-gray-200">
+              <Space><FileTextOutlined /> Query Results</Space>
+              {records.length > 0 && (
+                <Button
+                  type="primary"
+                  icon={<SafetyCertificateOutlined />}
+                  onClick={handleRiskAssessment}
+                  loading={assessmentLoading}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 border-0"
+                >
+                  Perform Risk Assessment
+                </Button>
+              )}
+            </div>
+          }
         >
-          进行用户风险评估
-        </Button>
-      )}
-    </div>
-  }
->
-  {!searchPerformed ? (
-    <Empty description={<span className="text-gray-400">请输入查询条件</span>} />
-  ) : records.length === 0 ? (
-    <Empty description={<span className="text-gray-400">未找到相关记录</span>} />
-  ) : (
-    <Table
-      columns={columns}
-      dataSource={records}
-      rowKey={(record) => `${record.institution_id}_${record.timestamp}`}
-      pagination={{
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total) => `共 ${total} 条记录`,
-        pageSize: 10,
-        className: "px-4 py-3"
-      }}
-      className="custom-table"
-    />
-  )}
-</Card>
+          {!searchPerformed ? (
+            <Empty description={<span className="text-gray-400">Please enter query criteria</span>} />
+          ) : records.length === 0 ? (
+            <Empty description={<span className="text-gray-400">No records found</span>} />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={records}
+              rowKey={(record) => `${record.institution_id}_${record.timestamp}`}
+              pagination={{
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total) => `Total ${total} records`,
+                pageSize: 10,
+                className: "px-4 py-3"
+              }}
+              className="custom-table"
+            />
+          )}
+        </Card>
       </div>
 
       <Modal
-  title={
-    <Space className="text-gray-200">
-      <FileTextOutlined />
-      信用记录详情 - {currentDetails?.institution_name || ''}
-    </Space>
-  }
-  open={detailVisible}
-  onCancel={() => setDetailVisible(false)}
-  width={900}
-  footer={[
-    <Button 
-      key="close" 
-      onClick={() => setDetailVisible(false)}
-      className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
-    >
-      关闭
-    </Button>
-  ]}
-  className="dark-modal"
->
-  {currentDetails ? (
-    <Table
-      columns={detailColumns}
-      dataSource={currentDetails.records}
-      rowKey={(record) => `${record.id}_${record.timestamp}`}
-      pagination={false}
-      className="custom-table"
-    />
-  ) : (
-    <Empty description={<span className="text-gray-400">暂无详细信息</span>} />
-  )}
-</Modal>
+        title={
+          <Space className="text-gray-200">
+            <FileTextOutlined />
+            Credit Record Details - {currentDetails?.institution_name || ''}
+          </Space>
+        }
+        open={detailVisible}
+        onCancel={() => setDetailVisible(false)}
+        width={900}
+        footer={[
+          <Button 
+            key="close" 
+            onClick={() => setDetailVisible(false)}
+            className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+          >
+            Close
+          </Button>
+        ]}
+        className="dark-modal"
+      >
+        {currentDetails ? (
+          <Table
+            columns={detailColumns}
+            dataSource={currentDetails.records}
+            rowKey={(record) => `${record.id}_${record.timestamp}`}
+            pagination={false}
+            className="custom-table"
+          />
+        ) : (
+          <Empty description={<span className="text-gray-400">No detailed information available</span>} />
+        )}
+      </Modal>
 
-{/* 风险评估模态框 */}
-<Modal
-  title={
-    <Space className="text-gray-200">
-      <AlertOutlined />
-      用户风险评估报告
-    </Space>
-  }
-  open={riskAssessmentVisible}
-  onCancel={() => setRiskAssessmentVisible(false)}
-  width={800}
-  footer={null}
-  className="dark-modal"
->
-  {riskAssessment && <RiskAssessmentReport data={riskAssessment} showCard={false} />}
-</Modal>
+      <Modal
+        title={
+          <Space className="text-gray-200">
+            <AlertOutlined />
+            User Risk Assessment Report
+          </Space>
+        }
+        open={riskAssessmentVisible}
+        onCancel={() => setRiskAssessmentVisible(false)}
+        width={800}
+        footer={null}
+        className="dark-modal"
+      >
+        {riskAssessment && <RiskAssessmentReport data={riskAssessment} showCard={false} />}
+      </Modal>
     </div>
   );
 };

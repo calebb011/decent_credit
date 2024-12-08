@@ -9,8 +9,8 @@ const InstitutionSettings = () => {
   const [saving, setSaving] = useState(false);
   const [formValues, setFormValues] = useState({
     dataServiceEnabled: false,
-    queryPrice: 0,
-    rewardShareRatio: 0
+    queryPrice: 1,
+    rewardShareRatio: 10  // 固定值 10
   });
 
   // 获取设置
@@ -23,7 +23,7 @@ const InstitutionSettings = () => {
         const values = {
           dataServiceEnabled: Boolean(response.data.dataServiceEnabled),
           queryPrice: parseFloat(response.data.queryPrice) || 0,
-          rewardShareRatio: parseInt(response.data.rewardShareRatio) || 0
+          rewardShareRatio: 10  // 始终设为 10，忽略 API 返回值
         };
         console.log('Setting form values:', values);
         
@@ -48,9 +48,15 @@ const InstitutionSettings = () => {
 
   // 提交更新
   const handleSubmit = async (values) => {
+    // 确保提交时 rewardShareRatio 为 10
+    const submitValues = {
+      ...values,
+      rewardShareRatio: 10
+    };
+
     setSaving(true);
     try {
-      const response = await updateInstitutionSettings(values);
+      const response = await updateInstitutionSettings(submitValues);
       if (response.success) {
         message.success('Settings updated successfully');
         await fetchSettings();
@@ -164,7 +170,7 @@ const InstitutionSettings = () => {
               />
             </Form.Item>
 
-            {/* 分成比例 */}
+            {/* 分成比例 - 固定为 10% */}
             <Form.Item
               name="rewardShareRatio"
               label={
@@ -174,22 +180,19 @@ const InstitutionSettings = () => {
                 </span>
               }
               tooltip={{
-                title: "Your share ratio in data query revenue (0-100%)",
+                title: "Your share ratio in data query revenue (Fixed at 10%)",
                 className: 'bg-gray-800 text-gray-200'
               }}
             >
               <InputNumber
-                className="w-full bg-[#17304D] border-[#17304D] text-gray-200"
-                value={formValues.rewardShareRatio}
-                onChange={value => {
-                  setFormValues(prev => ({ ...prev, rewardShareRatio: value }));
-                }}
-                min={0}
-                max={100}
+                className="w-full bg-[#17304D] border-[#17304D] text-gray-200 opacity-50 cursor-not-allowed"
+                value={10}
+                disabled={true}
                 precision={0}
                 controls={false}
-                formatter={value => `${value || 0}%`}
+                formatter={value => `${value}%`}
                 parser={value => parseInt(value?.replace('%', ''))}
+                addonAfter="%"
               />
             </Form.Item>
           </div>

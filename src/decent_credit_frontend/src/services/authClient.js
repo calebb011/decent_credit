@@ -7,6 +7,9 @@ class AuthClientService {
     this._identity = null;
     this._agent = null;
     console.log("[AuthClientService] Service instance created");
+    
+    // 在构造函数中初始化
+    this.init().catch(console.error);
   }
 
   async init() {
@@ -36,12 +39,13 @@ class AuthClientService {
         });
         
         console.log("[AuthClientService.init] Auth client created successfully");
-        console.log('是否认证',this.authClient.isAuthenticated())
+        console.log('是否认证', await this.authClient.isAuthenticated())
 
         // 如果已经认证，恢复identity和agent
         if (await this.authClient.isAuthenticated()) {
           this._identity = this.authClient.getIdentity();
           await this._createAgent();
+          console.log("[AuthClientService.init] Identity and agent restored");
         }
       } catch (error) {
         console.error("[AuthClientService.init] Error:", error);
@@ -61,30 +65,33 @@ class AuthClientService {
       identity: this._identity
     };
 
-    
-  // 开发环境配置
+    // 开发环境配置
     agentOptions.verifyQuerySignatures = false;
     agentOptions.disableRootKeyValidation = true;
-  
 
-  this._agent = new HttpAgent(agentOptions);
-
+    this._agent = new HttpAgent(agentOptions);
     this._agent._isLocal = true;
+    
     try {
       await this._agent.fetchRootKey();
     } catch (err) {
       console.warn("Unable to fetch root key:", err);
     }
-  
 
     return this._agent;
   }
+
   getAgent() {
+    if (!this._agent && this._identity) {
+      // 如果有 identity 但没有 agent，重新创建 agent
+      return this._createAgent();
+    }
     if (!this._agent) {
       throw new Error('No agent available - please login first');
     }
     return this._agent;
   }
+
   async login() {
     try {
       const client = await this.init();
@@ -124,7 +131,6 @@ class AuthClientService {
     }
   }
 
-  
   async isAuthenticated() {
     try {
       const client = await this.init();

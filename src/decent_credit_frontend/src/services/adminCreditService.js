@@ -5,29 +5,27 @@ import { getActor } from './IDL';
 
 // 获取信用扣分记录列表
 export async function getCreditRecords(institutionId = '') {
-  const actorResult = await getActor();
-  if (!actorResult.success) {
-    return {
-      success: false,
-      message: actorResult.error
-    };
-  }
-
   try {
-    let option = [];
+    const actorResult = await getActor();
+    
+    // 处理参数，将其转换为 Option<Principal>
+    let option = null;  // 默认为 null，对应 Rust 中的 None
     if (institutionId) {
       try {
-        option = [Principal.fromText(institutionId)];
+        option = Principal.fromText(institutionId);  // 如果有值，创建 Principal，对应 Rust 中的 Some
       } catch (error) {
+        console.error('Invalid institution ID:', error);
         return {
           success: false,
-          message: '无效的机构ID'
+          message: 'Invalid institution ID format'
         };
       }
     }
 
-    const records = await actorResult.get_credit_records(option);
-    
+    console.log('Fetching records with institution_id:', option);
+    const records = await actorResult.get_credit_records();  // 传递 option
+    console.log('Received records:', records);
+
     const formattedRecords = records
       .map(formatCreditRecord)
       .filter(record => record !== null);
@@ -40,40 +38,71 @@ export async function getCreditRecords(institutionId = '') {
     console.error('Failed to fetch credit records:', error);
     return {
       success: false,
-      message: error.message || '获取信用记录失败'
+      message: error.message || 'Failed to fetch credit records'
     };
   }
 }
 
 export async function createCreditRecord(record) {
-  if (!record.institutionId || !record.deductionPoints || !record.reason || !record.dataQualityIssue) {
+  if (!record.institutionId || 
+      record.deductionPoints === undefined || 
+      record.deductionPoints === '' || 
+      !record.reason || 
+      !record.dataQualityIssue) {
     return {
       success: false,
-      message: '请填写所有必要信息'
+      message: 'Please fill in all required fields'
     };
   }
 
   const actorResult = await getActor();
-  if (!actorResult.success) {
-    return {
-      success: false,
-      message: actorResult.error
-    };
-  }
+
 
   try {
-    let institutionPrincipal = Principal.fromText(record.institutionId);
-    const result = await actorResult.actor.create_credit_record({
-      institution_id: institutionPrincipal,
-      deduction_points: Number(Math.floor(record.deductionPoints)),
-      reason: record.reason,
-      data_quality_issue: record.dataQualityIssue
-    });
-    console.log(result)
-    if ('Err' in result) {
+    // 确保 deductionPoints 是正整数
+    const deductionPoints = Math.floor(Math.abs(Number(record.deductionPoints)));
+    if (isNaN(deductionPoints) || deductionPoints <= 0) {
       return {
-        success: false,  
-        message: result.Err
+        success: false,
+        message: 'Deduction points must be a positive integer'
+      };
+    }
+
+    let institutionPrincipal;
+    try {
+      institutionPrincipal = Principal.fromText(record.institutionId);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Invalid institution ID format'
+      };
+    }
+
+    const payload = {
+      institution_id: institutionPrincipal,
+      deduction_points: deductionPoints,
+      reason: record.reason.trim(),
+      data_quality_issue: record.dataQualityIssue.trim()
+    };
+
+    console.log('Sending payload to backend:', payload);
+
+    const result = await actorResult.create_credit_record(payload);
+    console.log('Backend response:', result);
+
+    if ('Err' in result) {
+      // 处理后端返回的中文错误信息
+      const errorMsg = result.Err;
+      // 错误信息映射
+      const errorMap = {
+        '机构不存在': 'Institution does not exist',
+        '未知机构': 'Unknown institution',
+        '创建信用记录失败': 'Failed to create credit record'
+      };
+      
+      return {
+        success: false,
+        message: errorMap[errorMsg] || errorMsg // 如果没有映射就使用原始消息
       };
     }
     
@@ -82,9 +111,10 @@ export async function createCreditRecord(record) {
       data: formatCreditRecord(result.Ok)
     };
   } catch (error) {
+    console.error('Create record error:', error);
     return {
       success: false,
-      message: error.message || '创建信用记录失败'
+      message: error.message || 'Failed to create credit record'
     };
   }
 }
@@ -100,7 +130,7 @@ export async function queryRecordList(institutionId, userDid) {
 
   try {
     const institutionPrincipal = Principal.fromText(institutionId);
-    const details = await actorResult.actor.query_institution_records_list(institutionPrincipal, userDid);
+    const details = await actorResult.query_institution_records_list(institutionPrincipal, userDid);
     
     if ('Err' in details) {
       return {

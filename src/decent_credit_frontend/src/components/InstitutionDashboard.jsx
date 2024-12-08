@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PieChart as LucidePieChart, Database, Coins, Award, Activity, Star, Search } from 'lucide-react';
 import { Card, Spin, Empty, Progress } from 'antd';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { getInstitutionDashboardData  } from '../services/InstitutionDashboardService';
+import { getInstitutionDashboardData } from '../services/InstitutionDashboardService';
 
 const getCreditLevelColor = (level) => {
   const colors = {
@@ -24,15 +24,13 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 获取登录用户的 Principal
+        // Get logged-in user's Principal
         const userPrincipal = localStorage.getItem('userPrincipal');
         
-        // 改用新的方法名
         const response = await getInstitutionDashboardData(userPrincipal);
-        console.log(response)
+        console.log(response);
         if (response.success) {
           setDashboardData(response.data);
-          // analyticsData 相关的数据现在在 response.data.creditInfo 中
           setAnalyticsData({
             creditScore: response.data.creditInfo.creditScore,
             creditLevel: response.data.creditInfo.creditLevel,
@@ -40,7 +38,7 @@ const Dashboard = () => {
           });
         }
       } catch (error) {
-        console.error('获取数据异常:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -52,7 +50,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Spin tip="加载中..." size="large" />
+        <Spin tip="Loading..." size="large" />
       </div>
     );
   }
@@ -60,28 +58,28 @@ const Dashboard = () => {
   if (!dashboardData || !analyticsData) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <Empty description={<span className="text-gray-400">暂无数据</span>} />
+        <Empty description={<span className="text-gray-400">No data available</span>} />
       </div>
     );
   }
 
   const baseCards = [
     {
-      title: '信用上传数据量',
+      title: 'Credit Data Uploads',
       icon: <Database className="h-8 w-8 text-blue-500" />,
       bgColor: 'from-blue-500/20 to-blue-600/20',
       mainValue: dashboardData.submissionStats.totalSubmissions.toLocaleString(),
-      subTitle: '今日上传',
+      subTitle: 'Today\'s uploads',
       subValue: dashboardData.submissionStats.todaySubmissions.toLocaleString()
     },
     {
-      title: '查询其他机构数据量',
+      title: 'Queries to Other Institutions',
       icon: <Search className="h-8 w-8 text-green-500" />,
       bgColor: 'from-green-500/20 to-green-600/20',
       mainValue: dashboardData.usageStats.queryOthers.toLocaleString()
     },
     {
-      title: '被其他机构查询数据量',
+      title: 'Queries from Other Institutions',
       icon: <Activity className="h-8 w-8 text-orange-500" />,
       bgColor: 'from-orange-500/20 to-orange-600/20',
       mainValue: dashboardData.usageStats.queriedByOthers.toLocaleString()
@@ -89,23 +87,34 @@ const Dashboard = () => {
   ];
   
   const tokenCards = [
+    // 充值和提现
     {
-      title: '查询消耗DCC',
-      icon: <Coins className="h-8 w-8 text-yellow-500" />,
-      bgColor: 'from-yellow-500/20 to-yellow-600/20',
-      mainValue: dashboardData.tokenInfo.totalSpent.toLocaleString(),
-      subTitle: '今日消耗',
-      subValue: dashboardData.tokenInfo.todaySpent.toLocaleString()
+      title: 'Total Recharge',  // 充值总额
+      icon: <Coins className="h-8 w-8 text-emerald-500" />,
+      bgColor: 'from-emerald-500/20 to-emerald-600/20',
+      mainValue: dashboardData.tokenInfo.recharge.toLocaleString()
     },
     {
-      title: '查询奖励DCC',
+      title: 'Total Withdraw', // 提现总额
+      icon: <Coins className="h-8 w-8 text-rose-500" />,
+      bgColor: 'from-rose-500/20 to-rose-600/20',
+      mainValue: dashboardData.tokenInfo.withdraw.toLocaleString()
+    },
+    // 查询奖励和消耗
+    {
+      title: 'Query Rewards', // 查询奖励总额
       icon: <Award className="h-8 w-8 text-purple-500" />,
       bgColor: 'from-purple-500/20 to-purple-600/20',
-      mainValue: dashboardData.tokenInfo.totalReward.toLocaleString(),
-      subTitle: '今日奖励',
-      subValue: dashboardData.tokenInfo.todayReward.toLocaleString()
+      mainValue: dashboardData.tokenInfo.rewards.toLocaleString()
+    },
+    {
+      title: 'Query Consumption', // 查询消耗总额
+      icon: <Activity className="h-8 w-8 text-orange-500" />,
+      bgColor: 'from-orange-500/20 to-orange-600/20',
+      mainValue: dashboardData.tokenInfo.consumption.toLocaleString()
     }
   ];
+
   const StatsCard = ({ data }) => (
     <Card className="bg-black/20 border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex items-start space-x-4">
@@ -139,13 +148,13 @@ const Dashboard = () => {
           <div className="text-3xl font-bold text-blue-500 mb-1">
             {analyticsData.creditScore}
           </div>
-          <div className="text-sm text-gray-400">综合评分</div>
+          <div className="text-sm text-gray-400">Overall Score</div>
         </div>
         <div className="text-center">
           <div className={`text-3xl font-bold mb-1 ${getCreditLevelColor(analyticsData.creditLevel)}`}>
             {analyticsData.creditLevel}
           </div>
-          <div className="text-sm text-gray-400">信用等级</div>
+          <div className="text-sm text-gray-400">Credit Level</div>
         </div>
       </div>
       <LucidePieChart className="h-16 w-16 text-blue-500 opacity-20" />
@@ -154,16 +163,16 @@ const Dashboard = () => {
 
   const dataDistributionCard = (
     <div className="p-4">
-      <h3 className="text-lg font-medium text-gray-300 mb-4">数据分布</h3>
+      <h3 className="text-lg font-medium text-gray-300 mb-4">Data Distribution</h3>
       <div className="flex items-center justify-between">
         <div className="w-48 h-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={[
-                  { name: '贷款记录', value: analyticsData.dataDistribution.loanRecords },
-                  { name: '还款记录', value: analyticsData.dataDistribution.repaymentRecords },
-                  { name: '通知记录', value: analyticsData.dataDistribution.notificationRecords }
+                  { name: 'Loan Records', value: analyticsData.dataDistribution.loanRecords },
+                  { name: 'Repayment Records', value: analyticsData.dataDistribution.repaymentRecords },
+                  { name: 'Overdue Records', value: analyticsData.dataDistribution.notificationRecords }
                 ]}
                 cx="50%"
                 cy="50%"
@@ -172,9 +181,9 @@ const Dashboard = () => {
                 paddingAngle={5}
                 dataKey="value"
               >
-                <Cell fill="#3B82F6" /> {/* 蓝色 */}
-                <Cell fill="#10B981" /> {/* 绿色 */}
-                <Cell fill="#F59E0B" /> {/* 橙色 */}
+                <Cell fill="#3B82F6" />
+                <Cell fill="#10B981" />
+                <Cell fill="#F59E0B" />
               </Pie>
               <Tooltip 
                 formatter={(value) => `${value}%`}
@@ -190,9 +199,9 @@ const Dashboard = () => {
         <div className="flex-1 ml-6">
           <div className="space-y-3">
             {[
-              { name: '贷款记录', value: analyticsData.dataDistribution.loanRecords, color: '#3B82F6' },
-              { name: '还款记录', value: analyticsData.dataDistribution.repaymentRecords, color: '#10B981' },
-              { name: '通知记录', value: analyticsData.dataDistribution.notificationRecords, color: '#F59E0B' }
+              { name: 'Loan Records', value: analyticsData.dataDistribution.loanRecords, color: '#3B82F6' },
+              { name: 'Repayment Records', value: analyticsData.dataDistribution.repaymentRecords, color: '#10B981' },
+              { name: 'Overdue Records', value: analyticsData.dataDistribution.notificationRecords, color: '#F59E0B' }
             ].map(item => (
               <div key={item.name} className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -215,18 +224,18 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between bg-black/20 p-4 rounded-lg border border-gray-700">
         <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-2">系统概览</h2>
+          <h2 className="text-xl font-semibold text-gray-200 mb-2">System Overview</h2>
           <div className="flex items-center text-gray-400">
-            <span>机构名称: {dashboardData.basicInfo.name}</span>
+            <span>Institution Name: {dashboardData.basicInfo.name}</span>
             <span className="ml-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-500">
-              已接入
+              Connected
             </span>
           </div>
         </div>
         <div className="flex items-center px-4 py-2 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
           <Coins className="h-5 w-5 text-yellow-500 mr-2" />
           <div>
-            <span className="text-sm text-gray-400">代币余额</span>
+            <span className="text-sm text-gray-400">Token Balance</span>
             <p className="text-lg font-semibold text-yellow-500">
               {dashboardData.tokenInfo.balance.toLocaleString()} DCC
             </p>
@@ -237,7 +246,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-black/20 border-gray-700 hover:border-gray-600">
           <div className="flex items-center justify-between mb-2 px-4 pt-4">
-            <h3 className="text-lg font-medium text-gray-300">信用评分</h3>
+            <h3 className="text-lg font-medium text-gray-300">Credit Score</h3>
             <Star className="h-5 w-5 text-yellow-500" />
           </div>
           {creditScoreCard}
@@ -247,7 +256,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* 基础统计卡片和Token相关卡片部分保持不变 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {baseCards.map((card, index) => (
           <StatsCard key={index} data={card} />

@@ -21,6 +21,9 @@ pub struct Institution {
     pub reward_share_ratio: u8,          // 奖励分成比例(0-100)
       pub inbound_queries: u64,     // 被其他机构查询次数
       pub outbound_queries: u64,    // 查询其他机构次数
+      pub rewards: u64,     
+      pub consumption: u64,
+      pub balance: u64, 
 }
 
 
@@ -72,3 +75,4 @@ pub struct UpdateServiceSettingsRequest {
     pub query_price: u64,
     pub reward_share_ratio: u8,
 }
+

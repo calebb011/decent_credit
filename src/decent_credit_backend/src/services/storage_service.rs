@@ -25,30 +25,7 @@ impl StorageService {
             reports: Vec::new(),
         }
     }
-    // 添加一个新的方法来获取所有链上数据
-pub fn get_all_chain_data(&self) -> Vec<(String, String, Vec<u8>)> {
-    self.chain_data
-        .iter()
-        .map(|(record_id, (storage_id, proof))| {
-            (record_id.clone(), storage_id.clone(), proof.clone())
-        })
-        .collect()
-}
-    // 专门用于存储报告的方法
-    pub fn store_report_data(&mut self, data: Vec<u8>) -> Result<String, String> {
-        let id = format!("report-storage-{}", time());
-        self.stored_data.insert(id.clone(), data);
-        debug!("Stored report data with ID: {}", id);
-        Ok(id)
-    }
-
-    // 专门用于链上存储报告的方法
-    pub fn store_report_on_chain(&mut self, report_id: String, storage_id: String, data: Vec<u8>) -> Result<(), String> {
-        let key = format!("REPORT-{}", report_id);
-        self.chain_data.insert(key.clone(), (storage_id.clone(), data));
-        debug!("Stored report chain data for report: {}, storage: {}", report_id, storage_id);
-        Ok(())
-    }
+ 
     pub fn store_data(&mut self, data: Vec<u8>) -> Result<String, String> {
         let id = format!("storage-{}", time());
         self.stored_data.insert(id.clone(), data);
@@ -82,20 +59,7 @@ pub fn get_all_chain_data(&self) -> Vec<(String, String, Vec<u8>)> {
         info!("Storage cleared - Removed {} stored records and {} chain records", 
               stored_count, chain_count);
     }
-     // ID生成方法
-     fn generate_record_ids(&self, institution_id: &Principal, report: &RiskAssessmentReport) -> (String, String) {
-        // 存储ID: storage-timestamp
-        let storage_id = format!("storage-{}", report.created_at);
-        
-        // 记录ID: REC-{institution_id}-{report_id}
-        let record_id = format!("REC-{}-{}", institution_id.to_text(), report.report_id);
-        
-        info!("Generated IDs:");
-        info!("  Record ID: {}", record_id);
-        info!("  Storage ID: {}", storage_id);
-        
-        (record_id, storage_id)
-    }
+
     
 // 新增辅助函数用于调试
 pub fn print_all_records(&self) {
@@ -130,31 +94,8 @@ pub fn print_all_records(&self) {
     info!("\n=== End Records ===\n");
 }
 
-pub fn store_report(&mut self, institution_id: Principal, report: RiskAssessmentReport) -> Result<(), String> {
-    info!("Storing report:");
-    info!("  Institution: {}", institution_id.to_text());
-    info!("  Report ID: {}", report.report_id);
-    
-    self.reports.push((institution_id, report));
-    info!("Total reports: {}", self.reports.len());
-    
-    Ok(())
-}
 
-pub fn get_institution_reports(&self, institution_id: Principal) -> Vec<RiskAssessmentReport> {
-    info!("\n=== Starting Report Search ===");
-    info!("Institution ID: {}", institution_id.to_text());
-    info!("Total reports: {}", self.reports.len());
 
-    let reports: Vec<RiskAssessmentReport> = self.reports
-        .iter()
-        .filter(|(id, _)| *id == institution_id)
-        .map(|(_, report)| report.clone())
-        .collect();
-
-    info!("Found {} matching reports", reports.len());
-    reports
-}
     // 可以添加一个打印当前所有记录的调试方法
     pub fn debug_print_records(&self) {
         info!("=== Current Records ===");
@@ -163,34 +104,7 @@ pub fn get_institution_reports(&self, institution_id: Principal) -> Vec<RiskAsse
         }
         info!("=== End Records ===");
     }
-    // 可以添加一个按用户ID获取报告的方法
-    pub fn get_user_reports(&self, user_did: &str) -> Vec<RiskAssessmentReport> {
-        info!("Getting reports for user: {}", user_did);
-        
-        let reports: Vec<RiskAssessmentReport> = self.chain_data
-            .iter()
-            .filter_map(|(record_id, (storage_id, _))| {
-                if record_id.contains(user_did) {
-                    if let Some(data) = self.stored_data.get(storage_id) {
-                        match candid::decode_one::<RiskAssessmentReport>(data) {
-                            Ok(report) => Some(report),
-                            Err(e) => {
-                                warn!("Failed to decode report: {:?}", e);
-                                None
-                            }
-                        }
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        info!("Found {} reports for user {}", reports.len(), user_did);
-        reports
-    }
+    
     // 清理过期数据
     pub fn cleanup_old_data(&mut self, before_time: u64) -> usize {
         let mut removed = 0;

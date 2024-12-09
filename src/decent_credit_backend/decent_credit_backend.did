@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-type Institution = record {
-    id: principal;
-    name: text;
-    registration_time: nat64;
-    is_active: bool;
-    credit_score: nat64;
-};
-
-type CreditRecord = record {
-    id: nat64;
-    institution: principal;
-    subject_id: text;
-    record_type: text;
-    data_hash: text;
-    timestamp: nat64;
-    is_valid: bool;
-};
-
-service : {
-    "register_institution": (text) -> (variant { Ok: null; Err: text });
-    "get_institution": (principal) -> (opt Institution) query;
-    "init": () -> ();
-};
-=======
 // 基础结构定义
 type CreditScore = record {
     score: nat64;
@@ -231,4 +206,3 @@ service : {
     create_credit_record: (CreateCreditRecordRequest) -> (variant { Ok: CreditDeductionRecord; Err: text });
     get_credit_records: (opt principal) -> (vec CreditDeductionRecord) query;
 };
->>>>>>> dec-test

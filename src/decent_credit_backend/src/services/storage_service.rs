@@ -13,7 +13,6 @@ thread_local! {
 pub struct StorageService {
     stored_data: HashMap<String, Vec<u8>>,
     chain_data: HashMap<String, (String, Vec<u8>)>,
-    reports: Vec<(Principal, RiskAssessmentReport)>,
 
 }
 
@@ -22,7 +21,6 @@ impl StorageService {
         Self {
             stored_data: HashMap::new(),
             chain_data: HashMap::new(),
-            reports: Vec::new(),
         }
     }
  

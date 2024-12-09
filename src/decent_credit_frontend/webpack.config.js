@@ -1,17 +1,10 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-<<<<<<< HEAD
-
-function initCanisterEnv() {
-  let localCanisters, prodCanisters;
-
-=======
 const httpProxy = require('http-proxy'); // 需要添加这个导入
 
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
->>>>>>> dec-test
   try {
     localCanisters = require(path.resolve(".dfx", "local", "canister_ids.json"));
   } catch (error) {
@@ -24,28 +17,6 @@ function initCanisterEnv() {
     console.log("No production canister_ids.json found");
   }
 
-<<<<<<< HEAD
-  const network =
-    process.env.DFX_NETWORK ||
-    (process.env.NODE_ENV === "production" ? "ic" : "local");
-  const canisterConfig = network === "local" ? localCanisters : prodCanisters;
-
-  const env = {
-    DFX_NETWORK: network,
-  };
-
-  if (canisterConfig) {
-    for (const canister in canisterConfig) {
-      const canisterName = canister.toUpperCase() + "_CANISTER_ID";
-      env[canisterName] = canisterConfig[canister][network];
-      console.log(`Setting ${canisterName}:`, env[canisterName]);
-    }
-  }
-
-  return env;
-}
-
-=======
   const network = process.env.DFX_NETWORK || "local";
   const canisterConfig = network === "local" ? localCanisters : prodCanisters;
 
@@ -62,7 +33,6 @@ function initCanisterEnv() {
 // 创建代理实例
 const proxy = httpProxy.createProxyServer();
 
->>>>>>> dec-test
 module.exports = {
   target: "web",
   mode: "development",
@@ -71,14 +41,9 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, "dist"),
-<<<<<<< HEAD
-    filename: "index.js",
-    sourceMapFilename: "[name].js.map",
-=======
     filename: '[name].[contenthash].js',
     publicPath: '/',
     clean: true,
->>>>>>> dec-test
   },
   devtool: "source-map",
   optimization: {
@@ -110,22 +75,6 @@ module.exports = {
         test: /\.css$/i,
         use: [
           "style-loader",
-<<<<<<< HEAD
-          "css-loader",
-          {
-            loader: "postcss-loader",
-            options: {
-              postcssOptions: {
-                plugins: [
-                  require("tailwindcss"),
-                  require("autoprefixer"),
-                ],
-              },
-            },
-          },
-        ],
-      },
-=======
           {
             loader: "css-loader",
             options: {
@@ -149,16 +98,11 @@ module.exports = {
           filename: 'images/[hash][ext][query]'
         }
       },
->>>>>>> dec-test
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-<<<<<<< HEAD
-      template: path.join(__dirname, "public", "index.html"),
-=======
       template: path.join(__dirname, "src", "index.html"),
->>>>>>> dec-test
       cache: false,
     }),
     new webpack.EnvironmentPlugin(initCanisterEnv()),
@@ -168,27 +112,6 @@ module.exports = {
     }),
   ],
   devServer: {
-<<<<<<< HEAD
-    port: 3000,
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:4943",
-        changeOrigin: true,
-        pathRewrite: {
-          "^/api": "/api",
-        },
-      },
-    },
-    hot: true,
-    historyApiFallback: true,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "X-Requested-With, content-type, Authorization",
-    },
-  },
-=======
     port: 8080,
     host: 'localhost',
     historyApiFallback: true,
@@ -212,5 +135,4 @@ module.exports = {
       writeToDisk: true
     }
   }
->>>>>>> dec-test
 };

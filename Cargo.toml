@@ -1,11 +1,6 @@
 [workspace]
 members = [
-<<<<<<< HEAD
-    "src/decent_credit_backend"
-=======
     "src/decent_credit_backend",
     "src/token/src/token_backend",
-
->>>>>>> dec-test
 ]
 resolver = "2"

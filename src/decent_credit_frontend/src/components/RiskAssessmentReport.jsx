@@ -44,18 +44,7 @@ const CreditRecords = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'confirmed':
-        return <CheckCircleOutlined className="text-green-500" />;
-      case 'pending':
-        return <ExclamationCircleOutlined className="text-yellow-500" />;
-      case 'rejected':
-        return <CloseCircleOutlined className="text-red-500" />;
-      default:
-        return <InfoCircleOutlined className="text-gray-500" />;
-    }
-  };
+
 
   const getRecordTypeConfig = (type) => {
     const configs = {

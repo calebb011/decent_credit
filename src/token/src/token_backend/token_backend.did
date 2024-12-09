@@ -1,0 +1,27 @@
+type TokenTransferArgs = record {
+    to: principal;
+    amount: nat64;
+    memo: vec nat8;
+    from_subaccount: opt vec nat8;
+    to_subaccount: opt vec nat8;
+    created_at_time: opt nat64;
+};
+
+type TransferResult = record {
+    block_height: nat64;
+    tx_hash: text;
+};
+
+service : {
+    // 核心转账方法，对应 token_service.rs 中的 transfer 调用
+    "transfer": (TokenTransferArgs) -> (TransferResult);
+    
+    // 查询余额方法，对应 token_service.rs 中的 balance_of 调用
+    "balance_of": (principal) -> (nat64) query;
+    
+    // 基本信息查询方法
+    "name": () -> (text) query;
+    "symbol": () -> (text) query;
+    "decimals": () -> (nat8) query;
+    "total_supply": () -> (nat64) query;
+};

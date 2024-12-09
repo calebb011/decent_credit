@@ -10,8 +10,12 @@
 # dfx temporary files
 .dfx/
 
+<<<<<<< HEAD
 # generated files
 **/declarations/
+=======
+
+>>>>>>> dec-test
 
 # rust
 target/

@@ -2,24 +2,57 @@
   "name": "decent_credit_frontend",
   "version": "0.1.0",
   "description": "Internet Computer frontend",
+<<<<<<< HEAD
  "scripts": {
+=======
+  "scripts": {
+>>>>>>> dec-test
     "start": "webpack serve --mode development --env development",
     "build": "webpack --mode production",
     "deploy:local": "dfx deploy --network=local",
     "deploy:ic": "dfx deploy --network=ic"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@dfinity/agent": "^0.20.2",
     "@dfinity/candid": "^0.20.2",
     "@dfinity/principal": "^0.20.2",
     "@heroicons/react": "^2.1.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+=======
+    "@ant-design/icons": "^5.5.1",
+    "@dfinity/agent": "^0.20.2",
+    "@dfinity/auth-client": "^0.20.2",
+    "@dfinity/candid": "^0.20.2",
+    "@dfinity/principal": "^0.20.2",
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.1.5",
+    "@radix-ui/react-alert-dialog": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@tailwindcss/forms": "^0.5.9",
+    "antd": "^5.22.1",
+    "axios": "^1.7.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.363.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "recharts": "^2.12.3",
+    "tailwind-merge": "^2.5.5"
+>>>>>>> dec-test
   },
   "devDependencies": {
     "@babel/core": "^7.23.5",
     "@babel/preset-env": "^7.23.5",
     "@babel/preset-react": "^7.23.5",
+<<<<<<< HEAD
+=======
+    "@shadcn/ui": "^0.0.4",
+>>>>>>> dec-test
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^9.1.3",

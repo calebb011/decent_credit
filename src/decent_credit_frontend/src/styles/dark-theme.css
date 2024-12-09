@@ -1,0 +1,197 @@
+/* dark-theme.css */
+
+/* 基础样式 */
+body {
+    background: #111827;
+    color: #e5e7eb;
+  }
+  
+  /* Card 样式 */
+  .ant-card {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-color: #374151 !important;
+  }
+  
+  .ant-card-head {
+    border-bottom-color: #374151 !important;
+  }
+  
+  .ant-card-head-title {
+    color: #e5e7eb !important;
+  }
+  
+  /* Table 样式 */
+  .custom-table .ant-table {
+    background: transparent !important;
+  }
+  
+  .custom-table .ant-table-thead > tr > th {
+    background: rgba(30, 41, 59, 0.5) !important;
+    color: #e5e7eb !important;
+    border-bottom: 1px solid #374151 !important;
+  }
+  
+  .custom-table .ant-table-tbody > tr > td {
+    border-bottom: 1px solid #374151 !important;
+    transition: background 0.3s;
+    color: #e5e7eb !important;
+  }
+  
+  .custom-table .ant-table-tbody > tr:hover > td {
+    background: rgba(30, 41, 59, 0.5) !important;
+  }
+  
+  /* Form 样式 */
+  .ant-form-item-label > label {
+    color: #e5e7eb !important;
+  }
+  
+  .ant-input-affix-wrapper {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+  }
+  
+  .ant-input-affix-wrapper:hover {
+    border-color: #60A5FA !important;
+  }
+  
+  .ant-input-affix-wrapper input {
+    background: transparent !important;
+    color: #e5e7eb !important;
+  }
+  
+  .ant-input {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+  }
+  
+  /* DatePicker 样式 */
+  .ant-picker {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+  }
+  
+  .ant-picker-input > input {
+    color: #e5e7eb !important;
+  }
+  
+  .ant-picker-suffix {
+    color: #9CA3AF !important;
+  }
+  
+  /* Button 样式 */
+  .ant-btn-primary {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6) !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .ant-btn-default {
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+  }
+  
+  .ant-btn-default:hover {
+    border-color: #60A5FA !important;
+    color: #fff !important;
+  }
+  
+  /* Modal 样式 */
+  .dark-modal .ant-modal-content {
+    background: #1f2937 !important;
+    border: 1px solid #374151 !important;
+  }
+  
+  .dark-modal .ant-modal-header {
+    background: #1f2937 !important;
+    border-bottom: 1px solid #374151 !important;
+  }
+  
+  .dark-modal .ant-modal-title {
+    color: #e5e7eb !important;
+  }
+  
+  .dark-modal .ant-modal-close {
+    color: #9CA3AF !important;
+  }
+  
+  .dark-modal .ant-modal-close:hover {
+    color: #e5e7eb !important;
+  }
+  
+  /* Descriptions 样式 */
+  .ant-descriptions-bordered .ant-descriptions-item-label {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border-right: 1px solid #374151 !important;
+    color: #e5e7eb !important;
+  }
+  
+  .ant-descriptions-bordered .ant-descriptions-item-content {
+    border: 1px solid #374151 !important;
+    color: #e5e7eb !important;
+  }
+  
+  /* Pagination 样式 */
+  .ant-pagination-item {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+  }
+  
+  .ant-pagination-item a {
+    color: #e5e7eb !important;
+  }
+  
+  .ant-pagination-item-active {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+  }
+  
+  .ant-select-selector {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+  }
+  
+  .ant-select-selector .ant-select-selection-item {
+    color: #e5e7eb !important;
+  }
+  
+  .ant-pagination-options-quick-jumper input {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+  }
+  
+  /* Empty 状态 */
+  .ant-empty-description {
+    color: #9CA3AF !important;
+  }
+  
+  /* Tag 样式 */
+  .ant-tag {
+    border-radius: 4px !important;
+  }
+  
+  /* Tooltip 样式 */
+  .ant-tooltip-inner {
+    background-color: #1f2937 !important;
+    border: 1px solid #374151 !important;
+  }
+  
+  /* Space 组件中的文字颜色 */
+  .ant-space-item {
+    color: #e5e7eb !important;
+  }
+  
+  /* 通用文本颜色 */
+  .text-gray-200 {
+    color: #e5e7eb !important;
+  }
+  
+  .text-gray-300 {
+    color: #d1d5db !important;
+  }
+  
+  .text-gray-400 {
+    color: #9CA3AF !important;
+  }

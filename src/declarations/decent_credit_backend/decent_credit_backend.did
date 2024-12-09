@@ -1,0 +1,91 @@
+// decent_credit_backend.did
+
+type CreditScore = record {
+    score: nat64;
+    last_update: nat64;
+};
+
+type TokenTrading = record {
+    bought: nat64;
+    sold: nat64;
+};
+
+type Institution = record {
+    id: principal;
+    name: text;
+    full_name: text;
+    status: variant { Active; Inactive };
+    join_time: nat64;
+    last_active: nat64;
+    api_calls: nat64;
+    dcc_consumed: nat64;
+    data_uploads: nat64;
+    credit_score: CreditScore;
+    token_trading: TokenTrading;
+};
+
+type RecordType = variant {
+    LoanRecord;
+    RepaymentRecord;
+    OverdueRecord;
+};
+
+type LoanContent = record {
+    amount: nat64;
+    loan_id: text;
+    term_months: nat64;
+    interest_rate: float64;
+};
+
+type RepaymentContent = record {
+    amount: nat64;
+    loan_id: text;
+    repayment_date: text;
+};
+
+type OverdueContent = record {
+    amount: nat64;
+    overdueDays: nat64;
+    period_amount: nat64;
+};
+
+type RecordContent = variant {
+    Loan: LoanContent;
+    Repayment: RepaymentContent;
+    Overdue: OverdueContent;
+};
+
+type RecordStatus = variant {
+    Pending;
+    Confirmed;
+    Rejected;
+};
+
+type RecordSubmissionRequest = record {
+    record_type: nat64;
+    user_did: text;
+    event_date: text;
+    content: RecordContent;
+};
+
+type RecordSubmissionResponse = record {
+    record_id: text;
+    status: RecordStatus;
+    timestamp: nat64;
+    reward_amount: opt nat64;
+};
+
+service : {
+    // Institution management
+    register_institution: (name: text, full_name: text) -> (principal);
+    get_institution: (principal) -> (opt Institution) query;
+    get_all_institutions: () -> (vec Institution) query;
+    update_institution_status: (principal, bool) -> ();
+    update_credit_score: (principal, nat64) -> ();
+    record_api_call: (principal, nat64) -> ();
+    record_data_upload: (principal, nat64) -> ();
+    record_token_trading: (principal, bool, nat64) -> ();
+
+    // Credit record management
+    submit_credit_record: (RecordSubmissionRequest) -> (variant { Ok: RecordSubmissionResponse; Err: text });
+};

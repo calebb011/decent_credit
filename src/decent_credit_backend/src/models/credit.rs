@@ -34,3 +34,28 @@ pub struct AssessmentListResponse {
     pub message: Option<String>,
     pub data: Vec<RiskAssessmentReport>,
 }
+
+
+// === 特征提取结构 ===
+#[derive(Debug, Clone)]
+pub struct CreditFeatures {
+    // 基础特征
+    loan_frequency: f64,
+    repayment_ratio: f64,
+    overdue_ratio: f64,
+    
+    // 金额特征
+    avg_loan_amount: f64,
+    avg_repayment_amount: f64,
+    amount_variance: f64,
+    
+    // 时序特征
+    recent_activity_score: f64,
+    overdue_trend: f64,
+    repayment_consistency: f64,
+    
+    // 风险特征
+    max_overdue_days: u64,
+    total_overdue_amount: u64,
+    overdue_frequency: f64
+}

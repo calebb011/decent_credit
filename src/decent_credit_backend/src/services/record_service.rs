@@ -11,6 +11,7 @@ use crate::services::admin_institution_service::ADMIN_SERVICE;  // 移到顶部
 use crate::utils::error::Error;
 use crate::services::dashboard_service::DASHBOARD_SERVICE;
 use crate::services::token_service::*;
+use crate::services::credit_service::*;
 
 use crate::models::record::*;
 
@@ -130,6 +131,10 @@ impl RecordService {
             // 存储记录
             self.records.insert(record_id.clone(), record.clone());
 
+            CREDIT_SERVICE.with(|service| {
+                let mut credit_service = service.borrow_mut();
+                credit_service.records.insert(record_id.clone(), record.clone());
+            });
             // 存储到服务中
             let storage_id = with_storage_service(|service| {
                 service.store_data(encrypted_content_for_storage)  

@@ -257,7 +257,7 @@ pub async fn institution_login(request: LoginRequest) -> LoginResponse {
         let mut service = service.borrow_mut();
         let response = service.institution_login(request);
         if response.success {
-            info!("Login successful for message: {}", response.message);
+            info!("Login successful for message11: {}", response.message);
         } else {
             warn!("Login failed for user");
         }
